@@ -1,0 +1,36 @@
+@import "tailwindcss";
+body{
+  margin: 0;
+  padding: 0;
+  background-color: #101330;
+}
+
+.fade-up {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform 600ms cubic-bezier(.22,.9,.3,1), opacity 600ms;
+}
+.fade-up.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+//* ซ่อน scrollbar แบบ cross-browser */
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+  /* modern browsers: สำรองที่สำหรับ scrollbar เพื่อไม่ให้ layout กระโดด */
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+/* สำคัญ: ให้แน่ใจว่า flex child สามารถ overflow ได้ถูกต้อง */
+.sidebar-flex-child {
+  min-height: 0;
+}
+
+

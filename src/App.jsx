@@ -1,0 +1,46 @@
+// src/App.jsx
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/mainlayouts.jsx";
+import AdminLayout from "./layouts/adminlayout.jsx";
+import PrivateRoute from "./Routes/PrivateRoutes.jsx";
+import Home from "./Pages/Home";
+import RegisterForm from "./Pages/Registerform";
+import Login from "./Pages/admin/login.jsx";
+import Dashboard from "./Pages/admin/dashboard.jsx";
+import ScrollToTop from "./components/ScrollToTop";
+import NotFound from "./Pages/NotFound.jsx";
+
+export default function App() {
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+
+        {/* --- 🛡️ Routes สำหรับ Admin (ไม่มี Navbar) 🛡️ --- */}
+        <Route element={<AdminLayout />}>
+          <Route path="/admin/login" element={<Login />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <Dashboard />
+            }
+          />
+        </Route>
+
+        {/* --- 🏠 Routes สำหรับผู้ใช้งานทั่วไป (มี Navbar) 🏠 --- */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          {/* ✅ แก้ไข: ใช้ RegisterForm ตามชื่อที่นำเข้า หรือเปลี่ยนชื่อใน Route เป็น RegisterForm ✅ */}
+          <Route path="/register" element={<RegisterForm />} />
+
+        </Route>
+
+        {/* ⚠️ Route สำหรับหน้า Not Found ⚠️ */}
+        <Route path="*" element={<NotFound />} />
+
+      </Routes>
+      {/* ⚠️ ไม่ต้องมีแท็กเปิด/ปิด Routes ซ้ำอีก ⚠️ */}
+    </>
+  );
+}
