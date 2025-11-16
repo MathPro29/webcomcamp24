@@ -89,7 +89,7 @@ const Contact = () => {
                                     </div>
                                     <button
                                         type="submit"
-                                        className="w-full py-3 bg-yellow-400 text-[#1A1E4A] font-semibold rounded-lg hover:bg-yellow-300 hover:scale-[1.02] transition-all duration-300 shadow-md"
+                                        className="w-full py-3 bg-yellow-400 text-[#1A1E4A] font-semibold rounded-lg hover:bg-yellow-300 hover:scale-[1.02] transition-all duration-300 shadow-md cursor-pointer"
                                     >
                                         ส่งข้อความ
                                     </button>

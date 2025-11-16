@@ -6,7 +6,6 @@ const RegisterForm = () => {
         school: "",
         phone: "",
         email: "",
-        reason: "",
     });
 
     const [submitted, setSubmitted] = useState(false);
@@ -15,12 +14,10 @@ const RegisterForm = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
+    const handleSubmit = () => {
         // ตรวจสอบค่าว่าง
-        const { name, school, phone, email, reason } = formData;
-        if (!name || !school || !phone || !email || !reason) {
+        const { name, school, phone, email } = formData;
+        if (!name || !school || !phone || !email) {
             alert("กรุณากรอกข้อมูลให้ครบถ้วนก่อนส่งนะครับ 💛");
             return;
         }
@@ -34,103 +31,117 @@ const RegisterForm = () => {
     return (
         <section
             id="register"
-            className="bg-[#101330] py-16 sm:py-20 text-white relative overflow-hidden"
+            className="bg-[#101330] py-16 sm:py-20 text-white relative overflow-hidden min-h-screen"
         >
             {/* Header */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 relative z-10">
-                <h2 className="mt-4 text-3xl sm:text-4xl font-bold text-yellow-300">
-                    สมัครเข้าร่วม CAMP 24th ได้ที่นี่!
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12 relative z-10 mt-10">
+                
+                <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+                    สมัครเข้าร่วม Comcamp 24<sup className="text-amber-300">th</sup>
                 </h2>
-                <p className="mt-2 text-gray-300">กรอกข้อมูลให้ครบถ้วนก่อนส่งนะครับ 💫</p>
+                <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">
+                    เตรียมตัวให้พร้อมสำหรับประสบการณ์ที่จะเปลี่ยนชีวิตคุณ 💫
+                </p>
             </div>
 
             {/* Form */}
-            <div className="max-w-2xl mx-auto bg-[#1A1E4A] p-8 rounded-2xl shadow-xl border border-yellow-400/30 hover:border-yellow-400/60 transition-all duration-500 relative z-10">
-                {!submitted ? (
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label className="block text-sm text-gray-300 mb-2">
-                                ชื่อ-นามสกุล
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                placeholder="เช่น นายสมชาย ใจดี"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg bg-[#12163A] border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-300/30 focus:outline-none transition-all"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm text-gray-300 mb-2">โรงเรียน</label>
-                            <input
-                                type="text"
-                                name="school"
-                                placeholder="เช่น โรงเรียนแม่โจ้"
-                                value={formData.school}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2 rounded-lg bg-[#12163A] border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-300/30 focus:outline-none transition-all"
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm text-gray-300 mb-2">
-                                    เบอร์โทรศัพท์
+            <div className="max-w-2xl mx-auto px-4 relative z-10">
+                <div className="bg-gradient-to-br from-[#1A1E4A] to-[#151838] p-8 sm:p-10 rounded-3xl shadow-2xl border border-yellow-400/40 hover:border-yellow-400/70 hover:shadow-yellow-400/20 transition-all duration-500 backdrop-blur-sm">
+                    {!submitted ? (
+                        <div className="space-y-6">
+                            <div className="group">
+                                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                    <span className="text-yellow-400">👤</span> ชื่อ-นามสกุล
                                 </label>
                                 <input
-                                    type="tel"
-                                    name="phone"
-                                    placeholder="0991234567"
-                                    value={formData.phone}
+                                    type="text"
+                                    name="name"
+                                    placeholder="เช่น นายสมชาย ใจดี"
+                                    value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-lg bg-[#12163A] border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-300/30 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none transition-all group-hover:border-gray-500"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm text-gray-300 mb-2">
-                                    อีเมล
+
+                            <div className="group">
+                                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                    <span className="text-yellow-400">🏫</span> โรงเรียน
                                 </label>
                                 <input
-                                    type="email"
-                                    name="email"
-                                    placeholder="example@email.com"
-                                    value={formData.email}
+                                    type="text"
+                                    name="school"
+                                    placeholder="เช่น โรงเรียนแม่โจ้"
+                                    value={formData.school}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-2 rounded-lg bg-[#12163A] border border-gray-600 text-white placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-300/30 focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none transition-all group-hover:border-gray-500"
                                 />
                             </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                <div className="group">
+                                    <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                        <span className="text-yellow-400">📱</span> เบอร์โทรศัพท์
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        placeholder="0991234567"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none transition-all group-hover:border-gray-500"
+                                    />
+                                </div>
+                                <div className="group">
+                                    <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                                        <span className="text-yellow-400">📧</span> อีเมล
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        placeholder="example@email.com"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none transition-all group-hover:border-gray-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleSubmit}
+                                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#101330] font-bold rounded-xl hover:from-yellow-300 hover:to-yellow-400 hover:scale-[1.02] hover:shadow-xl hover:shadow-yellow-400/30 transition-all duration-300 cursor-pointer text-lg"
+                            >
+                                ✨ ส่งแบบฟอร์มลงทะเบียน
+                            </button>
                         </div>
-
-
-                        <button
-                            type="submit"
-                            className="w-full py-3 bg-yellow-400 text-[#101330] font-semibold rounded-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-300 shadow-md"
-                        >
-                            ส่งแบบฟอร์มลงทะเบียน
-                        </button>
-                    </form>
-                ) : (
-                    <div className="text-center space-y-3">
-                        <h3 className="text-2xl font-semibold text-yellow-400">
-                            ✅ ส่งข้อมูลเรียบร้อย!
-                        </h3>
-                        <p className="text-gray-300">
-                            ขอบคุณที่ลงทะเบียนเข้าค่ายนะครับ ทีมงานจะติดต่อกลับภายในไม่กี่วัน 💛
-                        </p>
-                        <button
-                            onClick={() => setSubmitted(false)}
-                            className="mt-4 px-6 py-2 bg-yellow-400 text-[#101330] rounded-lg font-semibold hover:bg-yellow-300 transition-all"
-                        >
-                            ส่งอีกครั้ง
-                        </button>
-                    </div>
-                )}
+                    ) : (
+                        <div className="text-center space-y-4 py-8">
+                            <div className="inline-block p-4 bg-yellow-400/20 rounded-full mb-4">
+                                <svg className="w-16 h-16 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 className="text-3xl font-bold bg-gradient-to-r from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                                ส่งข้อมูลเรียบร้อย!
+                            </h3>
+                            <p className="text-gray-300 text-lg max-w-md mx-auto">
+                                ขอบคุณที่ลงทะเบียนเข้าค่ายนะครับ 💛<br />
+                                ทีมงานจะติดต่อกลับภายในไม่กี่วัน
+                            </p>
+                            <button
+                                onClick={() => setSubmitted(false)}
+                                className="mt-6 px-8 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-[#101330] rounded-xl font-bold hover:from-yellow-300 hover:to-yellow-400 hover:scale-105 hover:shadow-xl hover:shadow-yellow-400/30 transition-all"
+                            >
+                                ส่งอีกครั้ง
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400/10 via-transparent to-yellow-500/10 blur-3xl"></div>
+            {/* Background effects */}
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-500/10 blur-3xl"></div>
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl"></div>
         </section>
     );
 };

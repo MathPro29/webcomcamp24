@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -8,6 +8,18 @@ const Navbar = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // ปิดเมนูอัตโนมัติเมื่อขยายจอเกิน breakpoint
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1452 && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMenuOpen]);
 
   const navItems = [
     { name: "หน้าหลัก", id: "home" },
@@ -72,7 +84,7 @@ const Navbar = () => {
           {/* โลโก้ */}
           <button
             onClick={handleLogoClick}
-            className="text-xl font-bold text-white hover:text-gray-300 transition-colors duration-200"
+            className="text-xl font-bold text-white hover:text-gray-300 transition-colors duration-200 cursor-pointer"
             aria-label="Go to home"
           >
             Comcamp24<sup>th</sup>
@@ -86,10 +98,10 @@ const Navbar = () => {
                 <button
                   key={item.id}
                   onClick={() => handleGotoSection(item.id)}
-                  className="text-white hover:text-gray-400 px-3 py-2 text-sm font-medium transition-all duration-200 relative group"
+                  className="text-white hover:text-gray-400 px-3 py-2 text-sm font-medium transition-all duration-200 relative group cursor-pointer"
                 >
                   {item.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#e28d0d] group-hover:w-full transition-all duration-300" />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#e28d0d] group-hover:w-full transition-all duration-300 " />
                 </button>
               ))}
             </div>
@@ -102,7 +114,7 @@ const Navbar = () => {
                 navigate("/register");
                 setIsMenuOpen(false);
               }}
-              className="text-white bg-[#e28d0d] hover:bg-[#a96909] px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+              className="text-white bg-[#e28d0d] hover:bg-[#a96909] px-4 py-2 rounded-lg font-medium transition-colors duration-200 cursor-pointer"
             >
               สนใจลงทะเบียน
             </button>

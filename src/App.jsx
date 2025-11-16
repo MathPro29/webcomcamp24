@@ -10,6 +10,8 @@ import Login from "./Pages/admin/login.jsx";
 import Dashboard from "./Pages/admin/dashboard.jsx";
 import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./Pages/NotFound.jsx";
+import Users from "./Pages/admin/users.jsx";
+import Receipts from "./Pages/admin/receipts.jsx";
 
 export default function App() {
   return (
@@ -18,14 +20,19 @@ export default function App() {
       <Routes>
 
         {/* --- 🛡️ Routes สำหรับ Admin (ไม่มี Navbar) 🛡️ --- */}
-        <Route element={<AdminLayout />}>
           <Route path="/admin/login" element={<Login />} />
+        <Route element={<AdminLayout />}>
           <Route
             path="/admin/dashboard"
             element={
               <Dashboard />
+
             }
           />
+          <Route path="/admin/users" element={<Users />} />
+           <Route path="/admin/receipts" element={<Receipts />}>
+
+        </Route>
         </Route>
 
         {/* --- 🏠 Routes สำหรับผู้ใช้งานทั่วไป (มี Navbar) 🏠 --- */}

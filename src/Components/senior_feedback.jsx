@@ -1,6 +1,5 @@
 import React from 'react'
 
-
 const Senior_feedback = () => {
     return (
         <section
@@ -53,7 +52,7 @@ const Senior_feedback = () => {
                                 ].map((review, idx) => (
                                     <div
                                         key={idx}
-                                        className="min-w-[300px] sm:min-w-[350px] bg-white text-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                                        className="min-w-[300px] sm:min-w-[350px] bg-white text-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:bg-amber-400 hover:cursor-pointer relative hover:z-50 hover-pause-parent"
                                     >
                                         <div className="flex items-center space-x-4 mb-3">
                                             <img
@@ -66,7 +65,7 @@ const Senior_feedback = () => {
                                                 <p className="text-xs text-gray-500">Comcamp รุ่นก่อน</p>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-gray-700 leading-relaxed">“{review.text}”</p>
+                                        <p className="text-sm text-gray-700 leading-relaxed">"{review.text}"</p>
                                     </div>
                                 ))}
                             </div>
@@ -108,7 +107,7 @@ const Senior_feedback = () => {
                                 ].map((review, idx) => (
                                     <div
                                         key={idx}
-                                        className="min-w-[300px] sm:min-w-[350px] bg-white text-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                                        className="min-w-[300px] sm:min-w-[350px] bg-white text-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:bg-amber-400 hover:cursor-pointer relative hover:z-50 hover-pause-parent"
                                     >
                                         <div className="flex items-center space-x-4 mb-3">
                                             <img
@@ -121,7 +120,7 @@ const Senior_feedback = () => {
                                                 <p className="text-xs text-gray-500">Comcamp รุ่นก่อน</p>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-gray-700 leading-relaxed">“{review.text}”</p>
+                                        <p className="text-sm text-gray-700 leading-relaxed">"{review.text}"</p>
                                     </div>
                                 ))}
                             </div>
@@ -157,11 +156,13 @@ const Senior_feedback = () => {
     width: 200%;
     animation: marquee-right 28s linear infinite;
   }
+  .animate-marquee-left:has(.hover-pause-parent:hover),
+  .animate-marquee-right:has(.hover-pause-parent:hover) {
+    animation-play-state: paused;
+  }
 `}</style>
 
         </section>
-
-
     )
 }
 

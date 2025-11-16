@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: '🏠' },
     { name: 'สมาชิก', path: '/admin/users', icon: '👥' },
-    { name: 'หัวข้อ 1', path: '/admin/products', icon: '📦' },
+    { name: 'ตรวจสอบการโอนเงิน', path: '/admin/receipts', icon: '💵' },
     { name: 'หัวข้อ 2', path: '/admin/settings', icon: '⚙️' },
     { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: '🔙' },
 ];
