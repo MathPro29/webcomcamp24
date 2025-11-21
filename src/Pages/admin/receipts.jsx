@@ -66,20 +66,20 @@ const Receipts = () => {
     const [receipts, setReceipts] = useState(initialReceipts);
 
     const statusConfig = {
-        approved: { 
-            label: 'อนุมัติ', 
-            color: 'bg-green-100 text-green-800 border-green-300', 
-            icon: <CheckCircle size={16} className="text-green-600" /> 
+        approved: {
+            label: 'อนุมัติ',
+            color: 'bg-green-100 text-green-800 border-green-300',
+            icon: <CheckCircle size={16} className="text-green-600" />
         },
-        pending: { 
-            label: 'รอตรวจสอบ', 
-            color: 'bg-yellow-100 text-yellow-800 border-yellow-300', 
-            icon: <Clock size={16} className="text-yellow-600" /> 
+        pending: {
+            label: 'รอตรวจสอบ',
+            color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            icon: <Clock size={16} className="text-yellow-600" />
         },
-        rejected: { 
-            label: 'ปฏิเสธ', 
-            color: 'bg-red-100 text-red-800 border-red-300', 
-            icon: <XCircle size={16} className="text-red-600" /> 
+        rejected: {
+            label: 'ปฏิเสธ',
+            color: 'bg-red-100 text-red-800 border-red-300',
+            icon: <XCircle size={16} className="text-red-600" />
         }
     };
 
@@ -109,7 +109,7 @@ const Receipts = () => {
 
     // จัดการสถานะ
     const handleStatusChange = (id, newStatus, note = '') => {
-        setReceipts(prev => prev.map(r => 
+        setReceipts(prev => prev.map(r =>
             r.id === id ? { ...r, status: newStatus, note } : r
         ));
     };
@@ -133,7 +133,7 @@ const Receipts = () => {
         link.download = `slip_${userName}.jpg`;
         link.click();
     };
-    
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -148,8 +148,8 @@ const Receipts = () => {
                     </div>
                 </div>
 
-                 {/* Stats */}
-                 
+                {/* Stats */}
+
                 <div className="mt-6 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-green-800 text-sm font-medium mb-1">
@@ -209,7 +209,7 @@ const Receipts = () => {
                                 <option value="rejected">ปฏิเสธ</option>
                             </select>
                         </div>
-                        
+
 
                         {/* Refresh Button */}
                         <button
@@ -298,9 +298,9 @@ const Receipts = () => {
                                                     onClick={() => setViewingSlip(receipt)}
                                                     className="relative group"
                                                 >
-                                                    <img 
-                                                        src={receipt.slipImage} 
-                                                        alt="สลิป" 
+                                                    <img
+                                                        src={receipt.slipImage}
+                                                        alt="สลิป"
                                                         className="w-12 h-12 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all cursor-pointer"
                                                     />
                                                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
@@ -359,11 +359,11 @@ const Receipts = () => {
 
             {/* Modal แสดงสลิป */}
             {viewingSlip && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
                     onClick={() => setViewingSlip(null)}
                 >
-                    <div 
+                    <div
                         className="bg-white rounded-xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -373,9 +373,9 @@ const Receipts = () => {
                         >
                             ×
                         </button>
-                        
+
                         <h3 className="text-xl font-bold mb-4">รายละเอียดการชำระเงิน</h3>
-                        
+
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <div className="text-sm text-gray-500">ผู้ชำระ</div>
@@ -394,9 +394,9 @@ const Receipts = () => {
                             </div>
                         </div>
 
-                        <img 
-                            src={viewingSlip.slipImage} 
-                            alt="สลิปการชำระเงิน" 
+                        <img
+                            src={viewingSlip.slipImage}
+                            alt="สลิปการชำระเงิน"
                             className="w-full rounded-lg border-2 border-gray-200 mb-4"
                         />
 

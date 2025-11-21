@@ -35,14 +35,14 @@ const HeroSections = () => {
               ComCamp24
               <sup className="text-[0.4em] align-super ml-1 text-white/80">th</sup>
             </motion.h1>
-            
+
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-white/60 text-sm sm:text-base md:text-lg font-light tracking-wide"
             >
-              เปิดรับสมัครตั้งแต่วันที่ N ถึง N+1 พ.ศ.2668
+              เปิดรับสมัครตั้งแต่วันที่ อะไรนะ ถึง N+1 พ.ศ.2569
             </motion.p>
           </div>
 
