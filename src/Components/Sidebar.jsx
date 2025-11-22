@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: '🏠' },
@@ -12,12 +12,28 @@ const sidebarItems = [
 export default function Sidebar({ isOpen, toggleSidebar }) {
     const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     // สำหรับ Desktop: ใช้ hover state, สำหรับ Mobile: ใช้ isOpen
     const isExpanded = window.innerWidth >= 1024 ? isHovered : isOpen;
 
     const sidebarWidthClass = isExpanded ? 'w-64' : 'w-20';
     const textVisibilityClass = isExpanded ? 'opacity-100 ml-3 inline-block' : 'opacity-0 w-0 overflow-hidden';
+
+    // ถ้า route เปลี่ยน และเป็น mobile และ sidebar ยังเปิด -> ปิดมัน (ป้องกัน overlay ค้าง)
+    useEffect(() => {
+        if (window.innerWidth < 1024 && isOpen) {
+            toggleSidebar();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
+
+    // ช่วยให้เรียกปิดเฉพาะเมื่อมือถือ
+    const closeOnMobileIfNeeded = () => {
+        if (window.innerWidth < 1024 && isOpen) {
+            toggleSidebar();
+        }
+    };
 
     return (
         <div
@@ -43,7 +59,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
 
                     <button
                         onClick={toggleSidebar}
-                        className={`lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-all duration-200 group ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                        className={`cursor-pointer lg:hidden p-2 rounded-lg  transition-all duration-200 group ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                         aria-label="Close Sidebar"
                     >
                         <svg
@@ -58,13 +74,13 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 </div>
             </div>
 
-            {/* --- แก้ตรงนี้: overflow-y ขึ้นกับ isExpanded + ใส่ no-scrollbar เมื่อย่อ --- */}
             <nav className={`flex-1 px-3 py-4 overflow-y-auto no-scrollbar`} style={{ minHeight: 0, scrollbarGutter: 'stable' }}>
                 <ul className="space-y-1">
                     {sidebarItems.map((item) => (
                         <li key={item.name}>
                             <NavLink
                                 to={item.path}
+                                onClick={closeOnMobileIfNeeded} // ปิด sidebar เมื่อมือถือ
                                 className={({ isActive }) =>
                                     `flex items-center rounded-lg transition-all duration-200 group relative
                   ${isActive
@@ -94,15 +110,16 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             <div className="p-3 border-t border-gray-700">
                 <button
                     onClick={() => {
-                        // Remove admin token and redirect to login
                         try {
                             localStorage.removeItem('adminToken');
                         } catch (e) {
                             // ignore
                         }
                         navigate('/admin/login', { replace: true });
+                        // ปิด sidebar ถ้ามือถือ
+                        if (window.innerWidth < 1024 && isOpen) toggleSidebar();
                     }}
-                    className={`flex items-center rounded-lg w-full text-left hover:bg-red-600/90 transition-all duration-200 text-gray-300 hover:text-white group relative
+                    className={`cursor-pointer flex items-center rounded-lg w-full text-left hover:bg-red-600/90 transition-all duration-200 text-gray-300 hover:text-white group relative
             ${isExpanded ? 'px-4 py-3 justify-start' : 'px-3 py-3 justify-center'}`}
                     aria-label="Logout"
                 >
@@ -112,7 +129,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                     </span>
 
                     {!isExpanded && !isHovered && (
-                        <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg">
+                        <span className="cursor-pointer absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg">
                             Logout
                         </span>
                     )}

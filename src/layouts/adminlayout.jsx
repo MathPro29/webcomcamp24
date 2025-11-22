@@ -19,7 +19,7 @@ const Header = ({ toggleSidebar, isOpen }) => {
             {/* Hamburger Button (แสดงบนมือถือเท่านั้น เพราะบน Desktop ใช้ hover) */}
             <button
                 onClick={toggleSidebar}
-                className="lg:hidden text-gray-700 hover:text-indigo-600 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 group absolute left-4"
+                className="lg:hidden  text-gray-700 hover:text-indigo-600 p-2 rounded-lg hover:bg-gray-100 transition-all duration-200 group absolute left-4"
                 aria-label="Toggle Sidebar"
             >
                 <svg className="w-6 h-6 transform group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@ export default function AdminLayout() {
             {/* Overlay สำหรับ Mobile */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden transition-opacity duration-300"
+                    className="fixed inset-0 bg-opacity-50 z-20 lg:hidden transition-opacity duration-300"
                     onClick={toggleSidebar}
                 />
             )}
