@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = () => setIsMenuOpen((v) => !v);
@@ -104,7 +105,10 @@ const Navbar = () => {
           {/* ปุ่ม Desktop - ชำระเงิน + สนใจลงทะเบียน */}
           <div className="hidden min-[1452px]:flex items-center gap-3 flex-shrink-0">
             <button
-              onClick={() => handleGotoSection("payment")}
+              onClick={() => {
+                navigate("/payment");
+                setIsMenuOpen(false);
+              }}
               className="relative text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#e28d0d]/50 px-5 py-2.5 rounded-full font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden backdrop-blur-sm"
             >
               <span className="relative z-10 flex items-center gap-2">
@@ -121,7 +125,6 @@ const Navbar = () => {
             >
               <span className="relative z-10 flex items-center gap-2">
                 สนใจลงทะเบียน
-                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
               </span>
               <span className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
             </button>

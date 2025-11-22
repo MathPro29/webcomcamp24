@@ -13,6 +13,7 @@ import NotFound from "./Pages/NotFound.jsx";
 import Users from "./Pages/admin/users.jsx";
 import Receipts from "./Pages/admin/receipts.jsx";
 import EditWeb from "./Pages/admin/editweb.jsx";
+import Payment from "./Pages/Payment.jsx";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           {/* ✅ แก้ไข: ใช้ RegisterForm ตามชื่อที่นำเข้า หรือเปลี่ยนชื่อใน Route เป็น RegisterForm ✅ */}
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/payment" element={<Payment Page/>} />
         </Route>
 
         {/* ⚠️ Route สำหรับหน้า Not Found ⚠️ */}
