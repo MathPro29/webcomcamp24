@@ -22,8 +22,6 @@ export default function RegisterForm() {
         medicalConditions: "",
         emergencyContact: "",
         emergencyPhone: "",
-        motivation: "",
-        expectations: "",
     });
 
     const [step, setStep] = useState(1);
