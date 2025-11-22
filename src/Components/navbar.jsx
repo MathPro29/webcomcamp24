@@ -23,7 +23,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: "หน้าหลัก", id: "home" },
-    { name: "หัวข้ออบรม", id: "topics" },
+    { name: "หัวข้อการอบรม", id: "topics" },
     { name: "ตรวจสอบรายชื่อ", id: "name_checking" },
     { name: "กิจกรรมในค่าย", id: "acts" },
     { name: "เสียงจากรุ่นพี่", id: "senior_feedback" },
@@ -36,7 +36,7 @@ const Navbar = () => {
     if (!id) return;
     const el = document.getElementById(id);
     if (!el) return;
-    const NAV_OFFSET = 80; // ปรับตามความสูง navbar ของท่าน
+    const NAV_OFFSET = 80;
     const rectTop = el.getBoundingClientRect().top + window.scrollY;
     const top = Math.max(0, rectTop - NAV_OFFSET);
     window.scrollTo({ top, behavior: "smooth" });
@@ -45,86 +45,93 @@ const Navbar = () => {
   // เมื่อกดเมนู section
   const handleGotoSection = (id) => {
     setIsMenuOpen(false);
-    // ถ้าอยู่ home แล้วเลื่อนเลย
     if (location.pathname === "/" || location.pathname === "") {
-      // นิดหน่อย delay เพื่อให้ mobile menu ปิดก่อนเลื่อน (UX ลื่น)
       setTimeout(() => scrollToIdOnPage(id), 80);
       return;
     }
-    // ถ้าไม่ได้อยู่ home ให้ navigate กลับไป home พร้อม state เพื่อให้ Home เลื่อนให้
     navigate("/", { state: { scrollTo: id } });
   };
 
   const handleLogoClick = () => {
-    // ปิดการ restore ของ browser (ช่วยลดการคืนตำแหน่งหลัง reload)
     if ("scrollRestoration" in window.history) {
       try {
         window.history.scrollRestoration = "manual";
       } catch (e) {
-        // ignore (บาง environment อาจขวาง)
+        // ignore
       }
     }
 
-    // เซ็ต flag ให้ Home รู้ว่าให้ไป top หลัง reload
     try {
       sessionStorage.setItem("goHome", "1");
     } catch (e) {
-      // ignore ถ้า sessionStorage ไม่พร้อม
+      // ignore
     }
 
-    // ทำ hard navigation / reload ไปหน้า Home
-    // ใช้ location.href เพื่อ full reload
     window.location.href = "/";
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-[#0b0e26]/90 backdrop-blur-md z-50 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="fixed top-0 left-0 w-full bg-gradient-to-r from-[#0b0e26]/95 via-[#0f1332]/95 to-[#0b0e26]/95 backdrop-blur-lg z-50 border-b border-white/10">
+      <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex justify-between items-center h-20">
           {/* โลโก้ */}
           <button
             onClick={handleLogoClick}
-            className="text-xl font-bold text-white hover:text-gray-300 transition-colors duration-200 cursor-pointer"
+            className="text-2xl font-bold bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent hover:from-blue-200 hover:via-white hover:to-blue-200 transition-all duration-300 cursor-pointer transform hover:scale-105 flex-shrink-0"
             aria-label="Go to home"
           >
-            Comcamp24<sup>th</sup>
+            Comcamp<span className="text-[#e28d0d]">24</span><sup className="text-sm text-[#e28d0d]">th</sup>
           </button>
 
-
-          {/* เมนู Desktop (ซ่อนที่ ≤1451px) */}
-          <div className="hidden min-[1452px]:flex flex-1 justify-center">
-            <div className="flex items-baseline space-x-8">
-              {navItems.map((item) => (
+          {/* เมนู Desktop - ขยายเต็มที่ */}
+          <div className="hidden min-[1452px]:flex flex-1 justify-center px-8">
+            <div className="flex items-center justify-between w-full max-w-5xl">
+              {navItems.map((item, index) => (
                 <button
                   key={item.id}
                   onClick={() => handleGotoSection(item.id)}
-                  className="text-white hover:text-gray-400 px-3 py-2 text-sm font-medium transition-all duration-200 relative group cursor-pointer"
+                  className="relative text-white/90 hover:text-white px-4 py-2.5 text-sm font-medium transition-all duration-300 group cursor-pointer overflow-hidden rounded-lg whitespace-nowrap"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  {item.name}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#e28d0d] group-hover:w-full transition-all duration-300 " />
+                  <span className="relative z-10">{item.name}</span>
+                  <span className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-transparent via-[#e28d0d] to-transparent group-hover:w-4/5 transition-all duration-300" />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ปุ่มลงทะเบียน Desktop */}
-          <div className="hidden min-[1452px]:flex">
+          {/* ปุ่ม Desktop - ชำระเงิน + สนใจลงทะเบียน */}
+          <div className="hidden min-[1452px]:flex items-center gap-3 flex-shrink-0">
+            <button
+              onClick={() => handleGotoSection("payment")}
+              className="relative text-white bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#e28d0d]/50 px-5 py-2.5 rounded-full font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden backdrop-blur-sm"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                ชำระเงิน
+              </span>
+            </button>
+
             <button
               onClick={() => {
                 navigate("/register");
                 setIsMenuOpen(false);
               }}
-              className="text-white bg-[#e28d0d] hover:bg-[#a96909] px-4 py-2 rounded-lg font-medium transition-colors duration-200 cursor-pointer"
+              className="relative text-white bg-gradient-to-r from-[#e28d0d] to-[#f5a623] hover:from-[#f5a623] hover:to-[#e28d0d] px-6 py-2.5 rounded-full font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 hover:shadow-lg hover:shadow-[#e28d0d]/50 group overflow-hidden"
             >
-              สนใจลงทะเบียน
+              <span className="relative z-10 flex items-center gap-2">
+                สนใจลงทะเบียน
+                <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </span>
+              <span className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
             </button>
           </div>
 
-          {/* ปุ่มเมนูมือถือ (แสดง ≤1451px) */}
+          {/* ปุ่มเมนูมือถือ */}
           <div className="block max-[1451px]:block min-[1452px]:hidden">
             <button
               onClick={toggleMenu}
-              className="p-2 rounded-md text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#e28d0d]"
+              className="p-2.5 rounded-xl text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#e28d0d] transition-all duration-200 border border-white/10"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -135,28 +142,48 @@ const Navbar = () => {
 
       {/* เมนูมือถือ */}
       <div
-        className={`max-[1451px]:block transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-          }`}
+        className={`max-[1451px]:block transition-all duration-300 ease-in-out ${
+          isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+        }`}
       >
-        <div className="px-4 pt-2 pb-3 space-y-1 border-t border-white/20 bg-[#0b0e26]/95 backdrop-blur-md">
-          {navItems.map((item) => (
+        <div className="px-4 pt-2 pb-4 space-y-2 border-t border-white/10 bg-gradient-to-b from-[#0b0e26]/98 to-[#0f1332]/98 backdrop-blur-lg">
+          {navItems.map((item, index) => (
             <button
               key={item.id}
               onClick={() => handleGotoSection(item.id)}
-              className="w-full text-left text-white hover:bg-white/10 rounded-md px-3 py-2 text-base font-medium transition-colors duration-200"
+              className="w-full text-left text-white/90 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 text-base font-medium transition-all duration-200 border border-transparent hover:border-white/10 backdrop-blur-sm"
+              style={{ animationDelay: `${index * 30}ms` }}
             >
-              {item.name}
+              <span className="flex items-center gap-3">
+                <span className="w-1 h-1 rounded-full bg-[#e28d0d]" />
+                {item.name}
+              </span>
             </button>
           ))}
 
+          {/* ปุ่มชำระเงินใน Mobile */}
+          <button
+            onClick={() => {
+              handleGotoSection("payment");
+              setIsMenuOpen(false);
+            }}
+            className="w-full text-center bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-3 font-medium transition-all duration-300 border border-white/20 hover:border-[#e28d0d]/50 backdrop-blur-sm"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#e28d0d]" />
+              ชำระเงิน
+            </span>
+          </button>
+
+          {/* ปุ่มสนใจลงทะเบียนใน Mobile */}
           <button
             onClick={() => {
               navigate("/register");
               setIsMenuOpen(false);
             }}
-            className="w-full text-center bg-[#e28d0d] text-white rounded-md px-3 py-2 font-medium hover:bg-[#a96909] transition-colors duration-200"
+            className="w-full text-center bg-gradient-to-r from-[#e28d0d] to-[#f5a623] text-white rounded-xl px-4 py-3 font-medium hover:from-[#f5a623] hover:to-[#e28d0d] transition-all duration-300 shadow-lg shadow-[#e28d0d]/30 hover:shadow-[#e28d0d]/50 transform hover:scale-[1.02]"
           >
-            สนใจลงทะเบียน
+            สนใจลงทะเบียน →
           </button>
         </div>
       </div>
