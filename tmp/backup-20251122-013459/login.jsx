@@ -10,7 +10,6 @@ const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // API base (optional). If you have a backend, set VITE_API_URL.
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const from = location.state?.from?.pathname || '/admin/dashboard';
 
@@ -18,12 +17,6 @@ const Login = () => {
         e.preventDefault();
         setError('');
 
-        if (!username || !password) {
-            setError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
-            return;
-        }
-
-        // Try server authentication first (if backend available)
         try {
             const res = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
@@ -31,29 +24,25 @@ const Login = () => {
                 body: JSON.stringify({ username, password })
             });
 
-            if (res.ok) {
-                const data = await res.json().catch(() => ({}));
-                const token = data.token || data.accessToken || null;
-                if (token) {
-                    localStorage.setItem('adminToken', token);
-                    navigate(from, { replace: true });
-                    return;
-                }
+            if (!res.ok) {
+                const errJson = await res.json().catch(() => ({}));
+                setError(errJson.message || 'Login failed');
+                return;
             }
-        } catch (err) {
-            // no-op: we'll fall back to a simple local check
-        }
 
-        // Fallback: very simple local-only admin credential for demo/testing
-        // WARNING: This is only for a simple demo. Do NOT use in production.
-        const FALLBACK_ADMIN = { username: 'adminbas', password: 'admin69' };
-        if (username === FALLBACK_ADMIN.username && password === FALLBACK_ADMIN.password) {
-            localStorage.setItem('adminToken', 'local-admin-token');
+            const data = await res.json();
+            const token = data.token || data.accessToken || null;
+            if (!token) {
+                setError('No token received from server');
+                return;
+            }
+
+            localStorage.setItem('adminToken', token);
             navigate(from, { replace: true });
-            return;
+        } catch (err) {
+            console.error(err);
+            setError('Network or server error');
         }
-
-        setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     };
 
     return (

@@ -93,14 +93,11 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
 
             <div className="p-3 border-t border-gray-700">
                 <button
+                    type="button"
                     onClick={() => {
-                        // Remove admin token and redirect to login
-                        try {
-                            localStorage.removeItem('adminToken');
-                        } catch (e) {
-                            // ignore
-                        }
-                        navigate('/admin/login', { replace: true });
+                        // ล้าง token แล้วไปหน้า login
+                        localStorage.removeItem('adminToken');
+                        navigate('/admin/login');
                     }}
                     className={`flex items-center rounded-lg w-full text-left hover:bg-red-600/90 transition-all duration-200 text-gray-300 hover:text-white group relative
             ${isExpanded ? 'px-4 py-3 justify-start' : 'px-3 py-3 justify-center'}`}
