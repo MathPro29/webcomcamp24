@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from "lucide-react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -107,6 +107,9 @@ const Login = () => {
                     >
                         Login
                     </button>
+                    <Link to="/" className="text-sm text-gray-600 hover:underline flex justify-center mt-2">
+                        กลับสู่หน้าหลัก
+                    </Link>
                 </form>
             </div>
         </div>
