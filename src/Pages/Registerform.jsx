@@ -101,7 +101,7 @@ export default function RegisterForm() {
             setSubmitted(true);
         } catch (err) {
             console.error(err);
-            alert("เกิดข้อผิดพลาดขณะส่งข้อมูล ลองอีกครั้งครับ");
+            alert("เกิดข้อผิดพลาดขณะส่งข้อมูล ลองอีกครั้ง");
         }
     };
 
@@ -135,7 +135,6 @@ export default function RegisterForm() {
                 <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
                     สมัครเข้าร่วม Comcamp 24<sup className="text-amber-300">th</sup>
                 </h2>
-                <p className="mt-4 text-lg text-gray-300 max-w-2xl mx-auto">เตรียมตัวให้พร้อมสำหรับประสบการณ์ที่จะเปลี่ยนชีวิตคุณ 💫</p>
             </div>
 
             <div className="max-w-2xl mx-auto px-4 relative z-10">
@@ -181,39 +180,39 @@ export default function RegisterForm() {
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">👤 ชื่อ <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อ <span className="text-red-400">*</span></label>
                                                 <input type="text" name="firstName" placeholder="เช่น สมชาย" value={formData.firstName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.firstName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
                                             </div>
 
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">👤 นามสกุล <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">นามสกุล <span className="text-red-400">*</span></label>
                                                 <input type="text" name="lastName" placeholder="เช่น ใจดี" value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.lastName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
                                             </div>
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">😊 ชื่อเล่น <span className="text-red-400">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อเล่น <span className="text-red-400">*</span></label>
                                             <input type="text" name="nickname" placeholder="เช่น ออก้า" value={formData.nickname} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.nickname ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                             {errors.nickname && <p className="text-red-400 text-xs mt-1">{errors.nickname}</p>}
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">🎂 วันเกิด <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">วันเกิด <span className="text-red-400">*</span></label>
                                                 <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.birthDate && <p className="text-red-400 text-xs mt-1">{errors.birthDate}</p>}
                                             </div>
 
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">👶 อายุ</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">อายุ</label>
                                                 <input type="number" min="0" max="25" name="age" placeholder="เช่น 16" value={formData.age} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
                                             </div>
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">⚧️ เพศ <span className="text-red-400">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">เพศ <span className="text-red-400">*</span></label>
                                             <select name="gender" value={formData.gender} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.gender ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
                                                 <option value="" disabled>เลือกเพศ</option>
                                                 <option value="ชาย">ชาย</option>
@@ -232,14 +231,14 @@ export default function RegisterForm() {
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">🎓 ข้อมูลการศึกษา</h3>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">🏫 ชื่อโรงเรียน <span className="text-red-400">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อโรงเรียน <span className="text-red-400">*</span></label>
                                             <input type="text" name="school" placeholder="เช่น โรงเรียนแม่โจ้" value={formData.school} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.school ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                             {errors.school && <p className="text-red-400 text-xs mt-1">{errors.school}</p>}
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">📚 ระดับชั้น <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">ระดับชั้น <span className="text-red-400">*</span></label>
                                                 <select name="grade" value={formData.grade} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.grade ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
                                                     <option value="" disabled>เลือกระดับชั้น</option>
                                                     <option value="ม.1">มัธยมศึกษาปีที่ 1</option>
@@ -253,7 +252,7 @@ export default function RegisterForm() {
                                             </div>
 
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">📍 จังหวัด <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">จังหวัด <span className="text-red-400">*</span></label>
                                                 <input type="text" name="province" placeholder="เช่น เชียงใหม่" value={formData.province} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.province ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.province && <p className="text-red-400 text-xs mt-1">{errors.province}</p>}
                                             </div>
@@ -269,25 +268,25 @@ export default function RegisterForm() {
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">📱 เบอร์โทรศัพท์ <span className="text-red-400">*</span></label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์โทรศัพท์ <span className="text-red-400">*</span></label>
                                                 <input type="tel" name="phone" placeholder="0812345678" value={formData.phone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.phone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                                             </div>
 
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">📞 เบอร์ผู้ปกครอง</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์ผู้ปกครอง</label>
                                                 <input type="tel" name="parentPhone" placeholder="0898765432" value={formData.parentPhone} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
                                             </div>
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">📧 อีเมล <span className="text-red-400">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">อีเมล <span className="text-red-400">*</span></label>
                                             <input type="email" name="email" placeholder="example@email.com" value={formData.email} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.email ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                             {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">💬 LINE ID</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">LINE ID</label>
                                             <input type="text" name="lineId" placeholder="your_line_id" value={formData.lineId} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
                                         </div>
 
@@ -296,13 +295,13 @@ export default function RegisterForm() {
 
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="group">
-                                                    <label className="block text-sm font-medium text-gray-300 mb-2">👤 ผู้ติดต่อฉุกเฉิน <span className="text-red-400">*</span></label>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">ผู้ติดต่อฉุกเฉิน <span className="text-red-400">*</span></label>
                                                     <input type="text" name="emergencyContact" placeholder="ชื่อผู้ปกครอง/ญาติ" value={formData.emergencyContact} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyContact ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                     {errors.emergencyContact && <p className="text-red-400 text-xs mt-1">{errors.emergencyContact}</p>}
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="block text-sm font-medium text-gray-300 mb-2">📞 เบอร์ฉุกเฉิน <span className="text-red-400">*</span></label>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์ฉุกเฉิน <span className="text-red-400">*</span></label>
                                                     <input type="tel" name="emergencyPhone" placeholder="0812345678" value={formData.emergencyPhone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyPhone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                     {errors.emergencyPhone && <p className="text-red-400 text-xs mt-1">{errors.emergencyPhone}</p>}
                                                 </div>
@@ -318,7 +317,7 @@ export default function RegisterForm() {
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">✨ ข้อมูลเพิ่มเติม</h3>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">👕 ไซส์เสื้อ <span className="text-red-400">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">ไซส์เสื้อ <span className="text-red-400">*</span></label>
                                             <select name="shirtSize" value={formData.shirtSize} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.shirtSize ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
                                                 <option value="" disabled>เลือกไซส์เสื้อ</option>
                                                 <option value="XS">XS</option>
@@ -333,27 +332,16 @@ export default function RegisterForm() {
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">🍽️ อาหารที่แพ้ / ข้อจำกัดด้านอาหาร</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">อาหารที่แพ้</label>
                                             <textarea name="allergies" rows="2" placeholder="เช่น แพ้กุ้ง, แพ้นม" value={formData.allergies} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
                                         </div>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">💊 โรคประจำตัว / ข้อมูลสุขภาพที่ควรทราบ</label>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">โรคประจำตัว</label>
                                             <textarea name="medicalConditions" rows="2" placeholder="เช่น โรคหอบหืด" value={formData.medicalConditions} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
                                         </div>
 
-                                        <div className="border-t border-gray-700 pt-4 mt-6">
-                                            <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">💡 เหตุผลที่อยากเข้าค่าย Comcamp <span className="text-red-400">*</span></label>
-                                                <textarea name="motivation" rows="4" placeholder="บอกเราสักหน่อยว่าทำไมถึงอยากเข้าค่าย" value={formData.motivation} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.motivation ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none`} />
-                                                {errors.motivation && <p className="text-red-400 text-xs mt-1">{errors.motivation}</p>}
-                                            </div>
-
-                                            <div className="group mt-4">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">🎯 คุณคาดหวังอะไรจากค่ายนี้</label>
-                                                <textarea name="expectations" rows="3" placeholder="เช่น อยากเรียนรู้การเขียนโปรแกรม" value={formData.expectations} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
-                                            </div>
-                                        </div>
+                                        
 
                                         <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4 mt-4">
                                             <p className="text-sm text-gray-300">💡 <span className="font-semibold text-yellow-400">หมายเหตุ:</span> กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้องก่อนส่งแบบฟอร์มนะครับ</p>

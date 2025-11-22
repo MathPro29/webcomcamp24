@@ -33,7 +33,7 @@ const HeroSections = () => {
               style={{ fontSize: "clamp(3rem, 8vw, 6rem)" }}
             >
               ComCamp24
-              <sup className="text-[0.4em] align-super ml-1 text-white/80">th</sup>
+              <sup className="text-[0.4em] align-super ml-1 text-white">th</sup>
             </motion.h1>
 
             <motion.p
