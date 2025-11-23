@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
     // บันทึก
     const newUser = await User.create({
       ...data,
-      status: "รอตรวจสอบ",
+      status: "pending",
       birthDate: data.birthDate ? new Date(data.birthDate) : null,
     });
 

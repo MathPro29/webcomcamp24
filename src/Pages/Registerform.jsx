@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios"; 
+import axios from "axios";
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
@@ -82,36 +82,36 @@ export default function RegisterForm() {
     };
 
     const handleSubmit = async () => {
-  const requiredFields = [
-    "prefix","firstName","lastName","nickname","birthDate","gender",
-    "school","grade","province","phone","email",
-    "emergencyContact","emergencyPhone","shirtSize"
-  ];
+        const requiredFields = [
+            "prefix", "firstName", "lastName", "nickname", "birthDate", "gender",
+            "school", "grade", "province", "phone", "email",
+            "emergencyContact", "emergencyPhone", "shirtSize"
+        ];
 
-  const missing = requiredFields.filter(f => !formData[f]);
-  if (missing.length > 0) {
-    alert("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ");
-    return;
-  }
+        const missing = requiredFields.filter(f => !formData[f]);
+        if (missing.length > 0) {
+            alert("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ");
+            return;
+        }
 
-  try {
-    const res = await axios.post("http://localhost:5000/api/register", {
-      ...formData,
-      status: "รอตรวจสอบ"
-    });
+        try {
+            const res = await axios.post("http://localhost:5000/api/register", {
+                ...formData,
+                status: "pending",
+            });
 
-    console.log("สมัครสำเร็จ!", res.data);
-    setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
+            console.log("สมัครสำเร็จ!", res.data);
+            setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
 
-  } catch (err) {
-    console.error(err);
-    if (err.response?.status === 409) {
-      alert("อีเมลนี้ถูกใช้สมัครไปแล้ว!");
-    } else {
-      alert(err.response?.data?.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
-    }
-  }
-};
+        } catch (err) {
+            console.error(err);
+            if (err.response?.status === 409) {
+                alert("อีเมลนี้ถูกใช้สมัครไปแล้ว!");
+            } else {
+                alert(err.response?.data?.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
+            }
+        }
+    };
 
     const progressPercent = Math.round(((step - 1) / (totalSteps - 1)) * 100);
 
@@ -349,7 +349,7 @@ export default function RegisterForm() {
                                             <textarea name="medicalConditions" rows="2" placeholder="เช่น โรคหอบหืด" value={formData.medicalConditions} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
                                         </div>
 
-                                        
+
 
                                         <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4 mt-4">
                                             <p className="text-sm text-gray-300">💡 <span className="font-semibold text-yellow-400">หมายเหตุ:</span> กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้องก่อนส่งแบบฟอร์มนะครับ</p>
