@@ -4,7 +4,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import DBconnect from "./config/db.js";
 import userRouter from "./routes/users.js";
-import reviewRouter from "./routes/Review.js";
 import mongoose from "mongoose";
 
 
@@ -18,10 +17,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// API Routes
 app.use("/api/users", userRouter);
-app.use("/api/reviews", reviewRouter);
-
-
 
 
 
