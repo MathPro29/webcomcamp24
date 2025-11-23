@@ -1,10 +1,21 @@
-import User from "../models/users.js";
+// controllers/users.js
+import User from "../models/users.js"; // <-- ต้องมีบรรทัดนี้!
 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({});
-    res.status(200).json(users); // ได้รูปแบบตามที่ต้องการ
+    const users = await User.find({})
+      .select("firstName lastName school status") // ดึงเฉพาะที่ frontend ต้องการ
+      .sort({ lastName: 1, firstName: 1 })
+      .lean(); // ทำให้เร็วขึ้น
+
+    // ถ้าไม่มีข้อมูลเลย
+    if (users.length === 0) {
+      return res.json([]); // ส่ง array ว่างไปก่อนก็ได้
+    }
+
+    res.json(users);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in getUsers:", error);
+    res.status(500).json({ error: "ดึงข้อมูลไม่สำเร็จ" });
   }
 };
