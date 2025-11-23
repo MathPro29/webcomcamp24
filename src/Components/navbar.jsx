@@ -145,9 +145,8 @@ const Navbar = () => {
 
       {/* เมนูมือถือ */}
       <div
-        className={`max-[1451px]:block transition-all duration-300 ease-in-out ${
-          isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-        }`}
+        className={`max-[1451px]:block transition-all duration-300 ease-in-out ${isMenuOpen ? "max-h-[600px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+          }`}
       >
         <div className="px-4 pt-2 pb-4 space-y-2 border-t border-white/10 bg-gradient-to-b from-[#0b0e26]/98 to-[#0f1332]/98 backdrop-blur-lg">
           {navItems.map((item, index) => (
@@ -167,7 +166,7 @@ const Navbar = () => {
           {/* ปุ่มชำระเงินใน Mobile */}
           <button
             onClick={() => {
-              handleGotoSection("payment");
+              navigate("/payment");
               setIsMenuOpen(false);
             }}
             className="w-full text-center bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-3 font-medium transition-all duration-300 border border-white/20 hover:border-[#e28d0d]/50 backdrop-blur-sm"
