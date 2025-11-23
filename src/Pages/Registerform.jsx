@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import axios from "axios"; 
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
@@ -82,26 +82,36 @@ export default function RegisterForm() {
     };
 
     const handleSubmit = async () => {
-        if (!validateStep()) return;
+  const requiredFields = [
+    "prefix","firstName","lastName","nickname","birthDate","gender",
+    "school","grade","province","phone","email",
+    "emergencyContact","emergencyPhone","shirtSize"
+  ];
 
-        const requiredFields = ['prefix', 'firstName', 'lastName', 'nickname', 'birthDate', 'gender',
-            'school', 'grade', 'province', 'phone', 'email',
-            'emergencyContact', 'emergencyPhone', 'shirtSize'];
-        const missingFields = requiredFields.filter(field => !formData[field]);
+  const missing = requiredFields.filter(f => !formData[f]);
+  if (missing.length > 0) {
+    alert("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ");
+    return;
+  }
 
-        if (missingFields.length > 0) {
-            alert("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ 💛");
-            return;
-        }
+  try {
+    const res = await axios.post("http://localhost:5000/api/register", {
+      ...formData,
+      status: "รอตรวจสอบ"
+    });
 
-        try {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            setSubmitted(true);
-        } catch (err) {
-            console.error(err);
-            alert("เกิดข้อผิดพลาดขณะส่งข้อมูล ลองอีกครั้ง");
-        }
-    };
+    console.log("สมัครสำเร็จ!", res.data);
+    setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
+
+  } catch (err) {
+    console.error(err);
+    if (err.response?.status === 409) {
+      alert("อีเมลนี้ถูกใช้สมัครไปแล้ว!");
+    } else {
+      alert(err.response?.data?.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
+    }
+  }
+};
 
     const progressPercent = Math.round(((step - 1) / (totalSteps - 1)) * 100);
 
