@@ -20,7 +20,11 @@ const userSchema = new mongoose.Schema({
   medicalConditions: String,
   emergencyContact: String,
   emergencyPhone: String,
-  status: String,
+  status: {
+    type: String,
+    enum: ["pending", "success", "declined"],
+    default: "pending"
+  },
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);
