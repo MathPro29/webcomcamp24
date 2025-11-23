@@ -11,7 +11,7 @@ import mongoose from "mongoose";
 dotenv.config();
 // ดึงค่าตัวแปรจากไฟล์ .env ผ่าน process.env
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGO_URI;
+DBconnect();
 
 
 const app = express();
@@ -36,5 +36,3 @@ DBconnect().then(() => {
         console.log(`🚀 Server listening on port ${PORT}`);
     });
 });
-
-start();
