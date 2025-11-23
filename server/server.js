@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import DBconnect from "./config/db.js";
 import userRouter from "./routes/users.js";
 import mongoose from "mongoose";
-
+import registerRouter from "./routes/register.js";
 
 dotenv.config();
 // ดึงค่าตัวแปรจากไฟล์ .env ผ่าน process.env
@@ -19,7 +19,7 @@ app.use(express.json());
 
 // API Routes
 app.use("/api/users", userRouter);
-
+app.use("/api/register", registerRouter); // เพิ่มบรรทัดนี้แค่นี้พอ
 
 
 // 4. เรียกใช้ฟังก์ชันเชื่อมต่อและเปิดเซิร์ฟเวอร์

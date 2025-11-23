@@ -1,46 +1,42 @@
-// server/routes/register.js
-import express from 'express';
-import User from '../models/User.js';
+// backend/routes/register.js
+import express from "express";
+import User from "../models/users.js";   // หรือ "../models/User.js"
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const data = req.body;
 
-    // ตรวจสอบฟิลด์ที่จำเป็น
+    // เช็คฟิลด์ที่จำเป็น (ใช้ชื่อตรงกับ formData ของคุณ)
     const required = [
-      'prefix', 'firstName', 'lastName', 'nickname', 'birthDate', 'gender',
-      'school', 'grade', 'province', 'phone', 'email',
-      'emergencyContact', 'emergencyPhone', 'shirtSize'
+      "prefix","firstName","lastName","nickname","birthDate","gender",
+      "school","grade","province","phone","email",
+      "emergencyContact","emergencyPhone","shirtSize"
     ];
 
     for (const field of required) {
-      if (!data[field]) {
-        return res.status(400).json({ error: `กรุณากรอก${field === 'email' ? 'อีเมล' : 'ข้อมูล'}ให้ครบถ้วน` });
+      if (!data[field] || data[field].toString().trim() === "") {
+        return res.status(400).json({ error: "กรุณากรอกข้อมูลให้ครบทุกช่อง" });
       }
     }
 
-    // ตรวจสอบ email ซ้ำ
-    const existing = await User.findOne({ email: data.email });
-    if (existing) {
-      return res.status(409).json({ error: 'อีเมลนี้ถูกใช้สมัครแล้ว' });
-    }
+    // เช็คอีเมลซ้ำ
+    const exists = await User.findOne({ email: data.email });
+    if (exists) return res.status(409).json({ error: "อีเมลนี้ถูกใช้สมัครแล้ว" });
 
-    // สร้างผู้ใช้
-    const user = await User.create({
+    // บันทึก
+    const newUser = await User.create({
       ...data,
-      birthDate: new Date(data.birthDate)
+      status: "รอตรวจสอบ",
+      birthDate: data.birthDate ? new Date(data.birthDate) : null,
     });
 
-    res.status(201).json({ message: 'สมัครสำเร็จ!', user });
-
-  } catch (error) {
-    console.error(error);
-    if (error.code === 11000) {
-      return res.status(409).json({ error: 'อีเมลนี้ถูกใช้แล้ว' });
-    }
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล' });
+    res.status(201).json({ success: true, message: "สมัครสำเร็จ!", user: newUser });
+  } catch (err) {
+    console.error(err);
+    if (err.code === 11000) return res.status(409).json({ error: "ข้อมูลซ้ำ" });
+    res.status(500).json({ error: "บันทึกไม่สำเร็จ" });
   }
 });
 
