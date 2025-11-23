@@ -171,7 +171,7 @@ const Navbar = () => {
             }}
             className="w-full text-center bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-3 font-medium transition-all duration-300 border border-white/20 hover:border-[#e28d0d]/50 backdrop-blur-sm"
           >
-            <span className="flex items-center justify-center gap-2">
+            <span className="cursor-pointer flex items-center justify-center gap-2">
               <span className="w-1 h-1 rounded-full bg-[#e28d0d]" />
               ชำระเงิน
             </span>
@@ -183,9 +183,9 @@ const Navbar = () => {
               navigate("/register");
               setIsMenuOpen(false);
             }}
-            className="w-full text-center bg-gradient-to-r from-[#e28d0d] to-[#f5a623] text-white rounded-xl px-4 py-3 font-medium hover:from-[#f5a623] hover:to-[#e28d0d] transition-all duration-300 shadow-lg shadow-[#e28d0d]/30 hover:shadow-[#e28d0d]/50 transform hover:scale-[1.02]"
+            className="cursor-pointer w-full text-center bg-gradient-to-r from-[#e28d0d] to-[#f5a623] text-white rounded-xl px-4 py-3 font-medium hover:from-[#f5a623] hover:to-[#e28d0d] transition-all duration-300 shadow-lg shadow-[#e28d0d]/30 hover:shadow-[#e28d0d]/50 transform hover:scale-[1.02]"
           >
-            สนใจลงทะเบียน →
+            สนใจลงทะเบียน
           </button>
         </div>
       </div>
