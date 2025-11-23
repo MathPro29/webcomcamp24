@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
   allergies: String,
   medicalConditions: String,
   emergencyContact: String,
-  emergencyPhone: String
+  emergencyPhone: String,
+  status: String,
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);
