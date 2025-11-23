@@ -86,7 +86,7 @@ export default function RegisterForm() {
 
         const requiredFields = ['prefix', 'firstName', 'lastName', 'nickname', 'birthDate', 'gender',
             'school', 'grade', 'province', 'phone', 'email',
-            'emergencyContact', 'emergencyPhone', 'shirtSize', 'motivation'];
+            'emergencyContact', 'emergencyPhone', 'shirtSize'];
         const missingFields = requiredFields.filter(field => !formData[field]);
 
         if (missingFields.length > 0) {
