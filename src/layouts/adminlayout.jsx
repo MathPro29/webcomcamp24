@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../Components/Sidebar';
+import Sidebar from '../Components/Sidebar.jsx';
 
 // Header component ที่ปรับปรุงแล้ว
 const Header = ({ toggleSidebar, isOpen }) => {
