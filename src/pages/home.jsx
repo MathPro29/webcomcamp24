@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-import HeroSections from "./components/herosections";
-import Learningsection from "./components/learningsection";
-import NameChecking from "./components/name_checking";
+import HeroSections from "../components/herosections.jsx";  // lowercase
+import Learningsection from "../components/learningsection.jsx";
+import NameChecking from "../components/name_checking.jsx";
 import Acts from "./components/acts";
 import Senior_feedback from "./components/senior_feedback";
 import Contact from "./components/contact";
