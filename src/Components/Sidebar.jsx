@@ -109,9 +109,14 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
 
             <div className="p-3 border-t border-gray-700">
                 <button
-                    onClick={() => {
+                    onClick={async () => {
                         try {
-                            localStorage.removeItem('adminToken');
+                            // Call server logout to clear HttpOnly cookie
+                            await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/logout', {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: { 'Content-Type': 'application/json' }
+                            }).catch(() => {});
                         } catch (e) {
                             // ignore
                         }

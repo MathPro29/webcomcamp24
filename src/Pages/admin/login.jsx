@@ -28,30 +28,20 @@ const Login = () => {
             const res = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // accept HttpOnly cookie from server
                 body: JSON.stringify({ username, password })
             });
 
             if (res.ok) {
-                const data = await res.json().catch(() => ({}));
-                const token = data.token || data.accessToken || null;
-                if (token) {
-                    localStorage.setItem('adminToken', token);
-                    navigate(from, { replace: true });
-                    return;
-                }
+                // Server sets an HttpOnly cookie; do not store tokens in localStorage.
+                navigate('/admin/dashboard', { replace: true });
+                return;
             }
         } catch (err) {
-            // no-op: we'll fall back to a simple local check
+            // network/server error -> fall through to show login failure
         }
 
-        // Fallback: very simple local-only admin credential for demo/testing
-        // WARNING: This is only for a simple demo. Do NOT use in production.
-        const FALLBACK_ADMIN = { username: 'adminbas', password: 'admin69' };
-        if (username === FALLBACK_ADMIN.username && password === FALLBACK_ADMIN.password) {
-            localStorage.setItem('adminToken', 'local-admin-token');
-            navigate(from, { replace: true });
-            return;
-        }
+        // If we reach here, authentication failed
 
         setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
     };
