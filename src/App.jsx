@@ -3,7 +3,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/mainlayouts.jsx";
 import AdminLayout from "./layouts/adminlayout.jsx";
-import PrivateRoute from "./routes/PrivateRoutes.jsx";
+import PrivateRoute from "./routes/privateroutes.jsx";
 import Home from "./pages/home.jsx";
 import RegisterForm from "./pages/registerform.jsx";
 import Login from "./pages/admin/login.jsx";
