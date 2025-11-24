@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Eye, Download, CheckCircle, XCircle, Clock, Filter, RefreshCcw, Image, AlertCircle } from 'lucide-react';
-import Sidebar from '../../Components/Sidebar';
+import Sidebar from '../../components/sidebar';
 
 const Receipts = () => {
     const [searchTerm, setSearchTerm] = useState('');
