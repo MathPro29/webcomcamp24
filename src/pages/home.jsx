@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-import HeroSections from "../components/herosections.jsx";  // lowercase
-import Learningsection from "../components/learningsection.jsx";
-import NameChecking from "../components/name_checking.jsx";
-import Acts from "./components/acts";
-import Senior_feedback from "./components/senior_feedback";
-import Contact from "./components/contact";
-import QandA from "./components/qanda";
-import Footer from "./components/footer";
+import HeroSections from "src/components/herosections.jsx";  // lowercase
+import Learningsection from "src/components/learningsection.jsx";
+import NameChecking from "src/components/name_checking.jsx";
+import Acts from "src/components/acts";
+import Senior_feedback from "src/components/senior_feedback";
+import Contact from "src/components/contact";
+import QandA from "src/components/qanda";
+import Footer from "src/components/footer";
 
 import { useNavigate } from "react-router-dom";
 
