@@ -10,60 +10,6 @@ const Receipts = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [viewingSlip, setViewingSlip] = useState(null);
 
-    // ข้อมูลเริ่มต้น (จำลองจาก API) - เอา amount ออกเรียบร้อย
-    const initialReceipts = [
-        {
-            id: 1,
-            userId: 1,
-            userName: 'สมชาย ใจดี',
-            email: 'som@gmail.com',
-            slipImage: 'https://images.unsplash.com/photo-1554224311-beee415c201f?w=400',
-            uploadDate: '2024-11-15 14:30',
-            status: 'pending',
-            note: ''
-        },
-        {
-            id: 2,
-            userId: 2,
-            userName: 'สมหญิง รักเรียน',
-            email: 'somp@gmail.com',
-            slipImage: 'https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?w=400',
-            uploadDate: '2024-11-14 10:15',
-            status: 'approved',
-            note: 'ตรวจสอบแล้ว ถูกต้อง'
-        },
-        {
-            id: 3,
-            userId: 3,
-            userName: 'ประยุทธ์ มานะ',
-            email: 'prayut@gmail.com',
-            slipImage: 'https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=400',
-            uploadDate: '2024-11-13 16:45',
-            status: 'approved',
-            note: ''
-        },
-        {
-            id: 4,
-            userId: 4,
-            userName: 'วิภา สดใส',
-            email: 'wipa@gmail.com',
-            slipImage: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400',
-            uploadDate: '2024-11-12 09:20',
-            status: 'rejected',
-            note: 'จำนวนเงินไม่ถูกต้อง'
-        },
-        {
-            id: 5,
-            userId: 5,
-            userName: 'ธนา เก่งกล้า',
-            email: 'tana@gmail.com',
-            slipImage: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
-            uploadDate: '2024-11-15 11:00',
-            status: 'pending',
-            note: ''
-        },
-    ];
-
     const [receipts, setReceipts] = useState(initialReceipts);
 
     const statusConfig = {

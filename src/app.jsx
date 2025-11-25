@@ -6,6 +6,7 @@ import AdminLayout from "./layouts/adminlayout.jsx";
 import PrivateRoute from "./routes/privateroutes.jsx";
 import Home from "./pages/home.jsx";
 import RegisterForm from "./pages/registerform.jsx";
+import CheckRegistration from "./pages/CheckRegistration.jsx";
 import Login from "./pages/admin/login.jsx";
 import Dashboard from "./pages/admin/dashboard.jsx";
 import ScrollToTop from "./components/scrolltotop.jsx";
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           {/* ✅ แก้ไข: ใช้ RegisterForm ตามชื่อที่นำเข้า หรือเปลี่ยนชื่อใน Route เป็น RegisterForm ✅ */}
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/check-registration" element={<CheckRegistration />} />
           <Route path="/payment" element={<Payment Page/>} />
         </Route>
 

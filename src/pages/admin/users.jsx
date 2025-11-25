@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Eye, Filter, Download, UserPlus, RefreshCcw } from 'lucide-react';
 
 export default function Users() {
@@ -6,44 +6,43 @@ export default function Users() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [users, setUsers] = useState([]);
 
-    // ข้อมูลเริ่มต้น (จำลองจาก API)
-    const initialUsers = [
-        { id: 1, name: 'สมชาย ใจดี', email: 'som@gmail.com', phone: '098-5555555', school: 'โรงเรียนสวนกุหลาบ', status: 'approved' },
-        { id: 2, name: 'สมหญิง รักเรียน', email: 'somp@gmail.com', phone: '081-2345678', school: 'โรงเรียนเตรียมอุดมศึกษา', status: 'pending' },
-        { id: 3, name: 'ประยุทธ์ มานะ', email: 'prayut@gmail.com', phone: '092-7654321', school: 'โรงเรียนสาธิตจุฬา', status: 'approved' },
-        { id: 4, name: 'วิภา สดใส', email: 'wipa@gmail.com', phone: '065-9876543', school: 'โรงเรียนมหิดลวิทยานุสรณ์', status: 'rejected' },
-        { id: 5, name: 'ธนา เก่งกล้า', email: 'tana@gmail.com', phone: '089-1122334', school: 'โรงเรียนกรุงเทพคริสเตียน', status: 'pending' },
-    ];
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-    const [users, setUsers] = useState(initialUsers);
+    // Fetch users from server
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/users/all`);
+            if (res.ok) {
+                const data = await res.json();
+                const mapped = data.map(u => ({
+                    id: u._id,
+                    name: `${u.firstName} ${u.lastName}`,
+                    email: u.email || '-',
+                    phone: u.phone || '-',
+                    school: u.school || '-',
+                    status: u.status === 'success' ? 'approved' : u.status === 'declined' ? 'rejected' : 'pending'
+                }));
+                setUsers(mapped);
+            }
+        } catch (err) {
+            console.error('Failed to fetch users:', err);
+        }
+    };
 
     // ฟังก์ชัน refresh ข้อมูล
     const refreshData = async () => {
         setIsRefreshing(true);
-        
-        // จำลองการเรียก API (ในการใช้งานจริงให้เรียก API ของคุณ)
-        setTimeout(() => {
-            // รีเซ็ตข้อมูลกลับไปเป็นค่าเริ่มต้น
-            setUsers([...initialUsers]);
-            setSelectedUsers([]);
-            setSearchTerm('');
-            setStatusFilter('all');
-            setIsRefreshing(false);
-        }, 800);
-
-        /* ตัวอย่างการเรียก API จริง:
-        try {
-            const response = await fetch('/api/users');
-            const data = await response.json();
-            setUsers(data);
-            setSelectedUsers([]);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setIsRefreshing(false);
-        }
-        */
+        await fetchUsers();
+        setSelectedUsers([]);
+        setSearchTerm('');
+        setStatusFilter('all');
+        setIsRefreshing(false);
     };
 
     const statusConfig = {
@@ -77,22 +76,57 @@ export default function Users() {
     };
 
     // จัดการสถานะ
-    const handleStatusChange = (id, newStatus) => {
-        setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
-    };
-
-    const handleDelete = (id) => {
-        if (confirm('คุณต้องการลบผู้ใช้นี้ใช่หรือไม่?')) {
-            setUsers(prev => prev.filter(u => u.id !== id));
-            setSelectedUsers(prev => prev.filter(i => i !== id));
+    const handleStatusChange = async (id, newStatus) => {
+        const statusMap = { approved: 'success', pending: 'pending', rejected: 'declined' };
+        try {
+            const res = await fetch(`${API_BASE}/api/users/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ status: statusMap[newStatus] })
+            });
+            if (res.ok) {
+                setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
+            }
+        } catch (err) {
+            console.error('Failed to update status:', err);
         }
     };
 
-    const handleBulkDelete = () => {
+    const handleDelete = async (id) => {
+        if (confirm('คุณต้องการลบผู้ใช้นี้ใช่หรือไม่?')) {
+            try {
+                const res = await fetch(`${API_BASE}/api/users/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    setUsers(prev => prev.filter(u => u.id !== id));
+                    setSelectedUsers(prev => prev.filter(i => i !== id));
+                }
+            } catch (err) {
+                console.error('Failed to delete user:', err);
+            }
+        }
+    };
+
+    const handleBulkDelete = async () => {
         if (selectedUsers.length === 0) return;
         if (confirm(`คุณต้องการลบผู้ใช้ ${selectedUsers.length} คนใช่หรือไม่?`)) {
-            setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)));
-            setSelectedUsers([]);
+            try {
+                await Promise.all(
+                    selectedUsers.map(id =>
+                        fetch(`${API_BASE}/api/users/${id}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        })
+                    )
+                );
+                setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)));
+                setSelectedUsers([]);
+            } catch (err) {
+                console.error('Failed to delete users:', err);
+            }
         }
     };
 
