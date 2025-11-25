@@ -3,18 +3,18 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/mainlayouts.jsx";
 import AdminLayout from "./layouts/adminlayout.jsx";
-import PrivateRoute from "./routes/privateroutes.jsx";
-import Home from "./pages/home.jsx";
-import RegisterForm from "./pages/registerform.jsx";
-import CheckRegistration from "./pages/CheckRegistration.jsx";
-import Login from "./pages/admin/login.jsx";
-import Dashboard from "./pages/admin/dashboard.jsx";
+import PrivateRoute from "./Routes/PrivateRoutes.jsx";
+import Home from "./Pages/Home.jsx";
+import RegisterForm from "./Pages/Registerform.jsx";
+import CheckRegistration from "./Pages/CheckRegistration.jsx";
+import Login from "./Pages/admin/login.jsx";
+import Dashboard from "./Pages/admin/dashboard.jsx";
 import ScrollToTop from "./components/scrolltotop.jsx";
-import NotFound from "./pages/notfound.jsx";
-import Users from "./pages/admin/users.jsx";
-import Receipts from "./pages/admin/receipts.jsx";
-import EditWeb from "./pages/admin/editweb.jsx";
-import Payment from "./pages/payment.jsx";
+import NotFound from "./Pages/NotFound.jsx";
+import Users from "./Pages/admin/users.jsx";
+import Receipts from "./Pages/admin/receipts.jsx";
+import EditWeb from "./Pages/admin/editweb.jsx";
+import Payment from "./Pages/Payment.jsx";
 
 export default function App() {
   return (
@@ -38,7 +38,7 @@ export default function App() {
           {/* ✅ แก้ไข: ใช้ RegisterForm ตามชื่อที่นำเข้า หรือเปลี่ยนชื่อใน Route เป็น RegisterForm ✅ */}
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/check-registration" element={<CheckRegistration />} />
-          <Route path="/payment" element={<Payment Page/>} />
+          <Route path="/payment" element={<Payment />} />
         </Route>
 
         {/* ⚠️ Route สำหรับหน้า Not Found ⚠️ */}

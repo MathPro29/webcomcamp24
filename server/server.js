@@ -3,11 +3,13 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
+import fileUpload from 'express-fileupload';
 import DBconnect from "./config/db.js";
 import userRouter from "./routes/users.js";
 import mongoose from "mongoose";
 import registerRouter from "./routes/register.js";
 import authRouter from "./routes/auth.js";
+import paymentsRouter from "./routes/payments.js";
 
 dotenv.config();
 // ดึงค่าตัวแปรจากไฟล์ .env ผ่าน process.env
@@ -23,11 +25,15 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+}));
 
 // API Routes
 app.use("/api/users", userRouter);
 app.use("/api/register", registerRouter); // เพิ่มบรรทัดนี้แค่นี้พอ
 app.use('/api/auth', authRouter);
+app.use('/api/payments', paymentsRouter);
 
 
 // 4. เรียกใช้ฟังก์ชันเชื่อมต่อและเปิดเซิร์ฟเวอร์

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Eye, Download, CheckCircle, XCircle, Clock, Filter, RefreshCcw, Image, AlertCircle } from 'lucide-react';
 
 
@@ -9,8 +9,27 @@ const Receipts = () => {
     const [selectedReceipts, setSelectedReceipts] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [viewingSlip, setViewingSlip] = useState(null);
+    const [receipts, setReceipts] = useState([]);
 
-    const [receipts, setReceipts] = useState(initialReceipts);
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+    useEffect(() => {
+        fetchReceipts();
+    }, []);
+
+    const fetchReceipts = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/api/payments/admin/all`, {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setReceipts(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch receipts:', err);
+        }
+    };
 
     const statusConfig = {
         approved: {
@@ -34,7 +53,7 @@ const Receipts = () => {
     const filteredReceipts = receipts.filter(receipt => {
         const matchSearch = receipt.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             receipt.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            receipt.id.toString().includes(searchTerm);
+            receipt.phone.includes(searchTerm);
         const matchStatus = statusFilter === 'all' || receipt.status === statusFilter;
         return matchSearch && matchStatus;
     });
@@ -55,22 +74,32 @@ const Receipts = () => {
     };
 
     // จัดการสถานะ
-    const handleStatusChange = (id, newStatus, note = '') => {
-        setReceipts(prev => prev.map(r =>
-            r.id === id ? { ...r, status: newStatus, note } : r
-        ));
+    const handleStatusChange = async (id, newStatus, note = '') => {
+        try {
+            const res = await fetch(`${API_BASE}/api/payments/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ status: newStatus, note })
+            });
+            if (res.ok) {
+                setReceipts(prev => prev.map(r =>
+                    r.id === id ? { ...r, status: newStatus, note } : r
+                ));
+            }
+        } catch (err) {
+            console.error('Failed to update status:', err);
+        }
     };
 
     // ฟังก์ชัน refresh
     const refreshData = async () => {
         setIsRefreshing(true);
-        setTimeout(() => {
-            setReceipts([...initialReceipts]);
-            setSelectedReceipts([]);
-            setSearchTerm('');
-            setStatusFilter('all');
-            setIsRefreshing(false);
-        }, 800);
+        await fetchReceipts();
+        setSelectedReceipts([]);
+        setSearchTerm('');
+        setStatusFilter('all');
+        setIsRefreshing(false);
     };
 
     // ดาวน์โหลดสลิป
@@ -135,7 +164,7 @@ const Receipts = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                             <input
                                 type="text"
-                                placeholder="ค้นหาชื่อ, อีเมล, หมายเลขใบเสร็จ..."
+                                placeholder="ค้นหาชื่อ, อีเมล, เบอร์โทร..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
@@ -201,8 +230,8 @@ const Receipts = () => {
                                             className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
                                         />
                                     </th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">เลขที่</th>
-                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ผู้ชำระ</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ชื่อ</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">เบอร์โทร</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">สลิป</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">วันที่อัพโหลด</th>
                                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">สถานะ</th>
@@ -235,11 +264,11 @@ const Receipts = () => {
                                                     className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 cursor-pointer"
                                                 />
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">#{receipt.id.toString().padStart(4, '0')}</td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-medium text-gray-900">{receipt.userName}</div>
                                                 <div className="text-xs text-gray-500">{receipt.email}</div>
                                             </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">{receipt.phone}</td>
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => setViewingSlip(receipt)}
@@ -255,7 +284,9 @@ const Receipts = () => {
                                                     </div>
                                                 </button>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{receipt.uploadDate}</td>
+                                            <td className="px-6 py-4 text-sm text-gray-600">
+                                                {new Date(receipt.uploadDate).toLocaleString('th-TH')}
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <select
                                                     value={receipt.status}
@@ -325,12 +356,18 @@ const Receipts = () => {
 
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <div className="text-sm text-gray-500">ผู้ชำระ</div>
+                                <div className="text-sm text-gray-500">ชื่อ</div>
                                 <div className="font-medium">{viewingSlip.userName}</div>
                             </div>
                             <div>
+                                <div className="text-sm text-gray-500">เบอร์โทร</div>
+                                <div className="font-medium">{viewingSlip.phone}</div>
+                            </div>
+                            <div>
                                 <div className="text-sm text-gray-500">วันที่อัพโหลด</div>
-                                <div className="font-medium">{viewingSlip.uploadDate}</div>
+                                <div className="font-medium">
+                                    {new Date(viewingSlip.uploadDate).toLocaleString('th-TH')}
+                                </div>
                             </div>
                             <div>
                                 <div className="text-sm text-gray-500">สถานะ</div>

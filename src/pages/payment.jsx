@@ -74,26 +74,6 @@ export default function PaymentSection() {
     return { ok: newErrors.length === 0, newErrors };
   };
 
-
-  // checking payment info ตรงนี้เชื่อมกับ DB ผ่าน API  ************************
-  const checkPaymentExists = async ({ name, phone }) => {
-  try {
-    const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
-    const res = await fetch(`/api/payments/check?${params.toString()}`);
-    if (!res.ok) {
-      // ถ้า server ส่ง error (ไม่ใช่ 404) ให้โยนขึ้นไป
-      const text = await res.text();
-      throw new Error(text || "Server error");
-    }
-    const json = await res.json(); // { exists: true/false }
-    return json.exists === true;
-  } catch (err) {
-    console.error("checkPaymentExists error:", err);
-    // ถ้าต้องการ ให้แสดงข้อความทั่วไป
-    throw err;
-  }
-};
-
   // ปุ่มตรวจสอบ (อยู่ถัดจากช่องเบอร์)
   const handleCheck = async (e) => {
   e?.preventDefault();
@@ -110,17 +90,35 @@ export default function PaymentSection() {
   }
 
   try {
-    const exists = await checkPaymentExists({ name, phone });
-    if (exists) {
-      setErrors(["พบว่าชื่อนี้และเบอร์โทรได้ชำระเงินแล้ว ไม่สามารถชำระซ้ำได้"]);
-      setIsVerified(false);
-    } else {
-      // ผ่านการตรวจสอบเบื้องต้น และยังไม่ชำระซ้ำ
-      setIsVerified(true);
-      setErrors([]);
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
+    const res = await fetch(`${API_BASE}/api/payments/check?${params.toString()}`);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Server error");
     }
+    const data = await res.json();
+    
+    // ตรวจสอบว่ามีผู้สมัครในฐานข้อมูลหรือไม่
+    if (!data.userExists) {
+      setErrors(["❌ ไม่พบชื่อและเบอร์โทรนี้ในรายชื่อผู้สมัคร กรุณาตรวจสอบข้อมูลอีกครั้ง"]);
+      setIsVerified(false);
+      return;
+    }
+    
+    // ตรวจสอบว่าจ่ายเงินแล้วหรือไม่
+    if (data.exists) {
+      setErrors(["❌ ผู้สมัครรายนี้ได้ชำระเงินแล้ว ไม่สามารถชำระซ้ำได้"]);
+      setIsVerified(false);
+      return;
+    }
+    
+    // ผ่านการตรวจสอบ - มีผู้สมัครและยังไม่ชำระเงิน
+    setIsVerified(true);
+    setErrors([]);
   } catch (err) {
-    setErrors(["เกิดข้อผิดพลาดในการตรวจสอบ กรุณาลองใหม่ภายหลัง"]);
+    console.error("Check error:", err);
+    setErrors(["⚠️ เกิดข้อผิดพลาดในการตรวจสอบ กรุณาลองใหม่ภายหลัง"]);
   } finally {
     setChecking(false);
   }
@@ -141,15 +139,17 @@ export default function PaymentSection() {
     return;
   }
 
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   const formData = new FormData();
   formData.append("name", name.trim());
   formData.append("phone", clean_phone(phone));
   formData.append("slip", slip);
 
   try {
-    const res = await fetch("/api/payments", {
+    const res = await fetch(`${API_BASE}/api/payments`, {
       method: "POST",
       body: formData,
+      credentials: 'include'
     });
 
     if (res.status === 409) {
