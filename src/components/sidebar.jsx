@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-
+import { Home, Users, DollarSign, MessageSquare, ArrowLeft, Shield, X, LogOut } from 'lucide-react';
 
 const sidebarItems = [
-    { name: 'หน้าหลัก', path: '/admin/dashboard', icon: '🏠' },
-    { name: 'สมาชิก', path: '/admin/users', icon: '👥' },
-    { name: 'ตรวจสอบการโอนเงิน', path: '/admin/receipts', icon: '💵' },
-    { name: 'กล่องข้อความ', path: '/admin/inbox', icon: '⚙️' },
-    { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: '🔙' },
+    { name: 'หน้าหลัก', path: '/admin/dashboard', icon: Home },
+    { name: 'สมาชิก', path: '/admin/users', icon: Users },
+    { name: 'ตรวจสอบการโอนเงิน', path: '/admin/receipts', icon: DollarSign },
+    { name: 'กล่องข้อความ', path: '/admin/inbox', icon: MessageSquare },
+    { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: ArrowLeft },
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
@@ -52,7 +52,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             <div className="p-4 border-b border-gray-700">
                 <div className={`flex items-center ${isExpanded ? 'justify-between' : 'justify-center'}`}>
                     <div className="flex items-center">
-                        <span className={`text-3xl ${isExpanded ? 'mr-2' : ''}`}>🛠️</span>
+                        <Shield size={32} className={`text-indigo-400 ${isExpanded ? 'mr-2' : ''}`} />
                         <span className={`text-xl font-bold text-indigo-400 transition-all duration-300 ${textVisibilityClass}`}>
                             Admin Panel
                         </span>
@@ -63,14 +63,10 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                         className={`cursor-pointer lg:hidden p-2 rounded-lg  transition-all duration-200 group ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                         aria-label="Close Sidebar"
                     >
-                        <svg
-                            className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-200"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X
+                            size={24}
+                            className="transform group-hover:rotate-90 transition-transform duration-200"
+                        />
                     </button>
                 </div>
             </div>
@@ -92,7 +88,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                                 }
                                 end={item.path === '/admin'}
                             >
-                                <span className="text-2xl flex-shrink-0">{item.icon}</span>
+                                <item.icon size={20} className="flex-shrink-0" />
                                 <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${textVisibilityClass}`}>
                                     {item.name}
                                 </span>
@@ -129,7 +125,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             ${isExpanded ? 'px-4 py-3 justify-start' : 'px-3 py-3 justify-center'}`}
                     aria-label="Logout"
                 >
-                    <span className="text-2xl flex-shrink-0">🚪</span>
+                    <LogOut size={20} className="flex-shrink-0" />
                     <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${textVisibilityClass}`}>
                         Logout
                     </span>
