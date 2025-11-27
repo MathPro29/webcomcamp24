@@ -31,7 +31,8 @@ app.use(fileUpload({
 
 // API Routes
 app.use("/api/users", userRouter);
-app.use("/api/register", registerRouter); // เพิ่มบรรทัดนี้แค่นี้พอ
+app.use("/api/users/:id", userRouter);
+app.use("/api/register", registerRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/payments', paymentsRouter);
 

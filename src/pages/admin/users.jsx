@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Eye, Filter, Download, UserPlus, RefreshCcw } from 'lucide-react';
+import { Search, Edit, Trash2, Eye, Filter, Download, UserPlus, RefreshCcw, CheckCircle, XCircle, Clock, User } from 'lucide-react';
 
 export default function Users() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [viewingUser, setViewingUser] = useState(null);
     const [users, setUsers] = useState([]);
 
     const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -35,6 +36,23 @@ export default function Users() {
         }
     };
 
+    const fetchFullUser = async (id) => {
+        try {
+            const res = await fetch(`${API_BASE}/api/users/${id}`, {
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const fullUser = await res.json();
+                // Map status for display
+                fullUser.status = fullUser.status === 'success' ? 'approved' : fullUser.status === 'declined' ? 'rejected' : 'pending';
+                return fullUser;
+            }
+        } catch (err) {
+            console.error('Failed to fetch full user:', err);
+        }
+        return null;
+    };
+
     // ฟังก์ชัน refresh ข้อมูล
     const refreshData = async () => {
         setIsRefreshing(true);
@@ -46,9 +64,21 @@ export default function Users() {
     };
 
     const statusConfig = {
-        approved: { label: 'อนุมัติแล้ว', color: 'bg-green-100 text-green-800', icon: '✓' },
-        pending: { label: 'รอดำเนินการ', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
-        rejected: { label: 'ปฏิเสธ', color: 'bg-red-100 text-red-800', icon: '✗' }
+        approved: {
+            label: 'อนุมัติแล้ว',
+            color: 'bg-green-100 text-green-800 border-green-300',
+            icon: <CheckCircle size={16} className="text-green-600" />
+        },
+        pending: {
+            label: 'รอดำเนินการ',
+            color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            icon: <Clock size={16} className="text-yellow-600" />
+        },
+        rejected: {
+            label: 'ปฏิเสธ',
+            color: 'bg-red-100 text-red-800 border-red-300',
+            icon: <XCircle size={16} className="text-red-600" />
+        }
     };
 
     // ฟิลเตอร์ข้อมูล
@@ -87,6 +117,9 @@ export default function Users() {
             });
             if (res.ok) {
                 setUsers(prev => prev.map(u => u.id === id ? { ...u, status: newStatus } : u));
+                if (viewingUser && viewingUser._id === id) {
+                    setViewingUser(prev => ({ ...prev, status: newStatus }));
+                }
             }
         } catch (err) {
             console.error('Failed to update status:', err);
@@ -103,6 +136,9 @@ export default function Users() {
                 if (res.ok) {
                     setUsers(prev => prev.filter(u => u.id !== id));
                     setSelectedUsers(prev => prev.filter(i => i !== id));
+                    if (viewingUser && viewingUser._id === id) {
+                        setViewingUser(null);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to delete user:', err);
@@ -141,6 +177,25 @@ export default function Users() {
         link.href = URL.createObjectURL(blob);
         link.download = 'users_export.csv';
         link.click();
+    };
+
+    const openUserModal = async (user) => {
+        const fullUser = await fetchFullUser(user.id);
+        if (fullUser) {
+            setViewingUser(fullUser);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -304,7 +359,7 @@ export default function Users() {
                                                 <select
                                                     value={user.status}
                                                     onChange={(e) => handleStatusChange(user.id, e.target.value)}
-                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border-0 ${statusConfig[user.status].color}`}
+                                                    className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border ${statusConfig[user.status].color}`}
                                                 >
                                                     <option value="approved">อนุมัติแล้ว</option>
                                                     <option value="pending">รอดำเนินการ</option>
@@ -314,6 +369,7 @@ export default function Users() {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
+                                                        onClick={() => openUserModal(user)}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                         title="ดูรายละเอียด"
                                                     >
@@ -342,6 +398,128 @@ export default function Users() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal แสดงรายละเอียดผู้ใช้ */}
+            {viewingUser && (
+                <div
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+                    onClick={() => setViewingUser(null)}
+                >
+                    <div
+                        className="bg-white rounded-xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setViewingUser(null)}
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+                        >
+                            ×
+                        </button>
+
+                        <h3 className="text-xl font-bold mb-4">รายละเอียดผู้ใช้</h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <div className="text-sm text-gray-500">คำนำหน้า</div>
+                                <div className="font-medium">{viewingUser.prefix || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">ชื่อ</div>
+                                <div className="font-medium">{viewingUser.firstName || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">นามสกุล</div>
+                                <div className="font-medium">{viewingUser.lastName || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">ชื่อเล่น</div>
+                                <div className="font-medium">{viewingUser.nickname || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">วันเกิด</div>
+                                <div className="font-medium">{formatDate(viewingUser.birthDate)}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">อายุ</div>
+                                <div className="font-medium">{viewingUser.age || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">เพศ</div>
+                                <div className="font-medium">{viewingUser.gender || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">โรงเรียน</div>
+                                <div className="font-medium">{viewingUser.school || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">ชั้น</div>
+                                <div className="font-medium">{viewingUser.grade || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">จังหวัด</div>
+                                <div className="font-medium">{viewingUser.province || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">เบอร์โทร</div>
+                                <div className="font-medium">{viewingUser.phone || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">เบอร์โทรผู้ปกครอง</div>
+                                <div className="font-medium">{viewingUser.parentPhone || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">อีเมล</div>
+                                <div className="font-medium">{viewingUser.email || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">Line ID</div>
+                                <div className="font-medium">{viewingUser.lineId || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">ขนาดเสื้อ</div>
+                                <div className="font-medium">{viewingUser.shirtSize || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">อาการแพ้</div>
+                                <div className="font-medium">{viewingUser.allergies || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">โรคประจำตัว</div>
+                                <div className="font-medium">{viewingUser.medicalConditions || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">ผู้ติดต่อฉุกเฉิน</div>
+                                <div className="font-medium">{viewingUser.emergencyContact || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">เบอร์โทรฉุกเฉิน</div>
+                                <div className="font-medium">{viewingUser.emergencyPhone || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">สถานะ</div>
+                                <div className="flex items-center gap-2 mt-1">
+                                    {statusConfig[viewingUser.status]?.icon}
+                                    <span className="font-medium">{statusConfig[viewingUser.status]?.label}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-500">มีแล็ปท็อป</div>
+                                <div className="font-medium">{viewingUser.laptop === 'Yes' ? 'ใช่' : viewingUser.laptop === 'No' ? 'ไม่' : '-'}</div>
+                            </div>
+                            <div className="lg:col-span-2">
+                                <div className="text-sm text-gray-500">วันที่สร้าง</div>
+                                <div className="font-medium">{formatDate(viewingUser.createdAt)}</div>
+                            </div>
+                            <div className="lg:col-span-2">
+                                <div className="text-sm text-gray-500">วันที่อัพเดทล่าสุด</div>
+                                <div className="font-medium">{formatDate(viewingUser.updatedAt)}</div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
