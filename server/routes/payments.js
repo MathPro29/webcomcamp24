@@ -16,7 +16,7 @@ router.get('/check', async (req, res) => {
     // Split full name into parts for searching
     const nameParts = name.trim().split(/\s+/);
     let user = null;
-    
+
     // Try different search strategies
     if (nameParts.length === 2) {
       // If two names provided, try firstName + lastName
@@ -26,7 +26,7 @@ router.get('/check', async (req, res) => {
         phone: phone
       });
     }
-    
+
     // If not found, try matching any word in the name
     if (!user) {
       user = await User.findOne({
@@ -42,8 +42,8 @@ router.get('/check', async (req, res) => {
 
     // User doesn't exist in database
     if (!user) {
-      return res.json({ 
-        exists: false, 
+      return res.json({
+        exists: false,
         userExists: false,
         message: 'ไม่พบชื่อและเบอร์โทรนี้ในรายชื่อผู้สมัคร'
       });
@@ -51,8 +51,8 @@ router.get('/check', async (req, res) => {
 
     // Check if payment already exists for this user
     const payment = await Payment.findOne({ userId: user._id });
-    
-    return res.json({ 
+
+    return res.json({
       exists: !!payment,
       userExists: true,
       user: {
@@ -86,7 +86,7 @@ router.post('/', async (req, res) => {
     // Split full name into parts for searching
     const nameParts = name.trim().split(/\s+/);
     let user = null;
-    
+
     // Try different search strategies
     if (nameParts.length === 2) {
       // If two names provided, try firstName + lastName
@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
         phone: phone
       });
     }
-    
+
     // If not found, try matching any word in the name
     if (!user) {
       user = await User.findOne({
@@ -149,7 +149,7 @@ router.get('/admin/all', async (req, res) => {
       .populate('userId', 'firstName lastName email phone school')
       .sort({ uploadDate: -1 })
       .lean();
-    
+
     const mapped = payments.map(p => ({
       id: p._id,
       userId: p.userId._id,
@@ -191,6 +191,51 @@ router.put('/:id/status', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update payment' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const removeUser = req.query.removeUser === 'true';
+
+    // Find payment first
+    const payment = await Payment.findById(id);
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // Delete payment
+    const deletedPayment = await Payment.findByIdAndDelete(id);
+    if (!deletedPayment) {
+      return res.status(404).json({ error: 'Failed to delete payment' });
+    }
+
+    // Optionally delete associated user
+    let userDeleted = false;
+    if (removeUser && payment.userId) {
+      try {
+        const result = await User.findByIdAndDelete(payment.userId);
+        userDeleted = !!result;
+        if (userDeleted) {
+          console.log(`Deleted user ${payment.userId} along with payment ${id}`);
+        }
+      } catch (e) {
+        console.error(`Failed to delete user ${payment.userId}:`, e.message);
+        // Don't fail the whole request if user deletion fails
+        // (payment is already deleted; user deletion is optional)
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'Payment deleted successfully',
+      paymentDeleted: true,
+      userDeleted
+    });
+  } catch (err) {
+    console.error('Error deleting payment:', err);
+    res.status(500).json({ error: 'Failed to delete payment' });
   }
 });
 
