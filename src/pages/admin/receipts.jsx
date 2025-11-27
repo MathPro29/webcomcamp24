@@ -110,6 +110,36 @@ const Receipts = () => {
         link.click();
     };
 
+    // Delete a receipt
+    const deleteReceipt = async (id, userName = '') => {
+        // Ask whether to delete only slip or both user + slip
+        const removeUser = confirm('ต้องการลบชื่อผู้สมัครพร้อมสลิปหรือไม่?\n\nกด OK = ลบทั้งชื่อและสลิป, กด Cancel = ลบเฉพาะสลิป');
+        if (!confirm('ยืนยันการลบสลิปนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
+
+        try {
+            const url = `${API_BASE}/api/payments/${id}${removeUser ? '?removeUser=true' : ''}`;
+            const res = await fetch(url, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setReceipts(prev => prev.filter(r => r.id !== id));
+                setSelectedReceipts(prev => prev.filter(i => i !== id));
+                if (data.userDeleted) {
+                    alert(`ลบชื่อและสลิปของ ${userName || ''} เรียบร้อย`);
+                } else {
+                    alert('ลบสลิปเรียบร้อย');
+                }
+            } else {
+                alert(data.error || data.message || 'ลบสลิปไม่สำเร็จ');
+            }
+        } catch (err) {
+            console.error('Failed to delete receipt:', err);
+            alert('เกิดข้อผิดพลาดในการลบสลิป');
+        }
+    };
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -324,6 +354,13 @@ const Receipts = () => {
                                                     >
                                                         <Download size={18} />
                                                     </button>
+                                                        <button
+                                                            onClick={() => deleteReceipt(receipt.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="ลบสลิป"
+                                                        >
+                                                            <XCircle size={18} />
+                                                        </button>
                                                 </div>
                                             </td>
                                         </tr>
