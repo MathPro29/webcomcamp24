@@ -13,7 +13,7 @@ import ScrollToTop from "./components/scrolltotop.jsx";
 import NotFound from "./Pages/NotFound.jsx";
 import Users from "./Pages/admin/users.jsx";
 import Receipts from "./Pages/admin/receipts.jsx";
-import EditWeb from "./Pages/admin/editweb.jsx";
+import Inboxpage from "./Pages/admin/inbox.jsx";
 import Payment from "./Pages/Payment.jsx";
 
 export default function App() {
@@ -29,7 +29,7 @@ export default function App() {
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/users" element={<Users />} />
           <Route path="/admin/receipts" element={<Receipts />} />
-          <Route path="/admin/editweb" element={<EditWeb />} />
+          <Route path="/admin/inbox" element={<Inboxpage />} />
         </Route>
 
         {/* --- 🏠 Routes สำหรับผู้ใช้งานทั่วไป (มี Navbar) 🏠 --- */}

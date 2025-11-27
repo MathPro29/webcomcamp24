@@ -134,7 +134,7 @@ const Navbar = () => {
           <div className="block max-[1451px]:block min-[1452px]:hidden">
             <button
               onClick={toggleMenu}
-              className="p-2.5 rounded-xl text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#e28d0d] transition-all duration-200 border border-white/10"
+              className="cursor-pointer p-2.5 rounded-xl text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#e28d0d] transition-all duration-200 border border-white/10"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -153,11 +153,10 @@ const Navbar = () => {
             <button
               key={item.id}
               onClick={() => handleGotoSection(item.id)}
-              className="w-full text-left text-white/90 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 text-base font-medium transition-all duration-200 border border-transparent hover:border-white/10 backdrop-blur-sm"
+              className="cursor-pointer w-full text-left text-white/90 hover:text-white hover:bg-white/10 rounded-xl px-4 py-3 text-base font-medium transition-all duration-200 border border-transparent hover:border-white/10 backdrop-blur-sm"
               style={{ animationDelay: `${index * 30}ms` }}
             >
               <span className="flex items-center gap-3">
-                <span className="w-1 h-1 rounded-full bg-[#e28d0d]" />
                 {item.name}
               </span>
             </button>
@@ -172,7 +171,6 @@ const Navbar = () => {
             className="w-full text-center bg-white/10 hover:bg-white/20 text-white rounded-xl px-4 py-3 font-medium transition-all duration-300 border border-white/20 hover:border-[#e28d0d]/50 backdrop-blur-sm"
           >
             <span className="cursor-pointer flex items-center justify-center gap-2">
-              <span className="w-1 h-1 rounded-full bg-[#e28d0d]" />
               ชำระเงิน
             </span>
           </button>

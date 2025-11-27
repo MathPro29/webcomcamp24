@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 
+
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: '🏠' },
     { name: 'สมาชิก', path: '/admin/users', icon: '👥' },
     { name: 'ตรวจสอบการโอนเงิน', path: '/admin/receipts', icon: '💵' },
-    { name: 'แก้ไขหน้าเว็ปไซต์', path: '/admin/editweb', icon: '⚙️' },
+    { name: 'กล่องข้อความ', path: '/admin/inbox', icon: '⚙️' },
     { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: '🔙' },
 ];
 
@@ -116,7 +117,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: { 'Content-Type': 'application/json' }
-                            }).catch(() => {});
+                            }).catch(() => { });
                         } catch (e) {
                             // ignore
                         }
