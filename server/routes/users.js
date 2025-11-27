@@ -1,72 +1,143 @@
 import express from "express";
 import { getUsers } from "../controllers/users.js";
+import User from "../models/users.js";
 
 const userRouter = express.Router();
 
-userRouter.get("/", getUsers);
+// ==========================================
+// ⚠️ สำคัญ: Routes เฉพาะเจาะจงต้องอยู่ก่อน /:id
+// ==========================================
 
-import User from "../models/users.js";
+// 1. Seed route
+userRouter.get("/seed", async (req, res) => {
+  try {
+    await User.deleteMany({});
+    await User.insertMany([
+      { 
+        prefix: "นาย",
+        firstName: "สมชาย", 
+        lastName: "ใจดี", 
+        nickname: "ชาย",
+        school: "เตรียมอุดมศึกษา", 
+        grade: "ม.6",
+        province: "กรุงเทพ",
+        status: "pending",
+        email: "somchai@example.com",
+        phone: "081-234-5678",
+        parentPhone: "081-111-1111",
+        lineId: "somchai123",
+        shirtSize: "M",
+        laptop: "Yes"
+      },
+      { 
+        prefix: "นางสาว",
+        firstName: "สมหญิง", 
+        lastName: "รักดี", 
+        nickname: "หญิง",
+        school: "สตรีวิทยา", 
+        grade: "ม.5",
+        province: "กรุงเทพ",
+        status: "success",
+        email: "somying@example.com",
+        phone: "082-345-6789",
+        parentPhone: "082-222-2222",
+        lineId: "somying456",
+        shirtSize: "S",
+        laptop: "No"
+      },
+    ]);
+    res.json({ message: "เพิ่มข้อมูลตัวอย่างเรียบร้อย!", count: 2 });
+  } catch (err) {
+    console.error("❌ Seed error:", err);
+    res.status(500).json({ error: "Failed to seed data" });
+  }
+});
 
-// Get all users (for admin and public pages)
+// 2. Get all users
 userRouter.get("/all", async (req, res) => {
   try {
+    console.log("📥 GET /api/users/all");
     const users = await User.find({})
-      .select("_id prefix firstName lastName email phone school status")
+      .select("_id firstName lastName email phone school status")
       .sort({ createdAt: -1 })
       .lean();
+    
+    console.log(`✅ Found ${users.length} users`);
     res.json(users);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error:", err);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 });
 
-// Update user status by ID (admin only)
+// 3. Update status (PUT ต้องอยู่ก่อน GET /:id)
 userRouter.put("/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
     
+    console.log(`📝 PUT /api/users/${id}/status - ${status}`);
+    
     if (!["pending", "success", "declined"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+    const user = await User.findByIdAndUpdate(id, { status }, { new: true });
     
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    console.log(`✅ Status updated`);
     res.json({ success: true, user });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error:", err);
     res.status(500).json({ error: "Failed to update status" });
   }
 });
 
-// Delete user by ID (admin only)
+// 4. Delete user (DELETE ต้องอยู่ก่อน GET /:id)
 userRouter.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`🗑️ DELETE /api/users/${id}`);
+    
     const user = await User.findByIdAndDelete(id);
     
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    console.log(`✅ User deleted`);
     res.json({ success: true, message: "User deleted" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error:", err);
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
 
-userRouter.get("/seed", async (req, res) => {
-  await User.deleteMany({});
-  await User.insertMany([
-    { firstName: "สมชาย", lastName: "ใจดี", school: "เตรียมอุดมศึกษา", status: "pending" },
-    { firstName: "สมหญิง", lastName: "รักดี", school: "สตรีวิทยา", status: "success" },
-    { firstName: "เด็กชาย", lastName: "คอมแคมป์", school: "มหิดลวิทยานุสรณ์", status: "pending" },
-    { firstName: "เด็กหญิง", lastName: "เก่งมาก", school: "อัสสัมชัญ", status: "declined" },
-  ]);
-  res.send("เพิ่มข้อมูลตัวอย่างเรียบร้อย!");
+// 5. Get single user (ต้องอยู่ท้ายสุด!)
+userRouter.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`📥 GET /api/users/${id}`);
+    
+    const user = await User.findById(id).lean();
+    
+    if (!user) {
+      console.log(`❌ User not found: ${id}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    console.log(`✅ User found: ${user.firstName} ${user.lastName}`);
+    res.json(user);
+  } catch (err) {
+    console.error("❌ Error:", err);
+    res.status(500).json({ error: "Failed to fetch user", details: err.message });
+  }
 });
+
+// 6. Default route (ต้องอยู่ท้ายสุด!)
+userRouter.get("/", getUsers);
+
 export default userRouter;
