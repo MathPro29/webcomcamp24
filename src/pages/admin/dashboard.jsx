@@ -266,7 +266,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Recent Users Table */}
+            {/* Recent Users Table
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className='flex justify-end'>
                     <button onClick={() => window.location.href = '/admin/users'} className="cursor-pointer mb-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex justify-end items-center">
@@ -311,7 +311,7 @@ export default function Dashboard() {
                         </table>
                     </div>
                 )}
-            </div>
+            </div> */}
         </div>
     );
 }

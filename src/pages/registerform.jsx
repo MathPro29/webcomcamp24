@@ -240,8 +240,8 @@ export default function RegisterForm() {
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">🎓 ข้อมูลการศึกษา</h3>
 
                                         <div className="group">
-                                            <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อโรงเรียน <span className="text-red-400">*</span></label>
-                                            <input type="text" name="school" placeholder="เช่น โรงเรียนแม่โจ้" value={formData.school} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.school ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อโรงเรียน/วิทยาลัย <span className="text-red-400">*</span></label>
+                                            <input type="text" name="school" placeholder="เช่น โรงเรียน / วิทยาลัย" value={formData.school} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.school ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                             {errors.school && <p className="text-red-400 text-xs mt-1">{errors.school}</p>}
                                         </div>
 
@@ -250,12 +250,12 @@ export default function RegisterForm() {
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">ระดับชั้น <span className="text-red-400">*</span></label>
                                                 <select name="grade" value={formData.grade} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.grade ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
                                                     <option value="" disabled>เลือกระดับชั้น</option>
-                                                    <option value="ม.1">มัธยมศึกษาปีที่ 1</option>
-                                                    <option value="ม.2">มัธยมศึกษาปีที่ 2</option>
-                                                    <option value="ม.3">มัธยมศึกษาปีที่ 3</option>
                                                     <option value="ม.4">มัธยมศึกษาปีที่ 4</option>
                                                     <option value="ม.5">มัธยมศึกษาปีที่ 5</option>
                                                     <option value="ม.6">มัธยมศึกษาปีที่ 6</option>
+                                                    <option value="ปวช.1">ประกาศนียบัตรวิชาชีพปีที่ 1</option>
+                                                    <option value="ปวช.2">ประกาศนียบัตรวิชาชีพปีที่ 2</option>
+                                                    <option value="ปวช.3">ประกาศนียบัตรวิชาชีพปีที่ 3</option>
                                                 </select>
                                                 {errors.grade && <p className="text-red-400 text-xs mt-1">{errors.grade}</p>}
                                             </div>

@@ -124,7 +124,7 @@ const Navbar = () => {
               className="relative text-white bg-gradient-to-r from-[#e28d0d] to-[#f5a623] hover:from-[#f5a623] hover:to-[#e28d0d] px-6 py-2.5 rounded-full font-medium transition-all duration-300 cursor-pointer transform hover:scale-105 hover:shadow-lg hover:shadow-[#e28d0d]/50 group overflow-hidden"
             >
               <span className="relative z-10 flex items-center gap-2">
-                สนใจลงทะเบียน
+                ลงทะเบียน
               </span>
               <span className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
             </button>
@@ -183,7 +183,7 @@ const Navbar = () => {
             }}
             className="cursor-pointer w-full text-center bg-gradient-to-r from-[#e28d0d] to-[#f5a623] text-white rounded-xl px-4 py-3 font-medium hover:from-[#f5a623] hover:to-[#e28d0d] transition-all duration-300 shadow-lg shadow-[#e28d0d]/30 hover:shadow-[#e28d0d]/50 transform hover:scale-[1.02]"
           >
-            สนใจลงทะเบียน
+            ลงทะเบียน
           </button>
         </div>
       </div>

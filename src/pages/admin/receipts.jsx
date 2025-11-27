@@ -272,12 +272,12 @@ const Receipts = () => {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => setViewingSlip(receipt)}
-                                                    className="relative group"
+                                                    className="relative group cursor-pointer"
                                                 >
                                                     <img
                                                         src={receipt.slipImage}
                                                         alt="สลิป"
-                                                        className="w-12 h-12 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all cursor-pointer"
+                                                        className=" w-12 h-12 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all cursor-pointer"
                                                     />
                                                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <Image size={20} className="text-white" />
@@ -390,27 +390,14 @@ const Receipts = () => {
                                     handleStatusChange(viewingSlip.id, 'approved', 'ตรวจสอบแล้ว ถูกต้อง');
                                     setViewingSlip(null);
                                 }}
-                                className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                                className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                             >
                                 <CheckCircle size={20} />
                                 อนุมัติ
                             </button>
                             <button
-                                onClick={() => {
-                                    const reason = prompt('กรุณาระบุเหตุผล:');
-                                    if (reason) {
-                                        handleStatusChange(viewingSlip.id, 'rejected', reason);
-                                        setViewingSlip(null);
-                                    }
-                                }}
-                                className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-                            >
-                                <XCircle size={20} />
-                                ปฏิเสธ
-                            </button>
-                            <button
                                 onClick={() => downloadSlip(viewingSlip.slipImage, viewingSlip.userName)}
-                                className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors"
+                                className="cursor-pointer flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors"
                             >
                                 <Download size={20} />
                             </button>

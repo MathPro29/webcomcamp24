@@ -28,6 +28,7 @@ const NameChecking = () => {
           id: u._id,
           name: `${u.firstName} ${u.lastName}`,
           school: u.school || "ไม่ระบุโรงเรียน",
+          grade: u.grade || "ไม่ระบุชั้นปี",
           status: u.status || "รอตรวจสอบ", // สำคัญ!
         }));
 
@@ -126,6 +127,7 @@ const NameChecking = () => {
                     <th className="py-4 px-6 text-left font-semibold text-gray-300">ลำดับ</th>
                     <th className="py-4 px-6 text-left font-semibold text-gray-300">ชื่อ-นามสกุล</th>
                     <th className="py-4 px-6 text-left font-semibold text-gray-300">โรงเรียน</th>
+                    <th className="py-4 px-6 text-left font-semibold text-gray-300">ชั้นปี</th>
                     <th className="py-4 px-6 text-left font-semibold text-gray-300">สถานะ</th>
                   </tr>
                 </thead>
@@ -139,6 +141,7 @@ const NameChecking = () => {
                       <td className="py-4 px-6">{index + 1}</td>
                       <td className="py-4 px-6 font-medium">{person.name}</td>
                       <td className="py-4 px-6 text-gray-300">{person.school}</td>
+                      <td className="py-4 px-6 text-gray-300">{person.grade}</td>
                       <td className={`py-4 px-6 font-bold ${statusColor[person.status] || "text-gray-500"}`}>
                         {person.status}
                       </td>

@@ -59,7 +59,7 @@ const HeroSections = () => {
                 whileTap={{ scale: 0.98 }}
                 className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-[#e28d0d] to-[#f5a623] hover:from-[#f5a623] hover:to-[#e28d0d] text-white font-semibold rounded-full px-10 py-4 text-base sm:text-lg shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer"
               >
-                <span className="relative z-10">สนใจลงทะเบียน</span>
+                <span className="relative z-10">ลงทะเบียน</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -82,7 +82,6 @@ const HeroSections = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="pt-4"
           >
           </motion.div>
 
@@ -91,10 +90,10 @@ const HeroSections = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 1 }}
-            className="max-w-2xl mx-auto space-y-2 pt-8"
+            className="max-w-2xl mx-auto space-y-2 "
           >
             <p className="text-white/70 text-sm sm:text-base leading-relaxed font-light">
-              ค่ายยุวชนคอมพิวเตอร์ จัดขึ้นโดย สาขาวิชาวิทยาการคอมพิวเตอร์
+              ค่ายยุวชนคอมพิวเตอร์ จัดขึ้นโดย สาขาวิชาวิทยาการคอมพิวเตอร์และชมรมคอมพิวเตอร์
             </p>
             <p className="text-white/70 text-sm sm:text-base leading-relaxed font-light">
               คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้
