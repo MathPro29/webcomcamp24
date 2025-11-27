@@ -1,4 +1,5 @@
 import React from 'react'
+import { SendHorizontalIcon } from 'lucide-react';
 
 
 const Contact = () => {
@@ -61,42 +62,51 @@ const Contact = () => {
                     </div>
                 </div>
 
-                {/* Right: Form */}
-                                <form className="bg-white p-8 rounded-2xl shadow-xl border border-yellow-200 hover:border-yellow-400 transition-all duration-500 space-y-5 flex-shrink-0">
-                                    <div>
-                                        <label className="block text-sm text-gray-600 mb-2">ชื่อของคุณ</label>
-                                        <input
-                                            type="text"
-                                            placeholder="เช่น นายสมชาย ใจดี"
-                                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-600 mb-2">อีเมล</label>
-                                        <input
-                                            type="email"
-                                            placeholder="example@email.com"
-                                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-gray-600 mb-2">ข้อความ</label>
-                                        <textarea
-                                            rows="4"
-                                            placeholder="พิมพ์ข้อความของคุณ..."
-                                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all resize-none"
-                                        ></textarea>
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        className="w-full py-3 bg-yellow-400 text-[#1A1E4A] font-semibold rounded-lg hover:bg-yellow-300 hover:scale-[1.02] transition-all duration-300 shadow-md cursor-pointer"
-                                    >
-                                        ส่งข้อความ
-                                    </button>
-                                </form>
-                            </div>
+                { /* Right: Form */}
+                <form className="bg-white p-8 rounded-2xl shadow-xl border border-yellow-200 hover:border-yellow-400 transition-all duration-500 space-y-5 flex-shrink-0">
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-2">ชื่อของคุณ</label>
+                        <input
+                            type="text"
+                            placeholder="กรอกชื่อของคุณ"
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-2">เบอร์มือถือ</label>
+                        <input
+                            type="tel"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength="10"
+                            aria-label="เบอร์มือถือ"
+                            placeholder="กรอกเบอร์มือถือของคุณ"
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all"
+                            onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/\D/g, ''); }}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-2">ข้อความ</label>
+                        <textarea
+                            rows="4"
+                            placeholder="พิมพ์ข้อความของคุณ..."
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-200 focus:outline-none transition-all resize-none"
+                        ></textarea>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full py-3 bg-yellow-400 text-[#1A1E4A] font-semibold rounded-lg 
+             hover:bg-yellow-300 hover:scale-[1.02] transition-all duration-300 
+             shadow-md cursor-pointer flex items-center justify-center gap-2"
+                    >
+                        <SendHorizontalIcon className="w-5 h-5" />
+                        กระซิบถึงเรา
+                    </button>
 
-                            {/* Background Effects */}
+                </form>
+            </div>
+
+            {/* Background Effects */}
             <div className="absolute inset-0 bg-gradient-to-tr from-yellow-100 via-transparent to-yellow-50 blur-3xl"></div>
         </section>
     )

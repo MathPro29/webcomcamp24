@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
     enum: ["pending", "success", "declined"],
     default: "pending"
   },
+  laptop: String
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

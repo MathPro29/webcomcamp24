@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
     const required = [
       "prefix","firstName","lastName","nickname","birthDate","gender",
       "school","grade","province","phone","email",
-      "emergencyContact","emergencyPhone","shirtSize"
+      "emergencyContact","emergencyPhone","shirtSize","laptop"
     ];
 
     for (const field of required) {

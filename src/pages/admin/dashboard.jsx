@@ -22,7 +22,7 @@ export default function Dashboard() {
             const res = await fetch(`${API_BASE}/api/users/all`);
             if (res.ok) {
                 const data = await res.json();
-                
+
                 // Calculate stats
                 const statsData = {
                     total: data.length,
@@ -110,8 +110,13 @@ export default function Dashboard() {
 
             {/* Recent Users Table */}
             <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className='flex justify-end'>
+                    <button onClick={() => window.location.href = '/admin/users'} className="cursor-pointer mb-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex justify-end items-center">
+                        จัดการผู้สมัคร
+                    </button>
+                </div>
                 <h2 className="text-xl font-bold mb-4 text-gray-800">ผู้สมัครล่าสุด</h2>
-                
+
                 {isLoading ? (
                     <div className="h-64 flex items-center justify-center text-gray-400">
                         กำลังโหลดข้อมูล...

@@ -22,6 +22,7 @@ export default function RegisterForm() {
         medicalConditions: "",
         emergencyContact: "",
         emergencyPhone: "",
+        laptop: "",
     });
 
     const [step, setStep] = useState(1);
@@ -347,6 +348,16 @@ export default function RegisterForm() {
                                         <div className="group">
                                             <label className="block text-sm font-medium text-gray-300 mb-2">โรคประจำตัว</label>
                                             <textarea name="medicalConditions" rows="2" placeholder="เช่น โรคหอบหืด" value={formData.medicalConditions} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
+                                        </div>
+
+                                        <div className="group">
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">มีโน๊ตบุ๊คส่วนตัวหรือไม่<span className="text-red-400">*</span></label>
+                                            <select name="laptop" value={formData.laptop} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.laptop ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
+                                                <option value="" disabled>มีโน๊ตบุ๊คส่วนตัวหรือไม่?</option>
+                                                <option value="Yes">มี</option>
+                                                <option value="No">ไม่มี</option>
+                                            </select>
+                                            {errors.laptop && <p className="text-red-400 text-xs mt-1">{errors.laptop}</p>}
                                         </div>
 
 

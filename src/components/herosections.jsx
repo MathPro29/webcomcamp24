@@ -42,7 +42,7 @@ const HeroSections = () => {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-white/60 text-sm sm:text-base md:text-lg font-light tracking-wide"
             >
-              เปิดรับสมัครตั้งแต่วันที่ อะไรนะ ถึง N+1 พ.ศ.2569
+              เปิดรับสมัครตั้งแต่วันที่ 5 ธันวาคม 2568 ถึง วันที่ N+1 พ.ศ.2569
             </motion.p>
           </div>
 
