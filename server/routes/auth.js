@@ -1,22 +1,54 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import Admin from '../models/admin.js';
 
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_jwt_secret';
 
-// Admin credentials come from env (for demo). In production use DB + hashed passwords.
-const FALLBACK_ADMIN = {
-  username: process.env.ADMIN_USERNAME || 'adminbas',
-  password: process.env.ADMIN_PASSWORD || 'admin69',
-};
+// Seed endpoint - สร้าง/อัปเดต admin ใน MongoDB
+router.post('/seed-admin', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username และ password ต้องระบุ' });
+    }
 
-router.post('/login', (req, res) => {
+    // ตรวจสอบ admin มีอยู่แล้วหรือไม่
+    let admin = await Admin.findOne({ username });
+
+    if (admin) {
+      // อัปเดต password
+      admin.password = password;
+      await admin.save();
+      return res.json({ success: true, message: `อัปเดต admin '${username}' สำเร็จ`, action: 'updated' });
+    } else {
+      // สร้าง admin ใหม่
+      admin = new Admin({ username, password });
+      await admin.save();
+      return res.json({ success: true, message: `สร้าง admin '${username}' สำเร็จ`, action: 'created' });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Seed admin ล้มเหลว', details: err.message });
+  }
+});
+
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
 
-    if (username !== FALLBACK_ADMIN.username || password !== FALLBACK_ADMIN.password) {
+    // ค้นหา admin ใน MongoDB
+    const admin = await Admin.findOne({ username });
+    if (!admin) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // เช็ค password ด้วย bcrypt
+    const isPasswordValid = await admin.comparePassword(password);
+    if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
