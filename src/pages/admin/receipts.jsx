@@ -124,8 +124,13 @@ const Receipts = () => {
             });
             const data = await res.json().catch(() => ({}));
             if (res.ok) {
+                // Remove from local state first for immediate UI update
                 setReceipts(prev => prev.filter(r => r.id !== id));
                 setSelectedReceipts(prev => prev.filter(i => i !== id));
+                
+                // Refresh data from server to ensure consistency
+                setTimeout(() => fetchReceipts(), 500);
+                
                 if (data.userDeleted) {
                     alert(`ลบชื่อและสลิปของ ${userName || ''} เรียบร้อย`);
                 } else {

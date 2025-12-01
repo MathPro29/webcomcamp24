@@ -199,34 +199,47 @@ router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     const removeUser = req.query.removeUser === 'true';
 
+    console.log(`[DELETE] Attempting to delete payment ${id}, removeUser=${removeUser}`);
+
     // Find payment first
     const payment = await Payment.findById(id);
     if (!payment) {
+      console.warn(`[DELETE] Payment ${id} not found`);
       return res.status(404).json({ error: 'Payment not found' });
     }
 
-    // Delete payment
-    const deletedPayment = await Payment.findByIdAndDelete(id);
-    if (!deletedPayment) {
-      return res.status(404).json({ error: 'Failed to delete payment' });
-    }
+    console.log(`[DELETE] Found payment: ${payment._id}, userId: ${payment.userId}`);
 
-    // Optionally delete associated user
+    // Delete payment FIRST (this is critical)
+    const deletedPayment = await Payment.deleteOne({ _id: id });
+    
+    if (deletedPayment.deletedCount === 0) {
+      console.error(`[DELETE] Failed to delete payment ${id}`);
+      return res.status(500).json({ error: 'Failed to delete payment from database' });
+    }
+    
+    console.log(`[DELETE] Successfully deleted payment ${id}`);
+
+    // Optionally delete associated user (non-critical, don't fail if this fails)
     let userDeleted = false;
     if (removeUser && payment.userId) {
       try {
-        const result = await User.findByIdAndDelete(payment.userId);
-        userDeleted = !!result;
+        console.log(`[DELETE] Attempting to delete user ${payment.userId}`);
+        const result = await User.deleteOne({ _id: payment.userId });
+        userDeleted = result.deletedCount > 0;
         if (userDeleted) {
-          console.log(`Deleted user ${payment.userId} along with payment ${id}`);
+          console.log(`[DELETE] Successfully deleted user ${payment.userId}`);
+        } else {
+          console.warn(`[DELETE] User ${payment.userId} not found or already deleted`);
         }
       } catch (e) {
-        console.error(`Failed to delete user ${payment.userId}:`, e.message);
+        console.error(`[DELETE] Error deleting user ${payment.userId}:`, e.message);
         // Don't fail the whole request if user deletion fails
-        // (payment is already deleted; user deletion is optional)
+        // (payment is already deleted successfully)
       }
     }
 
+    console.log(`[DELETE] Delete complete: paymentDeleted=true, userDeleted=${userDeleted}`);
     return res.json({
       success: true,
       message: 'Payment deleted successfully',
@@ -234,8 +247,8 @@ router.delete('/:id', async (req, res) => {
       userDeleted
     });
   } catch (err) {
-    console.error('Error deleting payment:', err);
-    res.status(500).json({ error: 'Failed to delete payment' });
+    console.error('[DELETE] Unexpected error:', err);
+    res.status(500).json({ error: 'Failed to delete payment', details: err.message });
   }
 });
 
