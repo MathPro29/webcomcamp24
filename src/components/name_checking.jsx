@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Search, RefreshCw } from "lucide-react";
 import axios from "axios"; // เพิ่มบรรทัดนี้
 
 const NameChecking = () => {
@@ -7,44 +7,54 @@ const NameChecking = () => {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);   // เพิ่ม loading
   const [error, setError] = useState(null);       // เพิ่ม error
+  const [isRefreshing, setIsRefreshing] = useState(false); // สำหรับปุ่มรีเฟรช
 
 
-  // สร้าง Axios instance
-  const api = axios.create({
+  // สร้าง Axios instance (memoize เพื่อไม่ให้สร้างใหม่ทุกครั้ง)
+  const api = useMemo(() => axios.create({
     baseURL: import.meta.env.DEV
       ? "http://localhost:5000"   // dev รันแยกพอร์ต
       : "",                       // production ใช้ path เดียวกัน
     timeout: 10000,
-  });
+  }), []);
 
+  // ฟังก์ชันดึงข้อมูล (ใช้ได้ทั้ง useEffect และปุ่มรีเฟรช)
+  const fetchUsers = useCallback(async () => {
+    try {
+      setError(null);
+
+      const res = await api.get("/api/users"); // ใช้ axios แทน fetch
+
+      const formatted = res.data.map((u) => ({
+        id: u._id,
+        name: `${u.firstName} ${u.lastName}`,
+        school: u.school || "ไม่ระบุโรงเรียน",
+        grade: u.grade || "ไม่ระบุชั้นปี",
+        status: u.status || "รอตรวจสอบ", // สำคัญ!
+      }));
+
+      setApplicants(formatted);
+      console.log("โหลดข้อมูลสำเร็จ:", formatted);
+    } catch (err) {
+      console.error("โหลดข้อมูลล้มเหลว:", err);
+      setError("ไม่สามารถโหลดรายชื่อได้ ขณะนี้เซิร์ฟเวอร์กำลังปรับปรุง");
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [api]);
+
+  // เรียกใช้ fetchUsers ครั้งแรกเมื่อ mount
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await api.get("/api/users"); // ใช้ axios แทน fetch
-
-        const formatted = res.data.map((u) => ({
-          id: u._id,
-          name: `${u.firstName} ${u.lastName}`,
-          school: u.school || "ไม่ระบุโรงเรียน",
-          grade: u.grade || "ไม่ระบุชั้นปี",
-          status: u.status || "รอตรวจสอบ", // สำคัญ!
-        }));
-
-        setApplicants(formatted);
-        console.log("โหลดข้อมูลสำเร็จ:", formatted);
-      } catch (err) {
-        console.error("โหลดข้อมูลล้มเหลว:", err);
-        setError("ไม่สามารถโหลดรายชื่อได้ ขณะนี้เซิร์ฟเวอร์กำลังปรับปรุง");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    setLoading(true);
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
+
+  // ฟังก์ชันรีเฟรช (ไม่รีเฟรชเพจ)
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchUsers();
+  };
 
   const filtered = query.trim() === ""
     ? applicants
@@ -73,6 +83,16 @@ const NameChecking = () => {
           <p className="mt-2 text-gray-300">
             พิมพ์ชื่อ-นามสกุล เพื่อค้นหารายชื่อของในระบบ
           </p>
+          
+          {/* Refresh Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing || loading}
+            className="cursor-pointer mt-4 inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+            {isRefreshing ? "กำลังรีเฟรช..." : "รีเฟรชข้อมูล"}
+          </button>
         </div>
 
         {/* Search Box */}

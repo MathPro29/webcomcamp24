@@ -6,6 +6,7 @@ export default function Users() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [viewingUser, setViewingUser] = useState(null);
     const [users, setUsers] = useState([]);
 
@@ -18,6 +19,7 @@ export default function Users() {
 
     const fetchUsers = async () => {
         try {
+            setIsLoading(true);
             const res = await fetch(`${API_BASE}/api/users/all`);
             if (res.ok) {
                 const data = await res.json();
@@ -33,6 +35,8 @@ export default function Users() {
             }
         } catch (err) {
             console.error('Failed to fetch users:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -515,6 +519,18 @@ export default function Users() {
                         </div>
 
 
+                    </div>
+                    
+                </div>
+                
+            )}
+
+            {/* Loading overlay */}
+            {isLoading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-300 border-t-blue-600" />
+                        <div className="text-gray-700">กำลังโหลดข้อมูล...</div>
                     </div>
                 </div>
             )}

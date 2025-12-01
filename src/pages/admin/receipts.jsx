@@ -8,6 +8,7 @@ const Receipts = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedReceipts, setSelectedReceipts] = useState([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [viewingSlip, setViewingSlip] = useState(null);
     const [receipts, setReceipts] = useState([]);
 
@@ -19,6 +20,7 @@ const Receipts = () => {
 
     const fetchReceipts = async () => {
         try {
+            setIsLoading(true);
             const res = await fetch(`${API_BASE}/api/payments/admin/all`, {
                 credentials: 'include'
             });
@@ -28,6 +30,8 @@ const Receipts = () => {
             }
         } catch (err) {
             console.error('Failed to fetch receipts:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -253,7 +257,7 @@ const Receipts = () => {
                                         selectedReceipts.forEach(id => handleStatusChange(id, 'approved'));
                                         setSelectedReceipts([]);
                                     }}
-                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors "
                                 >
                                     <CheckCircle size={16} />
                                     อนุมัติทั้งหมด
@@ -295,7 +299,7 @@ const Receipts = () => {
                                             .filter(r => r.status === 'pending')
                                             .forEach(r => handleStatusChange(r.id, 'approved'));
                                     }}
-                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    className="cursor-pointer  flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                                     title="อนุมัติสลิปรอตรวจสอบทั้งหมด"
                                 >
                                     <CheckCircle size={16} />
@@ -431,6 +435,16 @@ const Receipts = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Loading overlay */}
+            {isLoading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                    <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-300 border-t-blue-600" />
+                        <div className="text-gray-700">กำลังโหลดข้อมูล...</div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal แสดงสลิป */}
             {viewingSlip && (

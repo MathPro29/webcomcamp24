@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, DollarSign, MessageSquare, ArrowLeft, Shield, X, LogOut } from 'lucide-react';
+import { Home, Users, DollarSign, MessageSquare, ArrowLeft, Shield, X, LogOut, Menu } from 'lucide-react';
 
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: Home },
@@ -11,17 +11,24 @@ const sidebarItems = [
 ];
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
-    const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    
+    // State สำหรับควบคุมการขยาย/ย่อบนจอใหญ่
+    const [isDesktopExpanded, setIsDesktopExpanded] = useState(true);
 
-    // สำหรับ Desktop: ใช้ hover state, สำหรับ Mobile: ใช้ isOpen
-    const isExpanded = window.innerWidth >= 1024 ? isHovered : isOpen;
+    // ตรวจสอบว่าอยู่บนจอใหญ่หรือไม่
+    const isLargeScreen = typeof window !== 'undefined' && window.innerWidth >= 1024;
+    
+    // กำหนดว่า sidebar ควรขยายหรือไม่
+    // - Mobile: ใช้ isOpen (แสดง/ซ่อน)
+    // - Desktop: ใช้ isDesktopExpanded (ขยาย/ย่อ)
+    const isExpanded = isLargeScreen ? isDesktopExpanded : isOpen;
 
     const sidebarWidthClass = isExpanded ? 'w-64' : 'w-20';
     const textVisibilityClass = isExpanded ? 'opacity-100 ml-3 inline-block' : 'opacity-0 w-0 overflow-hidden';
 
-    // ถ้า route เปลี่ยน และเป็น mobile และ sidebar ยังเปิด -> ปิดมัน (ป้องกัน overlay ค้าง)
+    // เมื่อเปลี่ยนหน้าบน mobile ให้ปิด sidebar
     useEffect(() => {
         if (window.innerWidth < 1024 && isOpen) {
             toggleSidebar();
@@ -29,17 +36,20 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname]);
 
-    // ช่วยให้เรียกปิดเฉพาะเมื่อมือถือ
+    // ฟังก์ชันสำหรับปิด sidebar บน mobile
     const closeOnMobileIfNeeded = () => {
         if (window.innerWidth < 1024 && isOpen) {
             toggleSidebar();
         }
     };
 
+    // ฟังก์ชันสำหรับ toggle ขยาย/ย่อบน desktop
+    const toggleDesktopExpand = () => {
+        setIsDesktopExpanded(!isDesktopExpanded);
+    };
+
     return (
         <div
-            onMouseEnter={() => window.innerWidth >= 1024 && setIsHovered(true)}
-            onMouseLeave={() => window.innerWidth >= 1024 && setIsHovered(false)}
             className={`
         ${sidebarWidthClass} 
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
@@ -48,6 +58,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         transition-all duration-300 ease-in-out
         fixed lg:sticky top-0 h-screen z-30
       `}
+            aria-expanded={isExpanded}
         >
             <div className="p-4 border-b border-gray-700">
                 <div className={`flex items-center ${isExpanded ? 'justify-between' : 'justify-center'}`}>
@@ -58,26 +69,33 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                         </span>
                     </div>
 
+                    {/* ปุ่มปิดสำหรับ mobile */}
                     <button
                         onClick={toggleSidebar}
-                        className={`cursor-pointer lg:hidden p-2 rounded-lg  transition-all duration-200 group ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                        aria-label="Close Sidebar"
+                        className={`cursor-pointer lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-all duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                        aria-label="Close sidebar"
                     >
-                        <X
-                            size={24}
-                            className="transform group-hover:rotate-90 transition-transform duration-200"
-                        />
+                        <X size={24} />
+                    </button>
+
+                    {/* ปุ่มขยาย/ย่อสำหรับ desktop */}
+                    <button
+                        onClick={toggleDesktopExpand}
+                        className="hidden lg:block cursor-pointer p-2 rounded-lg hover:bg-gray-700 transition-all duration-200"
+                        aria-label={isDesktopExpanded ? "Collapse sidebar" : "Expand sidebar"}
+                    >
+                        <Menu size={20} />
                     </button>
                 </div>
             </div>
 
-            <nav className={`flex-1 px-3 py-4 overflow-y-auto no-scrollbar`} style={{ minHeight: 0, scrollbarGutter: 'stable' }}>
+            <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar" style={{ minHeight: 0, scrollbarGutter: 'stable' }}>
                 <ul className="space-y-1">
                     {sidebarItems.map((item) => (
                         <li key={item.name}>
                             <NavLink
                                 to={item.path}
-                                onClick={closeOnMobileIfNeeded} // ปิด sidebar เมื่อมือถือ
+                                onClick={closeOnMobileIfNeeded}
                                 className={({ isActive }) =>
                                     `flex items-center rounded-lg transition-all duration-200 group relative
                   ${isActive
@@ -87,17 +105,12 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                   ${isExpanded ? 'px-4 py-3 justify-start' : 'px-3 py-3 justify-center'}`
                                 }
                                 end={item.path === '/admin'}
+                                title={!isExpanded ? item.name : undefined}
                             >
                                 <item.icon size={20} className="flex-shrink-0" />
                                 <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${textVisibilityClass}`}>
                                     {item.name}
                                 </span>
-
-                                {!isExpanded && !isHovered && (
-                                    <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg">
-                                        {item.name}
-                                    </span>
-                                )}
                             </NavLink>
                         </li>
                     ))}
@@ -108,7 +121,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 <button
                     onClick={async () => {
                         try {
-                            // Call server logout to clear HttpOnly cookie
                             await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/logout', {
                                 method: 'POST',
                                 credentials: 'include',
@@ -118,23 +130,17 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                             // ignore
                         }
                         navigate('/admin/login', { replace: true });
-                        // ปิด sidebar ถ้ามือถือ
                         if (window.innerWidth < 1024 && isOpen) toggleSidebar();
                     }}
                     className={`cursor-pointer flex items-center rounded-lg w-full text-left hover:bg-red-600/90 transition-all duration-200 text-gray-300 hover:text-white group relative
             ${isExpanded ? 'px-4 py-3 justify-start' : 'px-3 py-3 justify-center'}`}
                     aria-label="Logout"
+                    title={!isExpanded ? 'Logout' : undefined}
                 >
                     <LogOut size={20} className="flex-shrink-0" />
                     <span className={`text-sm font-medium whitespace-nowrap transition-all duration-300 ${textVisibilityClass}`}>
                         Logout
                     </span>
-
-                    {!isExpanded && !isHovered && (
-                        <span className="cursor-pointer absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap z-50 shadow-lg">
-                            Logout
-                        </span>
-                    )}
                 </button>
             </div>
         </div>

@@ -1,272 +1,428 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Clock, CheckCircle, XCircle, RefreshCcw } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Users, Clock, CheckCircle, XCircle, RefreshCcw, Search } from 'lucide-react';
 import {
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
 } from 'recharts';
 
-// NOTE: install with: npm install recharts lucide-react
+// Improved Dashboard (single-file React + Tailwind)
+// - Cleaner layout and spacing
+// - Compact stat cards with subtle icons
+// - Loading skeleton overlay
+// - Collapsible allergy list (preview + expand)
+// - Search/filter input (client-side) to quickly find schools/provinces
 
 export default function Dashboard() {
-    const [stats, setStats] = useState({
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-    });
-    const [recentUsers, setRecentUsers] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [genderData, setGenderData] = useState([]);
-    const [laptopData, setLaptopData] = useState([]);
-    const [allergyList, setAllergyList] = useState([]);
-    const [medicalList, setMedicalList] = useState([]);
+  const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [genderData, setGenderData] = useState([]);
+  const [laptopData, setLaptopData] = useState([]);
+  const [allergyList, setAllergyList] = useState([]);
+  const [ageData, setAgeData] = useState([]);
+  const [schoolData, setSchoolData] = useState([]);
+  const [gradeData, setGradeData] = useState([]);
+  const [provinceData, setProvinceData] = useState([]);
+  const [shirtSizeData, setShirtSizeData] = useState([]);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const [query, setQuery] = useState('');
+  const [showAllAllergies, setShowAllAllergies] = useState(false);
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
+  const API_BASE = 'http://localhost:5000';
+  // helper: laptop detection (stable, moved above fetch so fetch can call it)
+  const hasLaptop = (u) => {
+    const v = u.laptop;
+    if (!v) return false;
+    return ['yes', 'มี', 'true', '1', 'y'].includes(String(v).toLowerCase());
+  };
 
-    // helper: laptop detection (schema: laptop: String -> 'yes' / 'no')
-    const hasLaptop = (u) => {
-        const v = u.laptop;
-        if (!v) return false;
-        return ['yes', 'มี', 'true', '1', 'y'].includes(String(v).toLowerCase());
-    };
+  // helper: normalize and filter lists (stable)
+  const extractList = (raw) => {
+    if (!raw) return [];
+    return String(raw)
+      .split(/[;,\n]+/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .filter((s) => !['-', 'ไม่มี', 'ไม่'].some((skip) => s.includes(skip)));
+  };
 
-    // helper: allergies (schema: allergies: String)
-    const extractAllergies = (u) => {
-        if (!u.allergies) return [];
-        return String(u.allergies)
-            .split(/[;,\n]+/)
-            .map(s => s.trim())
-            .filter(Boolean);
-    };
+  // Stable fetch function so useEffect doesn't depend on a recreated function
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/all`);
+      if (!res.ok) throw new Error(`status ${res.status}`);
 
-    // helper: medical conditions (schema: medicalConditions: String)
-    const extractMedical = (u) => {
-        if (!u.medicalConditions) return [];
-        return String(u.medicalConditions)
-            .split(/[;,\n]+/)
-            .map(s => s.trim())
-            .filter(Boolean);
-    };
+      const data = await res.json();
 
-    const fetchDashboardData = async () => {
-        try {
-            setIsLoading(true);
-            const res = await fetch(`${API_BASE}/api/users/all`);
-            if (res.ok) {
-                const data = await res.json();
+      setStats({
+        total: data.length,
+        pending: data.filter((u) => u.status === 'pending').length,
+        approved: data.filter((u) => u.status === 'success').length,
+        rejected: data.filter((u) => u.status === 'declined').length,
+      });
 
-                // Calculate stats (based on schema.status)
-                const statsData = {
-                    total: data.length,
-                    pending: data.filter(u => u.status === 'pending').length,
-                    approved: data.filter(u => u.status === 'success').length,
-                    rejected: data.filter(u => u.status === 'declined').length,
-                };
-                setStats(statsData);
+      // Gender
+      const genderCounts = data.reduce(
+        (acc, u) => {
+          const g = (u.gender || '').toString().toLowerCase();
+          if (g === 'ชาย' || g === 'male' || g === 'm') acc.male++;
+          else if (g === 'หญิง' || g === 'female' || g === 'f') acc.female++;
+          else acc.unknown++;
+          return acc;
+        },
+        { male: 0, female: 0, unknown: 0 }
+      );
+      setGenderData([
+        { name: 'ชาย', value: genderCounts.male },
+        { name: 'หญิง', value: genderCounts.female },
+        { name: 'ไม่ระบุ', value: genderCounts.unknown },
+      ]);
 
-                // Recent users
-                const recent = data
-                    .slice(0, 5)
-                    .map(u => ({
-                        id: u._id,
-                        name: `${u.prefix || ''} ${u.firstName || ''} ${u.lastName || ''}`.trim(),
-                        email: u.email || '-',
-                        school: u.school || '-',
-                        status: u.status === 'success' ? 'approved' : u.status === 'declined' ? 'rejected' : 'pending'
-                    }));
-                setRecentUsers(recent);
+      // Laptop
+      const laptopCounts = data.reduce((acc, u) => {
+        if (hasLaptop(u)) acc.with += 1;
+        else acc.without += 1;
+        return acc;
+      }, { with: 0, without: 0 });
+      setLaptopData([
+        { name: 'มีโน้ตบุ๊ค', value: laptopCounts.with },
+        { name: 'ไม่มี', value: laptopCounts.without },
+      ]);
 
-                // Gender chart data (schema: gender: String)
-                const genderCounts = data.reduce((acc, u) => {
-                    const g = (u.gender || '').toString().toLowerCase();
-                    if (g === 'ชาย' || g === 'male' || g === 'm') acc.male++;
-                    else if (g === 'หญิง' || g === 'female' || g === 'f') acc.female++;
-                    else acc.unknown++;
-                    return acc;
-                }, { male: 0, female: 0, unknown: 0 });
-
-                setGenderData([
-                    { name: 'ชาย', value: genderCounts.male },
-                    { name: 'หญิง', value: genderCounts.female },
-                    { name: 'ไม่ระบุ', value: genderCounts.unknown },
-                ]);
-
-                // Laptop chart (schema: laptop: String)
-                const laptopCounts = data.reduce((acc, u) => {
-                    if (hasLaptop(u)) acc.with += 1; else acc.without += 1;
-                    return acc;
-                }, { with: 0, without: 0 });
-
-                setLaptopData([
-                    { name: 'มีโน้ตบุ๊ค', value: laptopCounts.with },
-                    { name: 'ไม่มี', value: laptopCounts.without },
-                ]);
-
-                // Allergies list (schema: allergies: String)
-                const allAllergies = [];
-                data.forEach(u => {
-                    const arr = extractAllergies(u);
-                    if (arr.length > 0) {
-                        allAllergies.push({ name: `${u.prefix || ''} ${u.firstName || ''} ${u.lastName || ''}`.trim() || u._id, foods: arr });
-                    }
-                });
-                setAllergyList(allAllergies);
-
-                // Medical conditions list (schema: medicalConditions: String)
-                const allMedical = [];
-                data.forEach(u => {
-                    const arr = extractMedical(u);
-                    if (arr.length > 0) {
-                        allMedical.push({ name: `${u.prefix || ''} ${u.firstName || ''} ${u.lastName || ''}`.trim() || u._id, conditions: arr });
-                    }
-                });
-                setMedicalList(allMedical);
-
-            } else {
-                console.error('Failed to fetch dashboard data, status:', res.status);
-            }
-        } catch (err) {
-            console.error('Failed to fetch dashboard data:', err);
-        } finally {
-            setIsLoading(false);
+      // Allergies & medical (group by person)
+      const personHealthMap = new Map();
+      data.forEach((u) => {
+        const fullName = `${u.prefix || ''} ${u.firstName || ''} ${u.lastName || ''}`.trim() || u._id;
+        const allergies = extractList(u.allergies);
+        const medical = extractList(u.medicalConditions);
+        if (allergies.length > 0 || medical.length > 0) {
+          if (!personHealthMap.has(fullName)) personHealthMap.set(fullName, { allergies: [], medical: [] });
+          const ex = personHealthMap.get(fullName);
+          ex.allergies.push(...allergies);
+          ex.medical.push(...medical);
         }
-    };
+      });
+      const combined = Array.from(personHealthMap, ([name, d]) => ({ name, allergies: [...new Set(d.allergies)], medical: [...new Set(d.medical)] }));
+      setAllergyList(combined);
 
-    const statusConfig = {
-        approved: { label: 'อนุมัติแล้ว', color: 'bg-green-100 text-green-800' },
-        pending: { label: 'รอดำเนินการ', color: 'bg-yellow-100 text-yellow-800' },
-        rejected: { label: 'ปฏิเสธ', color: 'bg-red-100 text-red-800' }
-    };
+      // Age (simplified into fixed ranges)
+      const ageBuckets = { '10-13': 0, '14-15': 0, '16-17': 0, '18-19': 0, '20-21': 0, '22-25': 0 };
+      data.forEach((u) => {
+        const age = parseInt(u.age);
+        if (!isNaN(age)) {
+          if (age <= 13) ageBuckets['10-13']++;
+          else if (age <= 15) ageBuckets['14-15']++;
+          else if (age <= 17) ageBuckets['16-17']++;
+          else if (age <= 19) ageBuckets['18-19']++;
+          else if (age <= 21) ageBuckets['20-21']++;
+          else if (age <= 25) ageBuckets['22-25']++;
+        }
+      });
+      setAgeData(Object.entries(ageBuckets).map(([name, value]) => ({ name, value })));
 
-    const COLORS = ['#60A5FA', '#F472B6', '#A78BFA', '#FBBF24'];
+      // Schools (top 8)
+      const schoolCounts = data.reduce((acc, u) => {
+        const s = (u.school || 'ไม่ระบุ').trim();
+        acc[s] = (acc[s] || 0) + 1;
+        return acc;
+      }, {});
+      const topSchools = Object.entries(schoolCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([name, value]) => ({ name: name.length > 28 ? name.slice(0, 28) + '...' : name, value }));
+      setSchoolData(topSchools);
 
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-                <button
-                    onClick={() => fetchDashboardData()}
-                    className="cursor-pointer flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                    <RefreshCcw size={18} />
-                    รีเฟรช
-                </button>
-            </div>
+      // Grade
+      const gradeCounts = data.reduce((acc, u) => {
+        const g = (u.grade || 'ไม่ระบุ').toString().trim();
+        acc[g] = (acc[g] || 0) + 1;
+        return acc;
+      }, {});
+      setGradeData(Object.entries(gradeCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value));
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-500 font-medium">ผู้สมัครทั้งหมด</p>
-                        <Users size={20} className="text-blue-500" />
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-                </div>
+      // Province
+      const provinceCounts = data.reduce((acc, u) => {
+        const p = (u.province || 'ไม่ระบุ').trim();
+        acc[p] = (acc[p] || 0) + 1;
+        return acc;
+      }, {});
+      const topProvinces = Object.entries(provinceCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name, value]) => ({ name, value }));
+      setProvinceData(topProvinces);
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-500">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-500 font-medium">รอตรวจสอบ</p>
-                        <Clock size={20} className="text-yellow-500" />
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900">{stats.pending}</p>
-                </div>
+      // Shirt size
+      const shirtCounts = data.reduce((acc, u) => {
+        const s = (u.shirtSize || 'ไม่ระบุ').toString().toUpperCase().trim();
+        acc[s] = (acc[s] || 0) + 1;
+        return acc;
+      }, {});
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+      const sortedShirts = Object.entries(shirtCounts)
+        .sort((a, b) => {
+          const ia = sizeOrder.indexOf(a[0]);
+          const ib = sizeOrder.indexOf(b[0]);
+          if (ia !== -1 && ib !== -1) return ia - ib;
+          if (ia !== -1) return -1;
+          if (ib !== -1) return 1;
+          return a[0].localeCompare(b[0]);
+        })
+        .map(([name, value]) => ({ name, value }));
+      setShirtSizeData(sortedShirts);
+    } catch (err) {
+      console.error('fetch error', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [API_BASE]);
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-500 font-medium">อนุมัติแล้ว</p>
-                        <CheckCircle size={20} className="text-green-500" />
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900">{stats.approved}</p>
-                </div>
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
-                    <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-gray-500 font-medium">ปฏิเสธ</p>
-                        <XCircle size={20} className="text-red-500" />
-                    </div>
-                    <p className="text-3xl font-bold text-gray-900">{stats.rejected}</p>
-                </div>
-            </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Gender Pie */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2">สัดส่วนเพศ</h3>
-                    <div style={{ width: '100%', height: 220 }}>
-                        <ResponsiveContainer>
-                            <PieChart>
-                                <Pie data={genderData} dataKey="value" nameKey="name" outerRadius={80} label>
-                                    {genderData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
 
-                {/* Laptop Bar */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2">มีโน้ตบุ๊ค / ไม่มี</h3>
-                    <div style={{ width: '100%', height: 220 }}>
-                        <ResponsiveContainer>
-                            <BarChart data={laptopData}>
-                                <XAxis dataKey="name" />
-                                <YAxis allowDecimals={false} />
-                                <Tooltip />
-                                <Bar dataKey="value">
-                                    {laptopData.map((entry, index) => (
-                                        <Cell key={`cell-l-${index}`} fill={COLORS[index % COLORS.length]} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+  const COLORS = ['#60A5FA', '#F472B6', '#A78BFA', '#FBBF24'];
 
-                {/* Allergies + Medical */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold mb-2">ผู้แพ้อาหาร / โรคประจำตัว (แพ้: {allergyList.length} / โรค: {medicalList.length})</h3>
-                    <div className="max-h-52 overflow-y-auto space-y-3">
-                        {allergyList.length === 0 && medicalList.length === 0 ? (
-                            <p className="text-gray-400">ไม่พบข้อมูลผู้แพ้หรือโรคประจำตัว</p>
-                        ) : (
-                            <div className="space-y-2">
-                                {allergyList.map((a, i) => (
-                                    <div key={`alg-${i}`} className="border p-2 rounded">
-                                        <div className="font-medium">{a.name}</div>
-                                        <div className="text-sm text-gray-600">แพ้: {a.foods.join(', ')}</div>
-                                    </div>
-                                ))}
+  // Client-side filtered views (search by school/province/name)
+  const filteredSchools = useMemo(() => schoolData.filter((s) => s.name.toLowerCase().includes(query.toLowerCase())), [schoolData, query]);
+  const filteredProvinces = useMemo(() => provinceData.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())), [provinceData, query]);
+  const filteredAllergies = useMemo(() => allergyList.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())), [allergyList, query]);
 
-                                {medicalList.map((m, i) => (
-                                    <div key={`med-${i}`} className="border p-2 rounded">
-                                        <div className="font-medium">{m.name}</div>
-                                        <div className="text-sm text-gray-600">โรคประจำตัว: {m.conditions.join(', ')}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-           
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen space-y-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Admin Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร — สรุปที่อ่านง่าย และค้นหาเร็ว</p>
         </div>
-    );
+
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="ค้นหา โรงเรียน/จังหวัด/ชื่อ..."
+              className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white shadow-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+            <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+          </div>
+
+          <button
+            onClick={() => fetchDashboardData()}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors"
+          >
+            <RefreshCcw size={16} />
+            รีเฟรช
+          </button>
+        </div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'ผู้สมัครทั้งหมด', value: stats.total, color: 'border-blue-500', icon: <Users size={18} /> },
+          { label: 'รอตรวจสอบ', value: stats.pending, color: 'border-yellow-400', icon: <Clock size={18} /> },
+          { label: 'อนุมัติแล้ว', value: stats.approved, color: 'border-green-500', icon: <CheckCircle size={18} /> },
+          { label: 'ปฏิเสธ', value: stats.rejected, color: 'border-red-500', icon: <XCircle size={18} /> },
+        ].map((c) => (
+          <div key={c.label} className={`bg-white p-4 rounded-lg shadow-sm border-l-4 ${c.color}`}>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-500 font-medium">{c.label}</div>
+              <div className="text-gray-400">{c.icon}</div>
+            </div>
+            <div className="mt-2 text-2xl font-bold text-gray-900">{c.value ?? 0}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-2">สัดส่วนเพศ</h3>
+          <div style={{ width: '100%', height: 220 }}>
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie data={genderData} dataKey="value" nameKey="name" outerRadius={80} label>
+                  {genderData.map((entry, index) => (
+                    <Cell key={`g-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-2">มีโน้ตบุ๊ค</h3>
+          <div style={{ width: '100%', height: 220 }}>
+            <ResponsiveContainer>
+              <BarChart data={laptopData}>
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="value">
+                  {laptopData.map((entry, i) => (
+                    <Cell key={`l-${i}`} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+
+{/* Allergy list (preview + expand) */}
+<div className="bg-white p-4 rounded-lg shadow-sm">
+<div className="flex items-center justify-between mb-3">
+<h3 className="font-semibold">ผู้แพ้ / โรคประจำตัว</h3>
+<div className="text-sm text-gray-500">ทั้งหมด: {allergyList.length}</div>
+</div>
+
+
+{allergyList.length === 0 ? (
+<p className="text-gray-400">ไม่พบข้อมูล</p>
+) : (
+<>
+<div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ${showAllAllergies ? '' : 'max-h-72 overflow-hidden'} transition-all`}>
+{filteredAllergies.slice(0, showAllAllergies ? filteredAllergies.length : 9).map((person, i) => (
+<div key={i} className="border p-3 rounded-lg bg-linear-to-br from-orange-50 to-red-50">
+<div className="font-medium text-gray-800 text-sm mb-2">{person.name}</div>
+<div className="text-xs space-y-1">
+{person.allergies.length > 0 && (
+<div className="bg-white p-2 rounded">
+<div className="font-semibold text-orange-600">🍽️ แพ้</div>
+<div className="mt-1 text-gray-700">{person.allergies.join(', ')}</div>
+</div>
+)}
+{person.medical.length > 0 && (
+<div className="bg-white p-2 rounded">
+<div className="font-semibold text-red-600">⚕️ โรค</div>
+<div className="mt-1 text-gray-700">{person.medical.join(', ')}</div>
+</div>
+)}
+</div>
+</div>
+))}
+</div>
+
+
+<div className="mt-3 flex justify-center">
+<button
+onClick={() => setShowAllAllergies((s) => !s)}
+className="text-sm text-blue-600 hover:underline"
+>
+{showAllAllergies ? 'ย่อ' : `ดูทั้งหมด (${filteredAllergies.length})`}
+</button>
+</div>
+</>
+)}
+</div>
+
+
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-2">ขนาดเสื้อ</h3>
+          <div style={{ width: '100%', height: 220 }}>
+            <ResponsiveContainer>
+              <BarChart data={shirtSizeData}>
+                <XAxis dataKey="name" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#A78BFA" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Age distribution */}
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <h3 className="font-semibold mb-2">การกระจายตัวตามอายุ</h3>
+        <div style={{ width: '100%', height: 260 }}>
+          <ResponsiveContainer>
+            <BarChart data={ageData}>
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#60A5FA" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Schools & Provinces */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-3">โรงเรียนยอดนิยม</h3>
+          {filteredSchools.length === 0 ? (
+            <p className="text-sm text-gray-400">ไม่พบโรงเรียนที่ตรงกับการค้นหา</p>
+          ) : (
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer>
+                <BarChart data={filteredSchools} layout="vertical" margin={{ left: 80 }}>
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis dataKey="name" type="category" width={140} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#F472B6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-3">จังหวัดยอดนิยม</h3>
+          {filteredProvinces.length === 0 ? (
+            <p className="text-sm text-gray-400">ไม่พบจังหวัดที่ตรงกับการค้นหา</p>
+          ) : (
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer>
+                <BarChart data={filteredProvinces} layout="vertical" margin={{ left: 80 }}>
+                  <XAxis type="number" allowDecimals={false} />
+                  <YAxis dataKey="name" type="category" width={120} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#FBBF24" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+      </div>
+
+      
+      {/* Grades */}
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <h3 className="font-semibold mb-2">การกระจายตามชั้นเรียน</h3>
+        <div style={{ width: '100%', height: 220 }}>
+          <ResponsiveContainer>
+            <BarChart data={gradeData}>
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#10B981" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-300 border-t-blue-600" />
+            <div className="text-gray-700">กำลังโหลดข้อมูล...</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

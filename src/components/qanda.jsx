@@ -54,7 +54,7 @@ const Qanda = () => {
                     >
                         <button
                             onClick={() => toggle(index)}
-                            className="w-full flex justify-between items-center px-6 py-4 text-left font-semibold text-yellow-300 hover:text-yellow-200 transition-all"
+                            className="cursor-pointer w-full flex justify-between items-center px-6 py-4 text-left font-semibold text-yellow-300 hover:text-yellow-200 transition-all"
                         >
                             <span>{item.q}</span>
                             <ChevronDown
