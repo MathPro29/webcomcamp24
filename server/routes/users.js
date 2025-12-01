@@ -9,7 +9,6 @@ const userRouter = express.Router();
 // ⚠️ สำคัญ: Routes เฉพาะเจาะจงต้องอยู่ก่อน /:id
 // ==========================================
 
-// 1. Seed route
 
 // 2. Get all users - รวมข้อมูลสำหรับ Dashboard
 userRouter.get("/all", async (req, res) => {
@@ -18,7 +17,7 @@ userRouter.get("/all", async (req, res) => {
     
     // ดึงข้อมูลทั้งหมดที่ Dashboard ต้องการ
     const users = await User.find({})
-      .select("_id prefix firstName lastName email phone school status gender laptop allergies medicalConditions grade")
+      .select("_id prefix firstName lastName email phone school status gender laptop allergies medicalConditions")
       .sort({ createdAt: -1 })
       .lean();
     
