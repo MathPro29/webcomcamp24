@@ -86,6 +86,16 @@ const Receipts = () => {
                 setReceipts(prev => prev.map(r =>
                     r.id === id ? { ...r, status: newStatus, note } : r
                 ));
+                
+                // Refresh data after status change to sync with dashboard
+                setTimeout(() => fetchReceipts(), 300);
+                
+                // Show success message
+                if (newStatus === 'approved') {
+                    console.log('✅ Payment approved - user status updated to "success"');
+                } else if (newStatus === 'rejected') {
+                    console.log('❌ Payment rejected - user status updated to "declined"');
+                }
             }
         } catch (err) {
             console.error('Failed to update status:', err);
@@ -233,20 +243,65 @@ const Receipts = () => {
                         </button>
                     </div>
 
-                    {/* Bulk Actions */}
+                    {/* Bulk Actions - Selected Items */}
                     {selectedReceipts.length > 0 && (
-                        <div className="mt-4 flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="mt-4 flex flex-wrap items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <span className="text-blue-800 font-medium">เลือกแล้ว {selectedReceipts.length} รายการ</span>
-                            <button
-                                onClick={() => {
-                                    selectedReceipts.forEach(id => handleStatusChange(id, 'approved'));
-                                    setSelectedReceipts([]);
-                                }}
-                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            >
-                                <CheckCircle size={16} />
-                                อนุมัติทั้งหมด
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => {
+                                        selectedReceipts.forEach(id => handleStatusChange(id, 'approved'));
+                                        setSelectedReceipts([]);
+                                    }}
+                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    <CheckCircle size={16} />
+                                    อนุมัติทั้งหมด
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        selectedReceipts.forEach(id => handleStatusChange(id, 'pending'));
+                                        setSelectedReceipts([]);
+                                    }}
+                                    className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    <Clock size={16} />
+                                    รอตรวจสอบ
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        selectedReceipts.forEach(id => handleStatusChange(id, 'rejected'));
+                                        setSelectedReceipts([]);
+                                    }}
+                                    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    <XCircle size={16} />
+                                    ปฏิเสธทั้งหมด
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quick Actions - Update All Pending */}
+                    {receipts.filter(r => r.status === 'pending').length > 0 && (
+                        <div className="mt-4 flex flex-wrap items-center gap-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                            <span className="text-purple-800 font-medium">
+                                มี {receipts.filter(r => r.status === 'pending').length} รายการรอตรวจสอบ
+                            </span>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    onClick={() => {
+                                        receipts
+                                            .filter(r => r.status === 'pending')
+                                            .forEach(r => handleStatusChange(r.id, 'approved'));
+                                    }}
+                                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                    title="อนุมัติสลิปรอตรวจสอบทั้งหมด"
+                                >
+                                    <CheckCircle size={16} />
+                                    อนุมัติรอตรวจสอบทั้งหมด
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

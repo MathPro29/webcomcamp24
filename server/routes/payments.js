@@ -180,6 +180,7 @@ router.put('/:id/status', async (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
+    // Update payment status
     const payment = await Payment.findByIdAndUpdate(
       id,
       { status, note },
@@ -187,7 +188,29 @@ router.put('/:id/status', async (req, res) => {
     ).populate('userId', 'firstName lastName email');
 
     if (!payment) return res.status(404).json({ error: 'Payment not found' });
-    res.json({ success: true, payment });
+
+    // Map payment status to user status
+    // payment status: pending, approved, rejected
+    // user status: pending, success, declined
+    let userStatus = 'pending';
+    if (status === 'approved') {
+      userStatus = 'success';
+    } else if (status === 'rejected') {
+      userStatus = 'declined';
+    }
+
+    // Also update the associated user's status
+    if (payment.userId) {
+      console.log(`[STATUS] Updating user ${payment.userId} status to ${userStatus}`);
+      await User.findByIdAndUpdate(
+        payment.userId,
+        { status: userStatus },
+        { new: true }
+      );
+    }
+
+    console.log(`[STATUS] Payment ${id} status changed to ${status}, user status updated to ${userStatus}`);
+    res.json({ success: true, payment, userStatus });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update payment' });
