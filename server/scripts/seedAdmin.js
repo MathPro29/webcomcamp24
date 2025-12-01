@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 import dotenv from 'dotenv';
 dotenv.config();
+import process from 'process';
 
 import DBconnect from '../config/db.js';
 import mongoose from 'mongoose';
 import Admin from '../models/admin.js';
 
+
+
 async function seed(username, password) {
   if (!username || !password) {
-    console.error('Usage: node scripts/seedAdmin.js <username> <password>');
+    console.error('ERROR TRY AGAIN!');
     process.exit(1);
   }
 

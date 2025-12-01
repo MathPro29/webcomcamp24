@@ -8,7 +8,8 @@ const NameChecking = () => {
   const [loading, setLoading] = useState(true);   // เพิ่ม loading
   const [error, setError] = useState(null);       // เพิ่ม error
 
-  // สร้าง Axios instance (แนะนำมาก!)
+
+  // สร้าง Axios instance
   const api = axios.create({
     baseURL: import.meta.env.DEV
       ? "http://localhost:5000"   // dev รันแยกพอร์ต

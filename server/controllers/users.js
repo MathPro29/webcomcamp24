@@ -4,7 +4,7 @@ import User from "../models/users.js"; // <-- ต้องมีบรรทั�
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find({})
-      .select("firstName lastName school status") // ดึงเฉพาะที่ frontend ต้องการ
+      .select("firstName lastName school grade status") // ดึงเฉพาะที่ frontend ต้องการ (เพิ่ม grade)
       .sort({ lastName: 1, firstName: 1 })
       .lean(); // ทำให้เร็วขึ้น
 

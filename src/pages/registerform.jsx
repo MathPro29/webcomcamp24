@@ -275,17 +275,14 @@ export default function RegisterForm() {
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">📞 ข้อมูลการติดต่อ</h3>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="grid col-span-1 gap-4">
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์โทรศัพท์ <span className="text-red-400">*</span></label>
-                                                <input type="tel" name="phone" placeholder="0812345678" value={formData.phone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.phone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์โทรศัพท์ส่วนตัว <span className="text-red-400">*</span></label>
+                                                <input type="tel" name="phone" placeholder="เบอร์โทรศัพท์ส่วนตัว" value={formData.phone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.phone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                                             </div>
 
-                                            <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์ผู้ปกครอง</label>
-                                                <input type="tel" name="parentPhone" placeholder="0898765432" value={formData.parentPhone} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
-                                            </div>
+
                                         </div>
 
                                         <div className="group">
@@ -374,7 +371,7 @@ export default function RegisterForm() {
                             <div className="text-6xl mb-4">🎉</div>
                             <h2 className="text-3xl font-bold text-yellow-400 mb-2">ยินดีด้วย!</h2>
                             <p className="text-gray-300 mb-6">เราได้รับแบบฟอร์มของคุณแล้ว ขอบคุณที่สนใจเข้าร่วม Comcamp 24</p>
-                            <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => window.location.href = "/"} className="px-6 py-2 bg-yellow-400 text-[#101330] font-semibold rounded-lg hover:bg-yellow-300 transition">กลับไปหน้าแรก</motion.button>
+                            <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => window.location.href = "/"} className="px-6 py-2 bg-yellow-400 text-[#101330] font-semibold rounded-lg hover:bg-yellow-300 transition cursor-pointer">กลับไปหน้าแรก</motion.button>
                         </motion.div>
                     )}
 

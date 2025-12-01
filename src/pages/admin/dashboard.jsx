@@ -158,7 +158,7 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
                 <button
                     onClick={() => fetchDashboardData()}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="cursor-pointer flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                     <RefreshCcw size={18} />
                     รีเฟรช
@@ -266,52 +266,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Recent Users Table
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <div className='flex justify-end'>
-                    <button onClick={() => window.location.href = '/admin/users'} className="cursor-pointer mb-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex justify-end items-center">
-                        จัดการผู้สมัคร
-                    </button>
-                </div>
-                <h2 className="text-xl font-bold mb-4 text-gray-800">ผู้สมัครล่าสุด</h2>
-
-                {isLoading ? (
-                    <div className="h-64 flex items-center justify-center text-gray-400">
-                        กำลังโหลดข้อมูล...
-                    </div>
-                ) : recentUsers.length === 0 ? (
-                    <div className="h-64 flex items-center justify-center text-gray-400">
-                        ไม่มีข้อมูลผู้สมัคร
-                    </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ชื่อ</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">อีเมล</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">โรงเรียน</th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {recentUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.name}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">{user.school}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${statusConfig[user.status].color}`}>
-                                                {statusConfig[user.status].label}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div> */}
+           
         </div>
     );
 }

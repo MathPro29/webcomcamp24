@@ -120,7 +120,7 @@ userRouter.get("/all", async (req, res) => {
     
     // ดึงข้อมูลทั้งหมดที่ Dashboard ต้องการ
     const users = await User.find({})
-      .select("_id prefix firstName lastName email phone school status gender laptop allergies medicalConditions")
+      .select("_id prefix firstName lastName email phone school status gender laptop allergies medicalConditions grade")
       .sort({ createdAt: -1 })
       .lean();
     

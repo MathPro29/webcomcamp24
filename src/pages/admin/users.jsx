@@ -193,8 +193,6 @@ export default function Users() {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
         });
     };
 
@@ -208,7 +206,7 @@ export default function Users() {
                             <h1 className="text-3xl font-bold text-gray-800 mb-2">จัดการผู้ใช้งาน</h1>
                             <p className="text-gray-600">ทั้งหมด {users.length} คน | กำลังแสดง {filteredUsers.length} คน</p>
                         </div>
-                        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md">
+                        <button className="cursor-pointer flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md">
                             <UserPlus size={20} />
                             เพิ่มผู้ใช้ใหม่
                         </button>
@@ -271,7 +269,7 @@ export default function Users() {
                         <button
                             onClick={refreshData}
                             disabled={isRefreshing}
-                            className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 disabled:text-gray-400 px-6 py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
+                            className="cursor-pointer flex items-center gap-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 disabled:text-gray-400 px-6 py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
                         >
                             <RefreshCcw size={20} className={isRefreshing ? 'animate-spin' : ''} />
                             {isRefreshing ? 'กำลังโหลด...' : 'รีเฟรช'}
@@ -280,7 +278,7 @@ export default function Users() {
                         {/* Export Button */}
                         <button
                             onClick={exportData}
-                            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                            className="cursor-pointer flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
                         >
                             <Download size={20} />
                             ส่งออก CSV

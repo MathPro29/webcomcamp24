@@ -236,7 +236,7 @@ export default function PaymentSection() {
                         setIsVerified(false); // แก้ข้อมูลต้องตรวจสอบใหม่
                         setConfirmedByUser(false);
                       }}
-                      placeholder="กรุณากรอกเบอร์โทรศัพท์"
+                      placeholder="กรอกเบอร์โทรศัพท์มือถือ"
                       className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-all"
                       required
                     />
@@ -256,7 +256,7 @@ export default function PaymentSection() {
                 {errors.length > 0 && (
                   <div className="bg-red-600/10 border border-red-600/20 rounded-lg p-3">
                     {errors.map((err, idx) => (
-                      <p key={idx} className="text-red-300 text-sm">• {err}</p>
+                      <p key={idx} className="text-red-300 text-sm">{err}</p>
                     ))}
                   </div>
                 )}
@@ -312,7 +312,7 @@ export default function PaymentSection() {
                 {/* ถ้าตรวจสอบผ่าน ให้โชว์สรุปและ checkbox ยืนยันโดยผู้ใช้ */}
                 {isVerified && (
                   <div className="mt-4 bg-white/5 border border-yellow-400/30 rounded-lg p-4">
-                    <p className="text-yellow-300 font-semibold mb-2">สรุปข้อมูล (ตรวจสอบแล้ว)</p>
+                    <p className="text-yellow-300 font-semibold mb-2">พบข้อมูล!</p>
                     <ul className="text-white/80 text-sm space-y-1 mb-3">
                       <li>ชื่อ-นามสกุล: <strong className="text-white">{name}</strong></li>
                       <li>เบอร์โทรศัพท์: <strong className="text-white">{clean_phone(phone)}</strong></li>
