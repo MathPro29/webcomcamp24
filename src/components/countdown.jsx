@@ -41,7 +41,7 @@ const Countdown = () => {
   return (
     <div className="flex flex-col items-center justify-center text-center text-white py-8 px-4">
       <motion.h1
-        className="text-lg sm:text-2xl md:text-3xl font-semibold mb-4 bg-gradient-to-r from-pink-400 to-blue-400 bg-clip-text text-transparent"
+        className="text-lg sm:text-2xl md:text-3xl font-semibold mb-4 bg-gradient-to-r from-orange-400 to-red-600 bg-clip-text text-transparent"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}

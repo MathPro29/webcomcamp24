@@ -25,15 +25,3 @@ export const loginlimit = rateLimit({
   max: 10,
   message: "Too many login attempts. Try again later."
 });
-
-// Limiter for frequently polled endpoints (e.g., admin refresh)
-export const getUsersLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 8, // allow up to 8 requests per minute per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    status: 429,
-    error: 'Too many requests to /api/users. Please wait a moment.'
-  }
-});
