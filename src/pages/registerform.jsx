@@ -21,7 +21,7 @@ export default function RegisterForm() {
         province: "",
         phone: "",
         parentPhone: "",
-        
+        email: "",
         lineId: "",
         shirtSize: "",
         allergies: "",
@@ -105,7 +105,7 @@ export default function RegisterForm() {
     const handleSubmit = async () => {
         const requiredFields = [
             "prefix", "firstName", "lastName", "nickname", "birthDate", "gender",
-            "school", "grade", "province", "phone",
+            "school", "grade", "province", "phone","email",
             "emergencyContact", "emergencyPhone", "shirtSize"
         ];
 
@@ -128,8 +128,8 @@ export default function RegisterForm() {
             const res = await axios.post("http://localhost:5000/api/register", dataToSend);
 
             console.log("สมัครสำเร็จ!", res.data);
-            notify.success('สมัครสำเร็จ! ขอบคุณที่สมัคร');
-            setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
+            notify.success('สมัครสำเร็จ! ขอบคุณที่สมัครเข้าร่วม ค่ายComcamp 24th');
+            setSubmitted(true);
 
         } catch (err) {
             console.error(err);

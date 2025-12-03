@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Copy, Check, Upload, X } from "lucide-react";
+import { notify } from "../utils/toast";
 
 export default function PaymentSection() {
   const [copied, setCopied] = useState(false);
