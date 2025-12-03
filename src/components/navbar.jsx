@@ -81,7 +81,11 @@ const Navbar = () => {
             className="text-2xl font-bold bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent hover:from-blue-200 hover:via-white hover:to-blue-200 transition-all duration-300 cursor-pointer transform hover:scale-105 flex-shrink-0"
             aria-label="Go to home"
           >
-            Comcamp<span className="text-[#e28d0d]">24</span><sup className="text-sm text-[#e28d0d]">th</sup>
+            <img
+              src="src/assets/logo.png"
+              alt="ComCamp Logo"
+              className="w-30 h-30 object-contain"
+            />
           </button>
 
           {/* เมนู Desktop - ขยายเต็มที่ */}
