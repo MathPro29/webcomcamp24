@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI; // ✅ ต้องประกาศตัวแปรนี้ก่อน
+const MONGO_URI = process.env.MONGO_URI;
 
 const DBconnect = async () => {
   try {

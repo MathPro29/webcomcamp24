@@ -8,8 +8,11 @@ import userRouter from "./routes/users.js";
 import registerRouter from "./routes/register.js";
 import authRouter from "./routes/auth.js";
 import paymentsRouter from "./routes/payments.js";
+import { limitsignup } from "./middleware/ratelimit.js";
+import { loginlimit } from "./middleware/ratelimit.js";
 
 dotenv.config();
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -27,10 +30,12 @@ app.use(fileUpload({
 }));
 
 // API Routes
-app.use("/api/users", userRouter);  // ✅ route เดียวพอ
-app.use("/api/register", registerRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/payments', paymentsRouter);
+app.use("/api/users", userRouter);
+// Apply rate limiter BEFORE the register router so it can block requests
+app.use("/api/register", limitsignup, registerRouter);
+app.use('/register', limitsignup);
+app.use('/api/auth', authRouter, loginlimit);
+app.use('/api/payments',limitsignup, paymentsRouter);
 
 // เชื่อมต่อ DB และเปิด server
 DBconnect().then(() => {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { notify } from "../utils/toast";
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
@@ -15,7 +16,7 @@ export default function RegisterForm() {
         province: "",
         phone: "",
         parentPhone: "",
-        email: "",
+        
         lineId: "",
         shirtSize: "",
         allergies: "",
@@ -36,7 +37,7 @@ export default function RegisterForm() {
         setFormData((s) => ({ ...s, [name]: value }));
     };
 
-    const validateStep = (currentStep = step) => {
+    const validateStep = () => {
         const newErrors = {};
 
         // if (currentStep === 1) {
@@ -85,13 +86,13 @@ export default function RegisterForm() {
     const handleSubmit = async () => {
         const requiredFields = [
             "prefix", "firstName", "lastName", "nickname", "birthDate", "gender",
-            "school", "grade", "province", "phone", "email",
+            "school", "grade", "province", "phone",
             "emergencyContact", "emergencyPhone", "shirtSize"
         ];
 
         const missing = requiredFields.filter(f => !formData[f]);
         if (missing.length > 0) {
-            alert("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ");
+            notify.warn("กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนส่งนะครับ");
             return;
         }
 
@@ -102,38 +103,22 @@ export default function RegisterForm() {
             });
 
             console.log("สมัครสำเร็จ!", res.data);
+            notify.success('สมัครสำเร็จ! ขอบคุณที่สมัคร');
             setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
 
         } catch (err) {
             console.error(err);
             if (err.response?.status === 409) {
-                alert("อีเมลนี้ถูกใช้สมัครไปแล้ว!");
+                notify.error("อีเมลนี้ถูกใช้สมัครไปแล้ว!");
             } else {
-                alert(err.response?.data?.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
+                notify.error(err.response?.data?.error || "เกิดข้อผิดพลาด กรุณาลองใหม่");
             }
         }
     };
 
     const progressPercent = Math.round(((step - 1) / (totalSteps - 1)) * 100);
 
-    // motion variants which use custom direction (custom prop)
-    const variants = {
-        enter: (dir) => ({
-            x: dir > 0 ? 120 : -120,
-            opacity: 0,
-            scale: 0.99,
-        }),
-        center: {
-            x: 0,
-            opacity: 1,
-            scale: 1,
-        },
-        exit: (dir) => ({
-            x: dir > 0 ? -120 : 120,
-            opacity: 0,
-            scale: 0.99,
-        }),
-    };
+    // motion variants were removed (not used currently)
 
     const buttonHover = { scale: 1.02, y: -3 };
     const buttonTap = { scale: 0.98, y: 0 };
@@ -141,13 +126,13 @@ export default function RegisterForm() {
     return (
         <section id="register" className="bg-[#101330] py-16 sm:py-20 text-white relative overflow-hidden min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8 relative z-10 mt-10">
-                <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+                <h2 className="text-4xl sm:text-5xl font-bold bg-linear-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
                     สมัครเข้าร่วม Comcamp 24<sup className="text-amber-300">th</sup>
                 </h2>
             </div>
 
             <div className="max-w-2xl mx-auto px-4 relative z-10">
-                <div className="bg-gradient-to-br from-[#1A1E4A] to-[#151838] p-8 sm:p-10 rounded-3xl shadow-2xl border border-yellow-400/40 transition-all duration-500 backdrop-blur-sm">
+                <div className="bg-linear-to-br from-[#1A1E4A] to-[#151838] p-8 sm:p-10 rounded-3xl shadow-2xl border border-yellow-400/40 transition-all duration-500 backdrop-blur-sm">
 
                     {/* Progress */}
                     <div className="mb-6">
@@ -156,7 +141,7 @@ export default function RegisterForm() {
                             <div>{progressPercent}%</div>
                         </div>
                         <div className="w-full bg-[#0d1028] rounded-full h-2 overflow-hidden">
-                            <motion.div
+                            <Motion.div
                                 className="h-2 rounded-full shadow-sm"
                                 animate={{ width: `${progressPercent}%` }}
                                 transition={{ type: "spring", stiffness: 120, damping: 18 }}
@@ -170,7 +155,7 @@ export default function RegisterForm() {
                             <AnimatePresence custom={direction} exitBeforeEnter initial={false}>
                                 {/* Wrap each step content in a motion.div keyed by step */}
                                 {step === 1 && (
-                                    <motion.div
+                                    <Motion.div
 
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">📝 ข้อมูลส่วนตัว</h3>
@@ -230,11 +215,11 @@ export default function RegisterForm() {
                                             </select>
                                             {errors.gender && <p className="text-red-400 text-xs mt-1">{errors.gender}</p>}
                                         </div>
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
 
                                 {step === 2 && (
-                                    <motion.div
+                                    <Motion.div
 
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">🎓 ข้อมูลการศึกษา</h3>
@@ -266,11 +251,11 @@ export default function RegisterForm() {
                                                 {errors.province && <p className="text-red-400 text-xs mt-1">{errors.province}</p>}
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
 
                                 {step === 3 && (
-                                    <motion.div
+                                    <Motion.div
 
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">📞 ข้อมูลการติดต่อ</h3>
@@ -313,11 +298,11 @@ export default function RegisterForm() {
                                                 </div>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
 
                                 {step === 4 && (
-                                    <motion.div
+                                    <Motion.div
 
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">✨ ข้อมูลเพิ่มเติม</h3>
@@ -362,23 +347,23 @@ export default function RegisterForm() {
                                         <div className="bg-yellow-400/10 border border-yellow-400/30 rounded-xl p-4 mt-4">
                                             <p className="text-sm text-gray-300">💡 <span className="font-semibold text-yellow-400">หมายเหตุ:</span> กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้องก่อนส่งแบบฟอร์มนะครับ</p>
                                         </div>
-                                    </motion.div>
+                                    </Motion.div>
                                 )}
                             </AnimatePresence>
                         </div>
                     ) : (
-                        <motion.div className="text-center py-12" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 70 }}>
+                        <Motion.div className="text-center py-12" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 70 }}>
                             <div className="text-6xl mb-4">🎉</div>
                             <h2 className="text-3xl font-bold text-yellow-400 mb-2">ยินดีด้วย!</h2>
                             <p className="text-gray-300 mb-6">เราได้รับแบบฟอร์มของคุณแล้ว ขอบคุณที่สนใจเข้าร่วม Comcamp 24</p>
-                            <motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => window.location.href = "/"} className="px-6 py-2 bg-yellow-400 text-[#101330] font-semibold rounded-lg hover:bg-yellow-300 transition cursor-pointer">กลับไปหน้าแรก</motion.button>
-                        </motion.div>
+                            <Motion.button whileHover={buttonHover} whileTap={buttonTap} onClick={() => window.location.href = "/"} className="px-6 py-2 bg-yellow-400 text-[#101330] font-semibold rounded-lg hover:bg-yellow-300 transition cursor-pointer">กลับไปหน้าแรก</Motion.button>
+                        </Motion.div>
                     )}
 
                     {/* Navigation Buttons */}
                     {!submitted && (
                         <div className="flex gap-4 mt-8">
-                            <motion.button
+                            <Motion.button
                                 onClick={back}
                                 initial={false}
                                 animate={{ opacity: step === 1 ? 0 : 1, pointerEvents: step === 1 ? "none" : "auto" }}
@@ -389,16 +374,16 @@ export default function RegisterForm() {
                                 style={{ display: step === 1 ? "none" : "inline-flex" }}
                             >
                                 ← ย้อนกลับ
-                            </motion.button>
+                            </Motion.button>
 
                             {step < totalSteps ? (
-                                <motion.button onClick={next} whileHover={buttonHover} whileTap={buttonTap} className="cursor-pointer flex-1 px-4 py-3 bg-yellow-400 hover:bg-yellow-300 text-[#101330] font-semibold rounded-xl shadow">
+                                <Motion.button onClick={next} whileHover={buttonHover} whileTap={buttonTap} className="cursor-pointer flex-1 px-4 py-3 bg-yellow-400 hover:bg-yellow-300 text-[#101330] font-semibold rounded-xl shadow">
                                     ถัดไป →
-                                </motion.button>
+                                </Motion.button>
                             ) : (
-                                <motion.button onClick={handleSubmit} whileHover={buttonHover} whileTap={buttonTap} className="cursor-pointer flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow">
+                                <Motion.button onClick={handleSubmit} whileHover={buttonHover} whileTap={buttonTap} className="cursor-pointer flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow">
                                     ส่งแบบฟอร์ม
-                                </motion.button>
+                                </Motion.button>
                             )}
                         </div>
                     )}
@@ -406,7 +391,7 @@ export default function RegisterForm() {
             </div>
 
             {/* subtle background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-500/10 blur-3xl pointer-events-none"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-yellow-400/5 via-transparent to-yellow-500/10 blur-3xl pointer-events-none"></div>
         </section>
     );
 }
