@@ -2,7 +2,6 @@ import express from "express";
 import { getUsers } from "../controllers/users.js";
 import User from "../models/users.js";
 import Payment from "../models/payment.js";
-import { getUsersLimiter } from "../middleware/ratelimit.js";
 
 const userRouter = express.Router();
 
@@ -109,7 +108,6 @@ userRouter.get("/:id", async (req, res) => {
 });
 
 // 6. Default route (ต้องอยู่ท้ายสุด!)
-// Apply a limiter so clients (admin UI refresh) cannot poll too frequently
-userRouter.get("/", getUsersLimiter, getUsers);
+userRouter.get("/", getUsers);
 
 export default userRouter;
