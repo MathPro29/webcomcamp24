@@ -1,5 +1,5 @@
 // controllers/users.js
-import User from "../models/users.js"; // <-- ต้องมีบรรทัดนี้!
+import User from "../models/users.js";
 
 export const getUsers = async (req, res) => {
   try {
@@ -10,7 +10,7 @@ export const getUsers = async (req, res) => {
 
     // ถ้าไม่มีข้อมูลเลย
     if (users.length === 0) {
-      return res.json([]); // ส่ง array ว่างไปก่อนก็ได้
+      return res.json([]);
     }
 
     res.json(users);

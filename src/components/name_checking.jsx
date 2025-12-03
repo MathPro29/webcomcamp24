@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Search, RefreshCw } from "lucide-react";
 import axios from "axios"; // เพิ่มบรรทัดนี้
+import { notify } from "../utils/toast";
 
 const NameChecking = () => {
   const [query, setQuery] = useState("");
@@ -8,6 +9,8 @@ const NameChecking = () => {
   const [loading, setLoading] = useState(true);   // เพิ่ม loading
   const [error, setError] = useState(null);       // เพิ่ม error
   const [isRefreshing, setIsRefreshing] = useState(false); // สำหรับปุ่มรีเฟรช
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const REFRESH_COOLDOWN = 5; // seconds client-side cooldown after refresh
 
 
   // สร้าง Axios instance (memoize เพื่อไม่ให้สร้างใหม่ทุกครั้ง)
@@ -37,6 +40,10 @@ const NameChecking = () => {
       console.log("โหลดข้อมูลสำเร็จ:", formatted);
     } catch (err) {
       console.error("โหลดข้อมูลล้มเหลว:", err);
+      // If server returned a 429, show a specific toast
+      if (err.response?.status === 429) {
+        notify.warn(err.response.data?.error || 'Too many requests. Please wait.');
+      }
       setError("ไม่สามารถโหลดรายชื่อได้ ขณะนี้เซิร์ฟเวอร์กำลังปรับปรุง");
     } finally {
       setLoading(false);
@@ -52,9 +59,34 @@ const NameChecking = () => {
 
   // ฟังก์ชันรีเฟรช (ไม่รีเฟรชเพจ)
   const handleRefresh = async () => {
+    if (cooldownRemaining > 0) {
+      notify.warn(`กรุณารอ ${cooldownRemaining} วินาทีก่อนรีเฟรชอีกครั้ง`);
+      return;
+    }
+
     setIsRefreshing(true);
-    await fetchUsers();
+    setCooldownRemaining(REFRESH_COOLDOWN);
+    try {
+      await fetchUsers();
+    } finally {
+      // isRefreshing will be set false by fetchUsers finally
+    }
   };
+
+  // cooldown countdown
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return undefined;
+    const t = setInterval(() => {
+      setCooldownRemaining((s) => {
+        if (s <= 1) {
+          clearInterval(t);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [cooldownRemaining]);
 
   const filtered = query.trim() === ""
     ? applicants
@@ -87,11 +119,11 @@ const NameChecking = () => {
           {/* Refresh Button */}
           <button
             onClick={handleRefresh}
-            disabled={isRefreshing || loading}
+            disabled={isRefreshing || loading || cooldownRemaining > 0}
             className="cursor-pointer mt-4 inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            {isRefreshing ? "กำลังรีเฟรช..." : "รีเฟรชข้อมูล"}
+            {isRefreshing ? "กำลังรีเฟรช..." : (cooldownRemaining > 0 ? `รอ ${cooldownRemaining}s` : "รีเฟรชข้อมูล")}
           </button>
         </div>
 
