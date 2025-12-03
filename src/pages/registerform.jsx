@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
-<<<<<<< HEAD
+
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
-=======
+
 import { notify } from "../utils/toast";
->>>>>>> b27624a0bb3f50399513811ebb5b51f4d7b67108
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
