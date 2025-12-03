@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
@@ -25,6 +28,9 @@ export default function RegisterForm() {
         laptop: "",
     });
 
+    // Date object for react-datepicker
+    const [birthDateObj, setBirthDateObj] = useState(null);
+
     const [step, setStep] = useState(1);
     const [submitted, setSubmitted] = useState(false);
     const [errors, setErrors] = useState({});
@@ -33,6 +39,17 @@ export default function RegisterForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+
+        // format phone-like fields as XXX-XXX-XXXX while typing
+        if (name === 'phone' || name === 'parentPhone' || name === 'emergencyPhone') {
+            const cleaned = value.replace(/\D/g, '').slice(0, 10);
+            let formatted = cleaned;
+            if (cleaned.length > 6) formatted = `${cleaned.slice(0,3)}-${cleaned.slice(3,6)}-${cleaned.slice(6)}`;
+            else if (cleaned.length > 3) formatted = `${cleaned.slice(0,3)}-${cleaned.slice(3)}`;
+            setFormData((s) => ({ ...s, [name]: formatted }));
+            return;
+        }
+
         setFormData((s) => ({ ...s, [name]: value }));
     };
 
@@ -96,10 +113,16 @@ export default function RegisterForm() {
         }
 
         try {
-            const res = await axios.post("http://localhost:5000/api/register", {
+            const dataToSend = {
                 ...formData,
+                phone: (formData.phone || '').replace(/-/g, ''),
+                parentPhone: (formData.parentPhone || '').replace(/-/g, ''),
+                emergencyPhone: (formData.emergencyPhone || '').replace(/-/g, ''),
+                birthDate: birthDateObj ? format(birthDateObj, 'yyyy-MM-dd') : formData.birthDate,
                 status: "pending",
-            });
+            };
+
+            const res = await axios.post("http://localhost:5000/api/register", dataToSend);
 
             console.log("สมัครสำเร็จ!", res.data);
             setSubmitted(true);   // โชว์หน้าขอบคุณเดิมของคุณต่อได้เลย
@@ -210,7 +233,16 @@ export default function RegisterForm() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">วันเกิด <span className="text-red-400">*</span></label>
-                                                <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                                <DatePicker
+                                                    selected={birthDateObj}
+                                                    onChange={(date) => {
+                                                        setBirthDateObj(date);
+                                                        setFormData(s => ({ ...s, birthDate: date ? format(date, 'dd/MM/yyyy') : '' }));
+                                                    }}
+                                                    dateFormat="dd/MM/yyyy"
+                                                    placeholderText="เลือกวันเกิด"
+                                                    className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}
+                                                />
                                                 {errors.birthDate && <p className="text-red-400 text-xs mt-1">{errors.birthDate}</p>}
                                             </div>
 
