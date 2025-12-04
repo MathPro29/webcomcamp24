@@ -119,7 +119,7 @@ const NameChecking = () => {
   };
 
   return (
-    <section className="bg-[#101330] py-12 sm:py-16 text-white min-h-screen">
+    <section id="name_checking" className="bg-[#101330] py-12 sm:py-16 text-white min-h-screen ">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
