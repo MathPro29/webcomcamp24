@@ -12,7 +12,6 @@ import Dashboard from "./pages/admin/dashboard.jsx";
 import ScrollToTop from "./components/scrolltotop.jsx";
 import NotFound from "./pages/notfound.jsx";
 import Users from "./pages/admin/users.jsx";
-import Receipts from "./pages/admin/receipts.jsx";
 import Inboxpage from "./pages/admin/inbox.jsx";
 import Payment from "./pages/payment.jsx";
 
