@@ -56,21 +56,21 @@ export default function Dashboard() {
   // helper: normalize school names to group similar names together
   const normalizeSchoolName = (name) => {
     if (!name) return 'ไม่ระบุ';
-    
+
     let normalized = name.trim();
-    
+
     // Remove common prefixes (case-insensitive)
     const prefixes = ['โรงเรียน', 'ร.ร.', 'ร.ร', 'วิทยาลัย', 'ว.', 'มหาวิทยาลัย', 'ม.'];
-    
+
     for (const prefix of prefixes) {
       // Remove prefix at the start (with optional space after)
       const regex = new RegExp(`^${prefix}\\s*`, 'i');
       normalized = normalized.replace(regex, '');
     }
-    
+
     // Trim again after removing prefix
     normalized = normalized.trim();
-    
+
     return normalized || name.trim(); // Return original if normalized is empty
   };
 
@@ -82,6 +82,10 @@ export default function Dashboard() {
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const data = await res.json();
+
+      console.log('📊 Sample user data:', data[0]);
+      console.log('📚 Grades found:', [...new Set(data.map(u => u.grade))]);
+      console.log('📍 Provinces found:', [...new Set(data.map(u => u.province))]);
 
       const pendingCount = data.filter((u) => u.status === 'pending').length;
       const approvedCount = data.filter((u) => u.status === 'success').length;
@@ -97,9 +101,6 @@ export default function Dashboard() {
         { name: 'อนุมัติแล้ว', value: approvedCount },
         { name: 'ปฏิเสธ', value: rejectedCount },
       ]);
-
-    
-  
 
       // Gender
       const genderCounts = data.reduce(
@@ -145,85 +146,75 @@ export default function Dashboard() {
       const combined = Array.from(personHealthMap, ([name, d]) => ({ name, allergies: [...new Set(d.allergies)], medical: [...new Set(d.medical)] }));
       setAllergyList(combined);
 
-      // Age (simplified into fixed ranges)
-      const ageBuckets = { '10-13': 0, '14-15': 0, '16-17': 0, '18-19': 0, '20-21': 0, '22-25': 0 };
-      data.forEach((u) => {
-        const age = parseInt(u.age);
-        if (!isNaN(age)) {
-          if (age <= 13) ageBuckets['10-13']++;
-          else if (age <= 15) ageBuckets['14-15']++;
-          else if (age <= 17) ageBuckets['16-17']++;
-          else if (age <= 19) ageBuckets['18-19']++;
-          else if (age <= 21) ageBuckets['20-21']++;
-          else if (age <= 25) ageBuckets['22-25']++;
-        }
-      });
-      // Grade
-const gradeCounts = data.reduce((acc, u) => {
-  const g = (u.grade || 'ไม่ระบุ').toString().trim();
-  acc[g] = (acc[g] || 0) + 1;
-  return acc;
-}, {});
+      // Grade - ✅ แก้ไขตรงนี้
+      const gradeCounts = data.reduce((acc, u) => {
+        const g = (u.grade || 'ไม่ระบุ').toString().trim();
+        acc[g] = (acc[g] || 0) + 1;
+        return acc;
+      }, {});
 
-const gradeOrder = [
- { name: "ม.4", value: 10 },
- { name: "ม.5", value: 20 },
- { name: "ม.6", value: 30 },
- { name: "ปวช.1", value: 40 },
- { name: "ปวช.2", value: 50 },
- { name: "ปวช.3", value: 60 },
- { name: "ไม่ระบุ", value: 999 }
-];
+      const gradeOrder = {
+        "ม.4": 10,
+        "ม.5": 20,
+        "ม.6": 30,
+        "ปวช.1": 40,
+        "ปวช.2": 50,
+        "ปวช.3": 60,
+        "ไม่ระบุ": 999
+      };
 
-const gradeData = Object.entries(gradeCounts)
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => gradeOrder[a.name] - gradeOrder[b.name]);
+      const gradeDataArray = Object.entries(gradeCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => (gradeOrder[a.name] || 999) - (gradeOrder[b.name] || 999));
 
+      setGradeData(gradeDataArray);
 
       // Schools (top 8) - with smart grouping
-      const schoolMap = new Map(); // Map: normalized name -> { fullNames: [], count: number }
-      
+      const schoolMap = new Map();
+
       data.forEach((u) => {
         const originalName = (u.school || 'ไม่ระบุ').trim();
         const normalizedName = normalizeSchoolName(originalName);
-        
+
         if (!schoolMap.has(normalizedName)) {
           schoolMap.set(normalizedName, { fullNames: {}, count: 0 });
         }
-        
+
         const entry = schoolMap.get(normalizedName);
         entry.count += 1;
-        
-        // Track frequency of each full name variant
         entry.fullNames[originalName] = (entry.fullNames[originalName] || 0) + 1;
       });
-      
-      // Convert to array and pick most common full name for each group
+
       const schoolCounts = Array.from(schoolMap.entries()).map(([normalized, data]) => {
-        // Find the most frequently used full name
         const mostCommonFullName = Object.entries(data.fullNames)
           .sort((a, b) => b[1] - a[1])[0][0];
-        
+
         return {
           name: mostCommonFullName.length > 28 ? mostCommonFullName.slice(0, 28) + '...' : mostCommonFullName,
           value: data.count
         };
       });
-      
+
       const topSchools = schoolCounts
         .sort((a, b) => b.value - a.value)
         .slice(0, 8);
-      
+
       setSchoolData(topSchools);
 
-      // Province
+      // Province - ✅ เพิ่มส่วนนี้
       const provinceCounts = data.reduce((acc, u) => {
         const p = (u.province || 'ไม่ระบุ').trim();
         acc[p] = (acc[p] || 0) + 1;
         return acc;
       }, {});
-      const topProvinces = Object.entries(provinceCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([name, value]) => ({ name, value }));
+
+      const topProvinces = Object.entries(provinceCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(([name, value]) => ({ name, value }));
+
       setProvinceData(topProvinces);
+
     } catch (err) {
       console.error('fetch error', err);
     } finally {
@@ -267,9 +258,9 @@ const gradeData = Object.entries(gradeCounts)
       setIsLoading(true);
       const res = await fetch(`${API_BASE}/api/users/all`);
       if (!res.ok) throw new Error(`status ${res.status}`);
-      
+
       const data = await res.json();
-      
+
       // Define CSV headers
       const headers = [
         'คำนำหน้า',
@@ -294,7 +285,7 @@ const gradeData = Object.entries(gradeCounts)
         'มีโน้ตบุ๊ค',
         'สถานะ'
       ];
-      
+
       // Convert data to CSV rows
       const csvRows = data.map(user => [
         user.prefix || '',
@@ -319,17 +310,17 @@ const gradeData = Object.entries(gradeCounts)
         user.laptop || '',
         user.status || ''
       ]);
-      
+
       // Combine headers and rows
       const csvContent = [
         headers.join(','),
         ...csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
       ].join('\n');
-      
+
       // Create blob with UTF-8 BOM for proper Thai character encoding
       const BOM = '\uFEFF';
       const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-      
+
       // Create download link
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -339,7 +330,7 @@ const gradeData = Object.entries(gradeCounts)
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
     } catch (err) {
       console.error('CSV export error', err);
       alert('เกิดข้อผิดพลาดในการ export CSV');
@@ -356,16 +347,16 @@ const gradeData = Object.entries(gradeCounts)
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Admin Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร</p>
         </div>
-       <button
-  onClick={fetchDashboardData}
-  className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer"
->
-  <RotateCcw size={16} />
-  รีเฟรช
-</button>
+        <button
+          onClick={fetchDashboardData}
+          className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+        >
+          <RotateCcw size={16} />
+          รีเฟรช
+        </button>
 
-        
-         
+
+
       </div>
 
       {/* Stat cards */}
@@ -444,21 +435,21 @@ const gradeData = Object.entries(gradeCounts)
         </div>
 
         {/* Grade Distribution (List) */}
-<div className="bg-white p-4 rounded-lg shadow-sm">
-  <h3 className="font-semibold mb-2">การกระจายตามชั้นเรียน</h3>
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <h3 className="font-semibold mb-2">การกระจายตามชั้นเรียน</h3>
 
-  <ul className="space-y-2">
-    {gradeData.map((g) => (
-      <li
-        key={g.name}
-        className="flex justify-between bg-gray-50 p-3 rounded-lg"
-      >
-        <span>{g.name}</span>
-        <span className="font-semibold">{g.value} คน</span>
-      </li>
-    ))}
-  </ul>
-</div>
+          <ul className="space-y-2">
+            {gradeData.map((g) => (
+              <li
+                key={g.name}
+                className="flex justify-between bg-gray-50 p-3 rounded-lg"
+              >
+                <span>{g.name}</span>
+                <span className="font-semibold">{g.value} คน</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
       </div>
 
@@ -468,31 +459,28 @@ const gradeData = Object.entries(gradeCounts)
         <div className="flex gap-2 mb-4 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('schools')}
-            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
-              activeTab === 'schools'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${activeTab === 'schools'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+              }`}
           >
             โรงเรียน
           </button>
           <button
             onClick={() => setActiveTab('provinces')}
-            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
-              activeTab === 'provinces'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${activeTab === 'provinces'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+              }`}
           >
             จังหวัด
           </button>
           <button
             onClick={() => setActiveTab('allergies')}
-            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
-              activeTab === 'allergies'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${activeTab === 'allergies'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+              }`}
           >
             ผู้แพ้ / โรคประจำตัว
           </button>
