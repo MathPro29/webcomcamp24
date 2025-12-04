@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Users, Clock, CheckCircle, XCircle, RefreshCcw, Search, Download } from 'lucide-react';
+import { Users, Clock, CheckCircle, XCircle, RotateCcw, Search, Download, } from 'lucide-react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -98,6 +98,9 @@ export default function Dashboard() {
         { name: 'ปฏิเสธ', value: rejectedCount },
       ]);
 
+    
+  
+
       // Gender
       const genderCounts = data.reduce(
         (acc, u) => {
@@ -156,12 +159,26 @@ export default function Dashboard() {
         }
       });
       // Grade
-      const gradeCounts = data.reduce((acc, u) => {
-        const g = (u.grade || 'ไม่ระบุ').toString().trim();
-        acc[g] = (acc[g] || 0) + 1;
-        return acc;
-      }, {});
-      setGradeData(Object.entries(gradeCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value));
+const gradeCounts = data.reduce((acc, u) => {
+  const g = (u.grade || 'ไม่ระบุ').toString().trim();
+  acc[g] = (acc[g] || 0) + 1;
+  return acc;
+}, {});
+
+const gradeOrder = [
+ { name: "ม.4", value: 10 },
+ { name: "ม.5", value: 20 },
+ { name: "ม.6", value: 30 },
+ { name: "ปวช.1", value: 40 },
+ { name: "ปวช.2", value: 50 },
+ { name: "ปวช.3", value: 60 },
+ { name: "ไม่ระบุ", value: 999 }
+];
+
+const gradeData = Object.entries(gradeCounts)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => gradeOrder[a.name] - gradeOrder[b.name]);
+
 
       // Schools (top 8) - with smart grouping
       const schoolMap = new Map(); // Map: normalized name -> { fullNames: [], count: number }
@@ -339,6 +356,13 @@ export default function Dashboard() {
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Admin Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร</p>
         </div>
+       <button
+  onClick={fetchDashboardData}
+  className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+>
+  <RotateCcw size={16} />
+  รีเฟรช
+</button>
 
         
          
@@ -419,20 +443,23 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Grade Distribution */}
-        <div className="bg-white p-4 rounded-lg shadow-sm">
-          <h3 className="font-semibold mb-2">การกระจายตามชั้นเรียน</h3>
-          <div style={{ width: '100%', height: 220 }}>
-            <ResponsiveContainer>
-              <BarChart data={gradeData}>
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#10B981" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {/* Grade Distribution (List) */}
+<div className="bg-white p-4 rounded-lg shadow-sm">
+  <h3 className="font-semibold mb-2">การกระจายตามชั้นเรียน</h3>
+
+  <ul className="space-y-2">
+    {gradeData.map((g) => (
+      <li
+        key={g.name}
+        className="flex justify-between bg-gray-50 p-3 rounded-lg"
+      >
+        <span>{g.name}</span>
+        <span className="font-semibold">{g.value} คน</span>
+      </li>
+    ))}
+  </ul>
+</div>
+
       </div>
 
       {/* Tabbed Secondary Section */}
@@ -441,7 +468,7 @@ export default function Dashboard() {
         <div className="flex gap-2 mb-4 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('schools')}
-            className={`px-4 py-2 font-semibold text-sm transition-all ${
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
               activeTab === 'schools'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
@@ -451,7 +478,7 @@ export default function Dashboard() {
           </button>
           <button
             onClick={() => setActiveTab('provinces')}
-            className={`px-4 py-2 font-semibold text-sm transition-all ${
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
               activeTab === 'provinces'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
@@ -461,7 +488,7 @@ export default function Dashboard() {
           </button>
           <button
             onClick={() => setActiveTab('allergies')}
-            className={`px-4 py-2 font-semibold text-sm transition-all ${
+            className={`cursor-pointer  px-4 py-2 font-semibold text-sm transition-all ${
               activeTab === 'allergies'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
