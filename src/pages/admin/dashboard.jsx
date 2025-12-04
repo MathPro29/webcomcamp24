@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Users, Clock, CheckCircle, XCircle, RefreshCcw, Search } from 'lucide-react';
+import { Users, Clock, CheckCircle, XCircle, RefreshCcw, Search, Download } from 'lucide-react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -51,6 +51,27 @@ export default function Dashboard() {
       .map((s) => s.trim())
       .filter(Boolean)
       .filter((s) => !['-', 'ไม่มี', 'ไม่'].some((skip) => s.includes(skip)));
+  };
+
+  // helper: normalize school names to group similar names together
+  const normalizeSchoolName = (name) => {
+    if (!name) return 'ไม่ระบุ';
+    
+    let normalized = name.trim();
+    
+    // Remove common prefixes (case-insensitive)
+    const prefixes = ['โรงเรียน', 'ร.ร.', 'ร.ร', 'วิทยาลัย', 'ว.', 'มหาวิทยาลัย', 'ม.'];
+    
+    for (const prefix of prefixes) {
+      // Remove prefix at the start (with optional space after)
+      const regex = new RegExp(`^${prefix}\\s*`, 'i');
+      normalized = normalized.replace(regex, '');
+    }
+    
+    // Trim again after removing prefix
+    normalized = normalized.trim();
+    
+    return normalized || name.trim(); // Return original if normalized is empty
   };
 
   // Stable fetch function so useEffect doesn't depend on a recreated function
@@ -142,16 +163,40 @@ export default function Dashboard() {
       }, {});
       setGradeData(Object.entries(gradeCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value));
 
-      // Schools (top 8)
-      const schoolCounts = data.reduce((acc, u) => {
-        const s = (u.school || 'ไม่ระบุ').trim();
-        acc[s] = (acc[s] || 0) + 1;
-        return acc;
-      }, {});
-      const topSchools = Object.entries(schoolCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(([name, value]) => ({ name: name.length > 28 ? name.slice(0, 28) + '...' : name, value }));
+      // Schools (top 8) - with smart grouping
+      const schoolMap = new Map(); // Map: normalized name -> { fullNames: [], count: number }
+      
+      data.forEach((u) => {
+        const originalName = (u.school || 'ไม่ระบุ').trim();
+        const normalizedName = normalizeSchoolName(originalName);
+        
+        if (!schoolMap.has(normalizedName)) {
+          schoolMap.set(normalizedName, { fullNames: {}, count: 0 });
+        }
+        
+        const entry = schoolMap.get(normalizedName);
+        entry.count += 1;
+        
+        // Track frequency of each full name variant
+        entry.fullNames[originalName] = (entry.fullNames[originalName] || 0) + 1;
+      });
+      
+      // Convert to array and pick most common full name for each group
+      const schoolCounts = Array.from(schoolMap.entries()).map(([normalized, data]) => {
+        // Find the most frequently used full name
+        const mostCommonFullName = Object.entries(data.fullNames)
+          .sort((a, b) => b[1] - a[1])[0][0];
+        
+        return {
+          name: mostCommonFullName.length > 28 ? mostCommonFullName.slice(0, 28) + '...' : mostCommonFullName,
+          value: data.count
+        };
+      });
+      
+      const topSchools = schoolCounts
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+      
       setSchoolData(topSchools);
 
       // Province
@@ -174,13 +219,117 @@ export default function Dashboard() {
   }, [fetchDashboardData]);
 
 
+  // Color mappings for different chart types
+  const getStatusColor = (name) => {
+    if (name === 'รอตรวจสอบ') return '#FF9800'; // orange
+    if (name === 'อนุมัติแล้ว') return '#4CAF50'; // green
+    if (name === 'ปฏิเสธ') return '#F44336'; // red
+    return '#9E9E9E'; // gray fallback
+  };
 
-  const COLORS = ['#60A5FA', '#F472B6', '#A78BFA', '#FBBF24'];
+  const getGenderColor = (name) => {
+    if (name === 'ชาย') return '#2196F3'; // blue
+    if (name === 'หญิง') return '#E91E63'; // pink
+    return '#9E9E9E'; // gray for unknown
+  };
+
+  const getLaptopColor = (name) => {
+    if (name === 'มีโน้ตบุ๊ค') return '#4CAF50'; // green
+    if (name === 'ไม่มี') return '#FF9800'; // orange
+    return '#9E9E9E'; // gray fallback
+  };
 
   // Client-side filtered views (search by school/province/name)
   const filteredSchools = useMemo(() => schoolData.filter((s) => s.name.toLowerCase().includes(query.toLowerCase())), [schoolData, query]);
   const filteredProvinces = useMemo(() => provinceData.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())), [provinceData, query]);
   const filteredAllergies = useMemo(() => allergyList.filter((p) => p.name.toLowerCase().includes(query.toLowerCase())), [allergyList, query]);
+
+  // CSV Export Function
+  const exportToCSV = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/all`);
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      
+      const data = await res.json();
+      
+      // Define CSV headers
+      const headers = [
+        'คำนำหน้า',
+        'ชื่อ',
+        'นามสกุล',
+        'ชื่อเล่น',
+        'วันเกิด',
+        'อายุ',
+        'เพศ',
+        'โรงเรียน',
+        'ระดับชั้น',
+        'จังหวัด',
+        'เบอร์โทร',
+        'เบอร์ผู้ปกครอง',
+        'อีเมล',
+        'LINE ID',
+        'ไซส์เสื้อ',
+        'อาหารที่แพ้',
+        'โรคประจำตัว',
+        'ผู้ติดต่อฉุกเฉิน',
+        'เบอร์ฉุกเฉิน',
+        'มีโน้ตบุ๊ค',
+        'สถานะ'
+      ];
+      
+      // Convert data to CSV rows
+      const csvRows = data.map(user => [
+        user.prefix || '',
+        user.firstName || '',
+        user.lastName || '',
+        user.nickname || '',
+        user.birthDate || '',
+        user.age || '',
+        user.gender || '',
+        user.school || '',
+        user.grade || '',
+        user.province || '',
+        user.phone || '',
+        user.parentPhone || '',
+        user.email || '',
+        user.lineId || '',
+        user.shirtSize || '',
+        user.allergies || '',
+        user.medicalConditions || '',
+        user.emergencyContact || '',
+        user.emergencyPhone || '',
+        user.laptop || '',
+        user.status || ''
+      ]);
+      
+      // Combine headers and rows
+      const csvContent = [
+        headers.join(','),
+        ...csvRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+      
+      // Create blob with UTF-8 BOM for proper Thai character encoding
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      // Create download link
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `comcamp24_applicants_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (err) {
+      console.error('CSV export error', err);
+      alert('เกิดข้อผิดพลาดในการ export CSV');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-6">
@@ -188,28 +337,11 @@ export default function Dashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Admin Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร — สรุปที่อ่านง่าย และค้นหาเร็ว</p>
+          <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="ค้นหา โรงเรียน/จังหวัด/ชื่อ..."
-              className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white shadow-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
-          </div>
-
-          <button
-            onClick={() => fetchDashboardData()}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm transition-colors"
-          >
-            <RefreshCcw size={16} />
-            รีเฟรช
-          </button>
-        </div>
+        
+         
       </div>
 
       {/* Stat cards */}
@@ -240,7 +372,7 @@ export default function Dashboard() {
               <PieChart>
                 <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={80} label>
                   {statusData.map((entry, index) => (
-                    <Cell key={`s-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`s-${index}`} fill={getStatusColor(entry.name)} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -258,7 +390,7 @@ export default function Dashboard() {
               <PieChart>
                 <Pie data={genderData} dataKey="value" nameKey="name" outerRadius={80} label>
                   {genderData.map((entry, index) => (
-                    <Cell key={`g-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`g-${index}`} fill={getGenderColor(entry.name)} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -279,7 +411,7 @@ export default function Dashboard() {
                 <Tooltip />
                 <Bar dataKey="value">
                   {laptopData.map((entry, i) => (
-                    <Cell key={`l-${i}`} fill={COLORS[i % COLORS.length]} />
+                    <Cell key={`l-${i}`} fill={getLaptopColor(entry.name)} />
                   ))}
                 </Bar>
               </BarChart>

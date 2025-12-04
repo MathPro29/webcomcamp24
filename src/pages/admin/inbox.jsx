@@ -2,7 +2,7 @@ import React from 'react'
 
 const Inboxpage = () => {
     return (
-        <div>inboxpage
+        <div>Log page
         </div>
     )
 }

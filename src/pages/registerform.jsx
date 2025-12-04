@@ -53,6 +53,15 @@ export default function RegisterForm() {
             return;
         }
 
+        // Prevent negative numbers for age field
+        if (name === 'age') {
+            const numValue = parseInt(value, 10);
+            if (value === '' || (numValue >= 0 && numValue <= 99)) {
+                setFormData((s) => ({ ...s, [name]: value }));
+            }
+            return;
+        }
+
         setFormData((s) => ({ ...s, [name]: value }));
     };
 
@@ -228,6 +237,12 @@ export default function RegisterForm() {
                                                     }}
                                                     dateFormat="dd/MM/yyyy"
                                                     placeholderText="เลือกวันเกิด"
+                                                    showYearDropdown
+                                                    showMonthDropdown
+                                                    dropdownMode="select"
+                                                    yearDropdownItemNumber={100}
+                                                    scrollableYearDropdown
+                                                    maxDate={new Date()}
                                                     className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}
                                                 />
                                                 {errors.birthDate && <p className="text-red-400 text-xs mt-1">{errors.birthDate}</p>}
@@ -235,7 +250,23 @@ export default function RegisterForm() {
 
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">อายุ</label>
-                                                <input type="number" min="0" max="25" name="age" placeholder="เช่น 16" value={formData.age} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
+                                                <input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    max="99" 
+                                                    name="age" 
+                                                    placeholder="ป้อนอายุ" 
+                                                    value={formData.age} 
+                                                    onChange={handleChange}
+                                                    onKeyDown={(e) => {
+                                                        // Prevent minus, plus, e, E keys
+                                                        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                    onWheel={(e) => e.target.blur()}
+                                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" 
+                                                />
                                             </div>
                                         </div>
 

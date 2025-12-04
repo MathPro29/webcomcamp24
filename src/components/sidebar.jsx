@@ -5,7 +5,7 @@ import { Home, Users, DollarSign, MessageSquare, ArrowLeft, Shield, X, LogOut, M
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: Home },
     { name: 'สมาชิก', path: '/admin/users', icon: Users },
-    { name: 'กล่องข้อความ', path: '/admin/inbox', icon: MessageSquare },
+    { name: 'Logs', path: '/admin/inbox', icon: MessageSquare },
     { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: ArrowLeft },
 ];
 
@@ -49,17 +49,17 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
 
     return (
         <div
-            className={`
+            className={` cursor-pointer
         ${sidebarWidthClass} 
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         lg:translate-x-0 
         bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col shadow-2xl 
         transition-all duration-300 ease-in-out
-        fixed lg:sticky top-0 h-screen z-30
+        fixed lg:sticky top-0 h-screen z-30 
       `}
             aria-expanded={isExpanded}
         >
-            <div className="p-4 border-b border-gray-700">
+            <div className="cursor-pointer p-4 border-b border-gray-700">
                 <div className={`flex items-center ${isExpanded ? 'justify-between' : 'justify-center'}`}>
                     <div className="flex items-center">
                         <Shield size={32} className={`text-indigo-400 ${isExpanded ? 'mr-2' : ''}`} />

@@ -312,10 +312,7 @@ export default function UnifiedUsersReceipts() {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">จัดการผู้สมัครและตรวจสอบสลิป</h1>
               <p className="text-gray-600">ทั้งหมด {users.length} คน | กำลังแสดง {filteredUsers.length} คน</p>
             </div>
-            <button className="cursor-pointer flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-md">
-              <UserPlus size={20} />
-              เพิ่มผู้ใช้ใหม่
-            </button>
+            
           </div>
         </div>
 

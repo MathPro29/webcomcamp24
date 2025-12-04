@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Search, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { limitrefresh } from "../utils/limitrefresh";
 
 const NameChecking = () => {
   const [firstName, setFirstName] = useState("");
@@ -27,6 +28,11 @@ const NameChecking = () => {
 
   // ฟังก์ชันค้นหา
   const handleSearch = async () => {
+    // Check rate limit before proceeding
+    if (!limitrefresh()) {
+      return; // Block the search if rate limit exceeded
+    }
+
     const first = firstName.trim();
     const last = lastName.trim();
     
@@ -119,13 +125,13 @@ const NameChecking = () => {
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-flex items-center rounded-full border border-yellow-500/70 px-4 py-1 text-sm font-semibold text-yellow-400">
-            ตรวจสอบสถานะ
+            ตรวจสอบรายชื่อ
           </span>
           <h2 className="mt-3 text-2xl sm:text-3xl font-bold">
-            ตรวจสอบสถานะการสมัครเข้าค่าย ComCamp 24<sup>th</sup>
+            ตรวจสอบรายชื่อเข้าค่าย ComCamp 24<sup>th</sup>
           </h2>
           <p className="mt-2 text-gray-300">
-            กรอกชื่อ-นามสกุล ของคุณเพื่อตรวจสอบสถานะการสมัคร
+            กรอกชื่อ-นามสกุล เพื่อตรวจสอบสถานะการสมัคร
           </p>
         </div>
 
@@ -262,8 +268,7 @@ const NameChecking = () => {
                   {searchResult.status === "success" && (
                     <div className="mt-6 p-4 bg-green-400/10 border border-green-400/30 rounded-lg">
                       <p className="text-green-400 text-sm">
-                        🎉 ยินดีด้วย! คุณผ่านการคัดเลือกเข้าค่าย ComCamp 24<sup>th</sup> แล้ว
-                        กรุณาตรวจสอบอีเมลเพื่อดูขั้นตอนถัดไป
+                        🎉 ยินดีด้วย! น้าาาา น้องผ่านการคัดเลือกเข้าค่าย ComCamp 24<sup>th</sup> แล้ว เจอกันที่ค่ายนะ
                       </p>
                     </div>
                   )}
@@ -273,7 +278,11 @@ const NameChecking = () => {
                       <p className="text-yellow-400 text-sm">
                         ⏳ ใบสมัครของคุณอยู่ระหว่างการพิจารณา กรุณารอประกาศผลอย่างเป็นทางการ
                       </p>
+                      <p className="text-center items-center mt-2">
+                        หากยังไม่ได้ชำระเงิน <a href="/payment" className="text-[#e38e0e] hover:underline">ชำระเงินตอนนี้!</a>
+                      </p>
                     </div>
+                    
                   )}
 
                   {searchResult.status === "declined" && (
@@ -299,6 +308,7 @@ const NameChecking = () => {
                   กรุณาตรวจสอบชื่อ-นามสกุลที่กรอกให้ถูกต้อง<br />
                   หากยังไม่ได้สมัคร กรุณาสมัครผ่านแบบฟอร์มสมัครเข้าค่าย
                 </p>
+                <p>หรือ <a href="/register" className="text-[#e38e0e] hover:underline">สมัครตอนนี้!</a></p>
               </div>
             )}
           </div>
