@@ -1,213 +1,321 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Search, RefreshCw } from "lucide-react";
-import axios from "axios"; // เพิ่มบรรทัดนี้
-import { notify } from "../utils/toast";
+import { useState, useMemo } from "react";
+import { Search, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 
 const NameChecking = () => {
-  const [query, setQuery] = useState("");
-  const [applicants, setApplicants] = useState([]);
-  const [loading, setLoading] = useState(true);   // เพิ่ม loading
-  const [error, setError] = useState(null);       // เพิ่ม error
-  const [isRefreshing, setIsRefreshing] = useState(false); // สำหรับปุ่มรีเฟรช
-  const [cooldownRemaining, setCooldownRemaining] = useState(0);
-  const REFRESH_COOLDOWN = 5; // seconds client-side cooldown after refresh
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
-
-  // สร้าง Axios instance (memoize เพื่อไม่ให้สร้างใหม่ทุกครั้ง)
-  const api = useMemo(() => axios.create({
-    baseURL: import.meta.env.DEV
-      ? "http://localhost:5000"   // dev รันแยกพอร์ต
-      : "",                       // production ใช้ path เดียวกัน
-    timeout: 10000,
-  }), []);
-
-  // ฟังก์ชันดึงข้อมูล (ใช้ได้ทั้ง useEffect และปุ่มรีเฟรช)
-  const fetchUsers = useCallback(async () => {
-    try {
-      setError(null);
-
-      const res = await api.get("/api/users"); // ใช้ axios แทน fetch
-
-      const formatted = res.data.map((u) => ({
-        id: u._id,
-        name: `${u.firstName} ${u.lastName}`,
-        school: u.school || "ไม่ระบุโรงเรียน",
-        grade: u.grade || "ไม่ระบุชั้นปี",
-        status: u.status || "รอตรวจสอบ", // สำคัญ!
-      }));
-
-      setApplicants(formatted);
-      console.log("โหลดข้อมูลสำเร็จ:", formatted);
-    } catch (err) {
-      console.error("โหลดข้อมูลล้มเหลว:", err);
-      // If server returned a 429, show a specific toast
-      if (err.response?.status === 429) {
-        notify.warn(err.response.data?.error || 'Too many requests. Please wait.');
+  // สร้าง API instance
+  const api = useMemo(() => {
+    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseURL = isDev ? "http://localhost:5000" : "";
+    
+    return {
+      get: async (endpoint) => {
+        const res = await fetch(`${baseURL}${endpoint}`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        return { data: await res.json() };
       }
-      setError("ไม่สามารถโหลดรายชื่อได้ ขณะนี้เซิร์ฟเวอร์กำลังปรับปรุง");
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [api]);
+    };
+  }, []);
 
-  // เรียกใช้ fetchUsers ครั้งแรกเมื่อ mount
-  useEffect(() => {
-    setLoading(true);
-    fetchUsers();
-  }, [fetchUsers]);
-
-  // ฟังก์ชันรีเฟรช (ไม่รีเฟรชเพจ)
-  const handleRefresh = async () => {
-    if (cooldownRemaining > 0) {
-      notify.warn(`กรุณารอ ${cooldownRemaining} วินาทีก่อนรีเฟรชอีกครั้ง`);
+  // ฟังก์ชันค้นหา
+  const handleSearch = async () => {
+    const first = firstName.trim();
+    const last = lastName.trim();
+    
+    if (!first || !last) {
+      setError("กรุณากรอกชื่อและนามสกุลให้ครบถ้วน");
       return;
     }
 
-    setIsRefreshing(true);
-    setCooldownRemaining(REFRESH_COOLDOWN);
+    setLoading(true);
+    setError(null);
+    setSearchResult(null);
+    setHasSearched(false);
+
     try {
-      await fetchUsers();
+      // เรียก API เพื่อค้นหา
+      const res = await api.get(`/api/users/search?firstName=${encodeURIComponent(first)}&lastName=${encodeURIComponent(last)}`);
+      
+      if (res.data.found) {
+        setSearchResult(res.data.user);
+      } else {
+        setSearchResult(null);
+      }
+      setHasSearched(true);
+    } catch (err) {
+      console.error("ค้นหาล้มเหลว:", err);
+      setError("เกิดข้อผิดพลาดในการค้นหา กรุณาลองใหม่อีกครั้ง");
     } finally {
-      // isRefreshing will be set false by fetchUsers finally
+      setLoading(false);
     }
   };
 
-  // cooldown countdown
-  useEffect(() => {
-    if (cooldownRemaining <= 0) return undefined;
-    const t = setInterval(() => {
-      setCooldownRemaining((s) => {
-        if (s <= 1) {
-          clearInterval(t);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [cooldownRemaining]);
+  // ฟังก์ชันล้างข้อมูล
+  const handleClear = () => {
+    setFirstName("");
+    setLastName("");
+    setSearchResult(null);
+    setError(null);
+    setHasSearched(false);
+  };
 
-  const filtered = query.trim() === ""
-    ? applicants
-    : applicants.filter((item) =>
-      item.name.toLowerCase().includes(query.toLowerCase())
-    );
+  // Handle Enter key
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !loading) {
+      handleSearch();
+    }
+  };
 
-  const statusColor = {
-    "success": "text-green-400",
-    "pending": "text-yellow-400",
-    "declined": "text-red-400",
+  // สีและไอคอนตามสถานะ
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case "success":
+        return {
+          text: "ผ่านการคัดเลือก",
+          color: "text-green-400",
+          bg: "bg-green-400/10",
+          border: "border-green-400/30",
+          icon: <CheckCircle className="w-8 h-8" />
+        };
+      case "pending":
+        return {
+          text: "รอการตรวจสอบ",
+          color: "text-yellow-400",
+          bg: "bg-yellow-400/10",
+          border: "border-yellow-400/30",
+          icon: <Clock className="w-8 h-8" />
+        };
+      case "declined":
+        return {
+          text: "ไม่ผ่านการคัดเลือก",
+          color: "text-red-400",
+          bg: "bg-red-400/10",
+          border: "border-red-400/30",
+          icon: <XCircle className="w-8 h-8" />
+        };
+      default:
+        return {
+          text: "ไม่ทราบสถานะ",
+          color: "text-gray-400",
+          bg: "bg-gray-400/10",
+          border: "border-gray-400/30",
+          icon: <AlertCircle className="w-8 h-8" />
+        };
+    }
   };
 
   return (
-    <section id="name_checking" className="bg-[#101330] py-12 sm:py-16 text-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="bg-[#101330] py-12 sm:py-16 text-white min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10">
           <span className="inline-flex items-center rounded-full border border-yellow-500/70 px-4 py-1 text-sm font-semibold text-yellow-400">
-            ตรวจสอบรายชื่อ
+            ตรวจสอบสถานะ
           </span>
           <h2 className="mt-3 text-2xl sm:text-3xl font-bold">
-            ค้นหารายชื่อผู้สมัครเข้าค่าย ComCamp 24<sup>th</sup>
+            ตรวจสอบสถานะการสมัครเข้าค่าย ComCamp 24<sup>th</sup>
           </h2>
           <p className="mt-2 text-gray-300">
-            พิมพ์ชื่อ-นามสกุล เพื่อค้นหารายชื่อของในระบบ
+            กรอกชื่อ-นามสกุล ของคุณเพื่อตรวจสอบสถานะการสมัคร
           </p>
-          
-          {/* Refresh Button */}
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing || loading || cooldownRemaining > 0}
-            className="cursor-pointer mt-4 inline-flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-            {isRefreshing ? "กำลังรีเฟรช..." : (cooldownRemaining > 0 ? `รอ ${cooldownRemaining}s` : "รีเฟรชข้อมูล")}
-          </button>
         </div>
 
-        {/* Search Box */}
-        <div className="max-w-xl mx-auto mb-10">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="ค้นหาชื่อ-นามสกุล เช่น สมชาย ใจดี"
-              className="w-full rounded-lg border border-gray-600 bg-[#1a1d3b] pl-10 pr-4 py-3
-                     focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-white
-                     placeholder-gray-400"
-            />
+        {/* Search Form */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="bg-[#1a1d3b] p-6 rounded-xl border border-gray-700 shadow-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {/* ชื่อ */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  ชื่อ <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="เช่น สมชาย"
+                  className="w-full rounded-lg border border-gray-600 bg-[#101330] px-4 py-3
+                           focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white
+                           placeholder-gray-400"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* นามสกุล */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  นามสกุล <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="เช่น ใจดี"
+                  className="w-full rounded-lg border border-gray-600 bg-[#101330] px-4 py-3
+                           focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-white
+                           placeholder-gray-400"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 
+                         text-white font-semibold py-3 px-6 rounded-lg transition-all
+                         flex items-center justify-center gap-2"
+              >
+                <Search className="w-5 h-5" />
+                {loading ? "กำลังค้นหา..." : "ค้นหาสถานะ"}
+              </button>
+              
+              {(searchResult || hasSearched) && (
+                <button
+                  onClick={handleClear}
+                  className="bg-gray-700 hover:bg-gray-600 text-white font-semibold 
+                           py-3 px-6 rounded-lg transition-all"
+                >
+                  ค้นหาใหม่
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Loading / Error / Empty */}
-        <div className="max-w-6xl mx-auto">
-          {loading && (
-            <p className="text-center text-yellow-400 py-10">
-              กำลังโหลดรายชื่อผู้สมัคร...
-            </p>
-          )}
-
-          {error && (
-            <p className="text-center text-red-400 py-10 bg-red-900/20 rounded-lg">
-              {error}
-            </p>
-          )}
-
-          {/* ยังไม่มีข้อมูลในระบบ */}
-          {!loading && !error && applicants.length === 0 && (
-            <p className="text-center text-gray-400 py-10 text-lg">
-              ยังไม่พบผู้สมัคร
-            </p>
-          )}
-
-          {/* มีข้อมูล แต่ค้นหาไม่เจอ */}
-          {!loading && !error && applicants.length > 0 && filtered.length === 0 && (
-            <p className="text-center text-gray-400 italic py-10 text-lg">
-              ไม่พบรายชื่อที่ตรงกับคำค้น
-            </p>
-          )}
-
-          {/* Table Scroll */}
-          {!loading && !error && filtered.length > 0 && (
-            <div className="max-h-[500px] overflow-y-auto border border-gray-700 rounded-lg">
-              <table className="min-w-full text-sm sm:text-base border-collapse">
-                <thead className="bg-[#1a1d3b] sticky top-0 z-10">
-                  <tr>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-300">ลำดับ</th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-300">ชื่อ-นามสกุล</th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-300">โรงเรียน</th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-300">ชั้นปี</th>
-                    <th className="py-4 px-6 text-left font-semibold text-gray-300">สถานะ</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filtered.map((person, index) => (
-                    <tr
-                      key={person.id}
-                      className="hover:bg-[#232757] transition-all border-b border-gray-700"
-                    >
-                      <td className="py-4 px-6">{index + 1}</td>
-                      <td className="py-4 px-6 font-medium">{person.name}</td>
-                      <td className="py-4 px-6 text-gray-300">{person.school}</td>
-                      <td className="py-4 px-6 text-gray-300">{person.grade}</td>
-                      <td className={`py-4 px-6 font-bold ${statusColor[person.status] || "text-gray-500"}`}>
-                        {person.status}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Error Message */}
+        {error && (
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-red-400">{error}</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Search Result */}
+        {hasSearched && !loading && (
+          <div className="max-w-2xl mx-auto">
+            {searchResult ? (
+              // พบข้อมูล
+              <div className="bg-[#1a1d3b] rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+                {/* Status Header */}
+                <div className={`${getStatusDisplay(searchResult.status).bg} ${getStatusDisplay(searchResult.status).border} border-b p-6`}>
+                  <div className="flex items-center gap-4">
+                    <div className={getStatusDisplay(searchResult.status).color}>
+                      {getStatusDisplay(searchResult.status).icon}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-1">
+                        สถานะการสมัคร
+                      </h3>
+                      <p className={`text-lg font-semibold ${getStatusDisplay(searchResult.status).color}`}>
+                        {getStatusDisplay(searchResult.status).text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Details */}
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">ชื่อ-นามสกุล</p>
+                      <p className="text-white font-medium">
+                        {searchResult.firstName} {searchResult.lastName}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">โรงเรียน</p>
+                      <p className="text-white font-medium">
+                        {searchResult.school || "ไม่ระบุ"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">ชั้นปี</p>
+                      <p className="text-white font-medium">
+                        {searchResult.grade || "ไม่ระบุ"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">อีเมล</p>
+                      <p className="text-white font-medium break-all">
+                        {searchResult.email || "ไม่ระบุ"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Additional Info based on status */}
+                  {searchResult.status === "success" && (
+                    <div className="mt-6 p-4 bg-green-400/10 border border-green-400/30 rounded-lg">
+                      <p className="text-green-400 text-sm">
+                        🎉 ยินดีด้วย! คุณผ่านการคัดเลือกเข้าค่าย ComCamp 24<sup>th</sup> แล้ว
+                        กรุณาตรวจสอบอีเมลเพื่อดูขั้นตอนถัดไป
+                      </p>
+                    </div>
+                  )}
+
+                  {searchResult.status === "pending" && (
+                    <div className="mt-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
+                      <p className="text-yellow-400 text-sm">
+                        ⏳ ใบสมัครของคุณอยู่ระหว่างการพิจารณา กรุณารอประกาศผลอย่างเป็นทางการ
+                      </p>
+                    </div>
+                  )}
+
+                  {searchResult.status === "declined" && (
+                    <div className="mt-6 p-4 bg-red-400/10 border border-red-400/30 rounded-lg">
+                      <p className="text-red-400 text-sm">
+                        ขออภัย คุณไม่ผ่านการคัดเลือกในครั้งนี้ ขอบคุณที่สนใจเข้าร่วมค่าย ComCamp
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // ไม่พบข้อมูล
+              <div className="bg-[#1a1d3b] border border-gray-700 rounded-xl p-8 text-center">
+                <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">
+                  ไม่พบข้อมูลผู้สมัคร
+                </h3>
+                <p className="text-gray-400 mb-4">
+                  ไม่พบชื่อ <span className="text-white font-medium">{firstName} {lastName}</span> ในระบบ
+                </p>
+                <p className="text-sm text-gray-500">
+                  กรุณาตรวจสอบชื่อ-นามสกุลที่กรอกให้ถูกต้อง<br />
+                  หากยังไม่ได้สมัคร กรุณาสมัครผ่านแบบฟอร์มสมัครเข้าค่าย
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Initial State */}
+        {!hasSearched && !loading && (
+          <div className="max-w-2xl mx-auto text-center py-10">
+            <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-400">
+              กรอกชื่อ-นามสกุลของคุณด้านบนเพื่อตรวจสอบสถานะการสมัคร
+            </p>
+          </div>
+        )}
+
       </div>
     </section>
-
   );
 };
 
