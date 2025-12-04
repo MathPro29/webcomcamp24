@@ -28,7 +28,7 @@ export default function App() {
         </PrivateRoute>}>
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/receipts" element={<Receipts />} />
+          {/* <Route path="/admin/receipts" element={<Receipts />} /> */}
           <Route path="/admin/inbox" element={<Inboxpage />} />
         </Route>
 

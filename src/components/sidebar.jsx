@@ -5,7 +5,6 @@ import { Home, Users, DollarSign, MessageSquare, ArrowLeft, Shield, X, LogOut, M
 const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: Home },
     { name: 'สมาชิก', path: '/admin/users', icon: Users },
-    { name: 'ตรวจสอบการโอนเงิน', path: '/admin/receipts', icon: DollarSign },
     { name: 'กล่องข้อความ', path: '/admin/inbox', icon: MessageSquare },
     { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: ArrowLeft },
 ];
