@@ -1,19 +1,19 @@
 // src/App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import MainLayout from "src/layouts/mainlayouts.jsx";
-import AdminLayout from "src/layouts/adminlayout.jsx";
-import PrivateRoute from "src/routes/privateroutes.jsx";
-import Home from "src/pages/home.jsx";
-import RegisterForm from "src/pages/registerform.jsx";
-import CheckRegistration from "src/pages/checkregistration.jsx";
-import Login from "src/pages/admin/login.jsx";
-import Dashboard from "src/pages/admin/dashboard.jsx";
-import ScrollToTop from "src/components/scrolltotop.jsx";
-import NotFound from "src/pages/notfound.jsx";
-import Users from "src/pages/admin/users.jsx";
-import Inboxpage from "src/pages/admin/inbox.jsx";
-import Payment from "src/pages/payment.jsx";
+import MainLayout from "./layouts/mainlayouts.jsx";
+import AdminLayout from "./layouts/adminlayout.jsx";
+import PrivateRoute from "./routes/privateroutes.jsx";
+import Home from "./pages/home.jsx";
+import RegisterForm from "./pages/registerform.jsx";
+import CheckRegistration from "./pages/checkregistration.jsx";
+import Login from "./pages/admin/login.jsx";
+import Dashboard from "./pages/admin/dashboard.jsx";
+import ScrollToTop from "./components/scrolltotop.jsx";
+import NotFound from "./pages/notfound.jsx";
+import Users from "./pages/admin/users.jsx";
+import Inboxpage from "./pages/admin/inbox.jsx";
+import Payment from "./pages/payment.jsx";
 
 export default function App() {
   return (
