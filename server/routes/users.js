@@ -9,6 +9,53 @@ const userRouter = express.Router();
 // ⚠️ สำคัญ: Routes เฉพาะเจาะจงต้องอยู่ก่อน /:id
 // ==========================================
 
+// 1. Search route - สำหรับ Name Checking (ต้องอยู่บนสุด)
+userRouter.get("/search", async (req, res) => {
+  try {
+    const { firstName, lastName } = req.query;
+    
+    console.log(`🔍 GET /api/users/search - ${firstName} ${lastName}`);
+    
+    if (!firstName || !lastName) {
+      return res.status(400).json({ 
+        found: false, 
+        error: "กรุณาระบุชื่อและนามสกุล" 
+      });
+    }
+
+    // ค้นหาแบบ case-insensitive และ trim whitespace
+    const user = await User.findOne({
+      firstName: { $regex: new RegExp(`^${firstName.trim()}$`, 'i') },
+      lastName: { $regex: new RegExp(`^${lastName.trim()}$`, 'i') }
+    })
+    .select("firstName lastName school grade status email")
+    .lean();
+    
+    if (!user) {
+      console.log(`❌ User not found: ${firstName} ${lastName}`);
+      return res.json({ found: false });
+    }
+    
+    console.log(`✅ User found: ${user.firstName} ${user.lastName} (${user.status})`);
+    res.json({ 
+      found: true, 
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        school: user.school,
+        grade: user.grade,
+        status: user.status,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error("❌ Error:", err);
+    res.status(500).json({ 
+      found: false, 
+      error: "เกิดข้อผิดพลาดในการค้นหา" 
+    });
+  }
+});
 
 // 2. Get all users - รวมข้อมูลสำหรับ Dashboard
 userRouter.get("/all", async (req, res) => {
@@ -108,7 +155,6 @@ userRouter.get("/:id", async (req, res) => {
 });
 
 // 6. Default route (ต้องอยู่ท้ายสุด!)
-// Apply a limiter so clients (admin UI refresh) cannot poll too frequently
 userRouter.get("/", getUsers);
 
 export default userRouter;

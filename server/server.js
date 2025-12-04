@@ -35,7 +35,7 @@ app.use("/api/users", userRouter);
 app.use("/api/register", limitsignup, registerRouter);
 app.use('/register', limitsignup);
 app.use('/api/auth', authRouter, loginlimit);
-app.use('/api/payments',paymentsRouter);
+app.use('/api/payments', paymentsRouter);
 
 // เชื่อมต่อ DB และเปิด server
 DBconnect().then(() => {
