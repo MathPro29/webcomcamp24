@@ -58,41 +58,28 @@ const Contact = () => {
                                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover/item:bg-yellow-500 transition-colors flex-shrink-0">
                                     <Phone className="w-5 h-5 text-yellow-600 group-hover/item:text-white transition-colors" />
                                 </div>
-                                <div>
+                                <div className="flex flex-col gap-2">
                                     <p className="text-xs text-gray-500 font-medium">โทรศัพท์</p>
-                                    <p className="text-gray-800 font-semibold">099-123-4567</p>
+                                    <p className="text-gray-800 font-semibold">093-215-0480 (พี่กาย)</p>
+                                    <p className="text-xs text-gray-500 font-medium">โทรศัพท์</p>
+                                    <p className="text-gray-800 font-semibold">080-676-8161 (พี่มีน)</p>
                                 </div>
+                                
                             </div>
+                            
 
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-white hover:bg-yellow-50 transition-colors group/item cursor-pointer shadow-sm">
-                                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover/item:bg-yellow-500 transition-colors flex-shrink-0">
-                                    <Mail className="w-5 h-5 text-yellow-600 group-hover/item:text-white transition-colors" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 font-medium">อีเมล</p>
-                                    <p className="text-gray-800 font-semibold text-sm">campinfo@example.com</p>
-                                </div>
-                            </div>
-
+                            
                             <div className="flex items-center gap-4 p-4 rounded-xl bg-white hover:bg-yellow-50 transition-colors group/item cursor-pointer shadow-sm">
                                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover/item:bg-yellow-500 transition-colors flex-shrink-0">
                                     <Facebook className="w-5 h-5 text-yellow-600 group-hover/item:text-white transition-colors" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-500 font-medium">Facebook</p>
-                                    <p className="text-gray-800 font-semibold">CampOfficial</p>
+                                    <p className="text-gray-800 font-semibold">Comcamp</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-white hover:bg-yellow-50 transition-colors group/item cursor-pointer shadow-sm">
-                                <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover/item:bg-yellow-500 transition-colors flex-shrink-0">
-                                    <MessageCircle className="w-5 h-5 text-yellow-600 group-hover/item:text-white transition-colors" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 font-medium">Line</p>
-                                    <p className="text-gray-800 font-semibold">@campofficial</p>
-                                </div>
-                            </div>
+                            
                         </div>
 
                         {/* Facebook Contact Button */}
