@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 
@@ -7,6 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
 
 import { notify } from "../utils/toast";
+
 export default function RegisterForm() {
     const [formData, setFormData] = useState({
         prefix: "",
@@ -40,6 +41,48 @@ export default function RegisterForm() {
     const [direction, setDirection] = useState(0); // +1 next, -1 back (for slide direction)
     const totalSteps = 4;
 
+    // Registration status
+    const [registrationStatus, setRegistrationStatus] = useState({
+        isOpen: true,
+        currentCount: 0,
+        maxCapacity: 100,
+        loading: true
+    });
+
+    // Check registration status on mount
+    useEffect(() => {
+        checkRegistrationStatus();
+    }, []);
+
+    const checkRegistrationStatus = async () => {
+        try {
+            // Fetch settings
+            const settingsRes = await axios.get('http://localhost:5000/api/settings');
+            const settings = settingsRes.data;
+
+            // Fetch current user count
+            const usersRes = await axios.get('http://localhost:5000/api/users/all');
+            const currentCount = usersRes.data.length;
+
+            setRegistrationStatus({
+                isOpen: settings.isRegistrationOpen,
+                currentCount: currentCount,
+                maxCapacity: settings.maxCapacity,
+                loading: false
+            });
+
+            // Show warning if registration is closed or full
+            if (!settings.isRegistrationOpen) {
+                notify.error('ขณะนี้ปิดรับสมัครแล้ว');
+            } else if (currentCount >= settings.maxCapacity) {
+                notify.error('ขออภัย! จำนวนผู้สมัครเต็มแล้ว');
+            }
+        } catch (error) {
+            console.error('Error checking registration status:', error);
+            setRegistrationStatus(prev => ({ ...prev, loading: false }));
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -68,7 +111,7 @@ export default function RegisterForm() {
     const validateStep = () => {
         const newErrors = {};
 
-        if (currentStep === 1) {
+        if (step === 1) {
             if (!formData.prefix) newErrors.prefix = "กรุณาเลือกคำนำหน้า";
             if (!formData.firstName) newErrors.firstName = "กรุณากรอกชื่อ";
             if (!formData.lastName) newErrors.lastName = "กรุณากรอกนามสกุล";
@@ -76,12 +119,12 @@ export default function RegisterForm() {
             if (!formData.birthDate) newErrors.birthDate = "กรุณาเลือกวันเกิด";
             if (!formData.gender) newErrors.gender = "กรุณาเลือกเพศ";
         }
-        if (currentStep === 2) {
+        if (step === 2) {
             if (!formData.school) newErrors.school = "กรุณากรอกชื่อโรงเรียน";
             if (!formData.grade) newErrors.grade = "กรุณาเลือกระดับชั้น";
             if (!formData.province) newErrors.province = "กรุณากรอกจังหวัด";
         }
-        if (currentStep === 3) {
+        if (step === 3) {
             if (!formData.phone) newErrors.phone = "กรุณากรอกเบอร์โทรศัพท์";
             if (!formData.email) newErrors.email = "กรุณากรอกอีเมล";
             if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
@@ -90,9 +133,9 @@ export default function RegisterForm() {
             if (!formData.emergencyContact) newErrors.emergencyContact = "กรุณากรอกชื่อผู้ติดต่อฉุกเฉิน";
             if (!formData.emergencyPhone) newErrors.emergencyPhone = "กรุณากรอกเบอร์ผู้ติดต่อฉุกเฉิน";
         }
-        if (currentStep === 4) {
+        if (step === 4) {
             if (!formData.shirtSize) newErrors.shirtSize = "กรุณาเลือกไซส์เสื้อ";
-            if (!formData.motivation) newErrors.motivation = "กรุณากรอกเหตุผลที่สมัคร";
+            if (!formData.laptop) newErrors.laptop = "กรุณาเลือกว่ามีโน๊ตบุ๊คหรือไม่";
         }
 
         setErrors(newErrors);
@@ -184,13 +227,44 @@ export default function RegisterForm() {
                         </div>
                     </div>
 
+                    {/* Registration Status Warning */}
+                    {!registrationStatus.loading && (!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity) && (
+                        <div className="mb-6 p-6 bg-red-500/20 border-2 border-red-500 rounded-2xl">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="text-3xl">🚫</div>
+                                <h3 className="text-xl font-bold text-red-400">
+                                    {!registrationStatus.isOpen ? 'ปิดรับสมัครแล้ว' : 'จำนวนผู้สมัครเต็มแล้ว'}
+                                </h3>
+                            </div>
+                            <p className="text-gray-300 ml-12">
+  {!registrationStatus.isOpen ? (
+    <>
+      ขณะนี้ระบบปิดรับสมัครชั่วคราว กรุณาติดตามข่าวสารเพิ่มเติมทางช่องทาง{" "}
+      <a 
+        href="https://www.facebook.com/CCCSMJU" 
+        target="_blank"
+        className="text-blue-400 underline"
+      >
+        Facebook Comcamp
+      </a>
+    </>
+  ) : (
+    <>
+      ขออภัย! จำนวนผู้สมัครเต็มแล้ว ({registrationStatus.currentCount}/{registrationStatus.maxCapacity} คน)
+    </>
+  )}
+</p>
+
+                        </div>
+                    )}
+
                     {!submitted ? (
                         <div className="space-y-6">
                             <AnimatePresence custom={direction} exitBeforeEnter initial={false}>
                                 {/* Wrap each step content in a motion.div keyed by step */}
                                 {step === 1 && (
                                     <Motion.div
-
+                                        className={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity ? 'opacity-50 pointer-events-none' : ''}
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">📝 ข้อมูลส่วนตัว</h3>
 
@@ -285,7 +359,7 @@ export default function RegisterForm() {
 
                                 {step === 2 && (
                                     <Motion.div
-
+                                        className={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity ? 'opacity-50 pointer-events-none' : ''}
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">🎓 ข้อมูลการศึกษา</h3>
 
@@ -321,7 +395,7 @@ export default function RegisterForm() {
 
                                 {step === 3 && (
                                     <Motion.div
-
+                                        className={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity ? 'opacity-50 pointer-events-none' : ''}
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">📞 ข้อมูลการติดต่อ</h3>
 
@@ -368,7 +442,7 @@ export default function RegisterForm() {
 
                                 {step === 4 && (
                                     <Motion.div
-
+                                        className={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity ? 'opacity-50 pointer-events-none' : ''}
                                     >
                                         <h3 className="text-xl font-bold text-yellow-400 mb-4">✨ ข้อมูลเพิ่มเติม</h3>
 
@@ -446,7 +520,13 @@ export default function RegisterForm() {
                                     ถัดไป →
                                 </Motion.button>
                             ) : (
-                                <Motion.button onClick={handleSubmit} whileHover={buttonHover} whileTap={buttonTap} className="cursor-pointer flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl shadow">
+                                <Motion.button 
+                                    onClick={handleSubmit} 
+                                    disabled={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity}
+                                    whileHover={buttonHover} 
+                                    whileTap={buttonTap} 
+                                    className="cursor-pointer flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow"
+                                >
                                     ส่งแบบฟอร์ม
                                 </Motion.button>
                             )}

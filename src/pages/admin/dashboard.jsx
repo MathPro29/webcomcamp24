@@ -146,7 +146,7 @@ export default function Dashboard() {
       const combined = Array.from(personHealthMap, ([name, d]) => ({ name, allergies: [...new Set(d.allergies)], medical: [...new Set(d.medical)] }));
       setAllergyList(combined);
 
-      // Grade - ✅ แก้ไขตรงนี้
+      
       const gradeCounts = data.reduce((acc, u) => {
         const g = (u.grade || 'ไม่ระบุ').toString().trim();
         acc[g] = (acc[g] || 0) + 1;
@@ -169,7 +169,7 @@ export default function Dashboard() {
 
       setGradeData(gradeDataArray);
 
-      // Schools (top 8) - with smart grouping
+      
       const schoolMap = new Map();
 
       data.forEach((u) => {
