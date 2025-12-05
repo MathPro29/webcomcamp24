@@ -35,7 +35,7 @@ export default function Dashboard() {
   const [showAllAllergies, setShowAllAllergies] = useState(false);
   const [statusData, setStatusData] = useState([]);
 
-  const API_BASE = 'http://localhost:5000';
+  const API_BASE = 'http://202.28.37.166:5000';
   // helper: laptop detection (stable, moved above fetch so fetch can call it)
   const hasLaptop = (u) => {
     const v = u.laptop;

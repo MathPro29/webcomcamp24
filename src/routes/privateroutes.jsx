@@ -7,7 +7,7 @@ export default function PrivateRoute({ children }) {
     const [checking, setChecking] = useState(true);
     const [isAuth, setIsAuth] = useState(false);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
 
     useEffect(() => {
         let mounted = true;

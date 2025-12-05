@@ -57,11 +57,11 @@ export default function RegisterForm() {
     const checkRegistrationStatus = async () => {
         try {
             // Fetch settings
-            const settingsRes = await axios.get('http://localhost:5000/api/settings');
+            const settingsRes = await axios.get('http://202.28.37.166:5000/api/settings');
             const settings = settingsRes.data;
 
             // Fetch current user count
-            const usersRes = await axios.get('http://localhost:5000/api/users/all');
+            const usersRes = await axios.get('http://202.28.37.166:5000/api/users/all');
             const currentCount = usersRes.data.length;
 
             setRegistrationStatus({
@@ -177,7 +177,7 @@ export default function RegisterForm() {
                 status: "pending",
             };
 
-            const res = await axios.post("http://localhost:5000/api/register", dataToSend);
+            const res = await axios.post("http://202.28.37.166:5000/api/register", dataToSend);
 
             console.log("สมัครสำเร็จ!", res.data);
             notify.success('สมัครสำเร็จ! ขอบคุณที่สมัครเข้าร่วม ค่ายComcamp 24th');

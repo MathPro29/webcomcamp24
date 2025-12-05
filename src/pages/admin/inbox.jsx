@@ -19,7 +19,7 @@ const Inboxpage = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = 'http://localhost:5000';
+  const API_BASE = 'http://202.28.37.166:5000';
 
   // Fetch current stats and settings
   useEffect(() => {
