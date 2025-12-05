@@ -181,18 +181,18 @@ const NameChecking = () => {
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 
+                className="cursor-pointer flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-600 
                          text-white font-semibold py-3 px-6 rounded-lg transition-all
                          flex items-center justify-center gap-2"
               >
                 <Search className="w-5 h-5" />
-                {loading ? "กำลังค้นหา..." : "ค้นหาสถานะ"}
+                {loading ? "กำลังค้นหา..." : "ค้นหา"}
               </button>
               
               {(searchResult || hasSearched) && (
                 <button
                   onClick={handleClear}
-                  className="bg-gray-700 hover:bg-gray-600 text-white font-semibold 
+                  className="cursor-pointer bg-gray-700 hover:bg-gray-600 text-white font-semibold 
                            py-3 px-6 rounded-lg transition-all"
                 >
                   ค้นหาใหม่
@@ -275,11 +275,11 @@ const NameChecking = () => {
 
                   {searchResult.status === "pending" && (
                     <div className="mt-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
-                      <p className="text-yellow-400 text-sm">
+                      <p className="text-yellow-400 text-sm text-center">
                         ⏳ ใบสมัครของคุณอยู่ระหว่างการพิจารณา กรุณารอประกาศผลอย่างเป็นทางการ
                       </p>
                       <p className="text-center items-center mt-2">
-                        หากยังไม่ได้ชำระเงิน <a href="/payment" className="text-[#e38e0e] hover:underline">ชำระเงินตอนนี้!</a>
+                        หรือ หากยังไม่ได้ชำระเงิน <a href="/payment" className="text-[#e38e0e] hover:underline">ชำระเงินตอนนี้!</a>
                       </p>
                     </div>
                     

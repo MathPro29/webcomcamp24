@@ -1,15 +1,87 @@
+// users.jsx
 import React, { useState, useEffect } from 'react';
-import { Search, Edit, Trash2, Eye, Filter, Download, UserPlus, RefreshCcw, CheckCircle, XCircle, Clock, User, Image, AlertCircle } from 'lucide-react';
+import {
+  Search, Edit2, Trash2, Eye, Filter, Download, RefreshCcw,
+  CheckCircle, XCircle, Clock, Image, AlertCircle } from 'lucide-react';
+import { notify } from '../../utils/toast.js';
 
+/* ---------------------------
+   Top-level small components
+   - ModalWrapper & FieldRow are defined at top-level
+   so EditUserModal and ViewUserModal can use them.
+   --------------------------- */
+function ModalWrapper({ children, onClose }) {
+  return (
+    <div
+      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+      onClick={() => onClose?.()}
+    >
+      <div
+        className="bg-white rounded-xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={() => onClose?.()}
+          className="cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+        >
+          ×
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FieldRow({ label, value, editingValue, onChange, type = 'text', textarea = false, options = null }) {
+  return (
+    <div>
+      <div className="text-sm text-gray-500">{label}</div>
+      {(!editingValue && !onChange) ? (
+        <div className="font-medium">{value ?? '-'}</div>
+      ) : textarea ? (
+        <textarea
+          value={editingValue ?? value ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 block w-full border rounded px-3 py-2"
+        />
+      ) : options ? (
+        <select
+          value={editingValue ?? value ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 block w-full border rounded px-3 py-2"
+        >
+          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+      ) : (
+        <input
+          type={type}
+          value={editingValue ?? value ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 block w-full border rounded px-3 py-2"
+        />
+      )}
+    </div>
+  );
+}
+
+/* ===========================
+   Main component
+   =========================== */
 export default function UnifiedUsersReceipts() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null); 
-  const [viewingUser, setViewingUser] = useState(null);
+  const [error, setError] = useState(null);
+
+  const [viewingUser, setViewingUser] = useState(null); // view-only modal
   const [viewingSlip, setViewingSlip] = useState(null);
+  const [editingUser, setEditingUser] = useState(null); // edit modal
+  const [saving, setSaving] = useState(false);
+
+  
+
   const [users, setUsers] = useState([]);
 
   const API_BASE = 'http://localhost:5000';
@@ -18,48 +90,36 @@ export default function UnifiedUsersReceipts() {
     fetchData();
   }, []);
 
+  /* ---------- Fetch / Data ---------- */
   const fetchData = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Fetch users
-      const usersRes = await fetch(`${API_BASE}/api/users/all`);
-      if (!usersRes.ok) {
-        throw new Error(`HTTP ${usersRes.status}: Failed to fetch users`);
-      }
+      const [usersRes, receiptsRes] = await Promise.all([
+        fetch(`${API_BASE}/api/users/all`),
+        fetch(`${API_BASE}/api/payments/admin/all`, { credentials: 'include' })
+      ]);
+
+      if (!usersRes.ok) throw new Error(`Users fetch failed (${usersRes.status})`);
+      if (!receiptsRes.ok) throw new Error(`Receipts fetch failed (${receiptsRes.status})`);
+
       const usersData = await usersRes.json();
-
-      // ✅ เพิ่ม validation
-      if (!Array.isArray(usersData)) {
-        console.error("❌ usersData is not an array:", usersData);
-        throw new Error("Invalid users data format");
-      }
-
-      // Fetch receipts
-      const receiptsRes = await fetch(`${API_BASE}/api/payments/admin/all`, {
-        credentials: 'include'
-      });
-      if (!receiptsRes.ok) {
-        throw new Error(`HTTP ${receiptsRes.status}: Failed to fetch receipts`);
-      }
       const receiptsData = await receiptsRes.json();
 
-      // ✅ เพิ่ม validation
-      if (!Array.isArray(receiptsData)) {
-        console.error("❌ receiptsData is not an array:", receiptsData);
-        throw new Error("Invalid receipts data format");
+      if (!Array.isArray(usersData) || !Array.isArray(receiptsData)) {
+        throw new Error('Invalid data format received from server');
       }
 
-      // Merge data - match receipts with users by email or phone
+      // Merge users + receipts (match by email or phone)
       const merged = usersData.map(u => {
-        const receipt = receiptsData.find(r =>
-          r.email === u.email || r.phone === u.phone
-        );
-
+        const receipt = receiptsData.find(r => r.email === u.email || r.phone === u.phone);
         return {
           id: u._id,
-          name: `${u.firstName} ${u.lastName}`,
+          _raw: u, // keep raw if needed
+          name: `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+          firstName: u.firstName,
+          lastName: u.lastName,
           email: u.email || '-',
           phone: u.phone || '-',
           school: u.school || '-',
@@ -75,29 +135,12 @@ export default function UnifiedUsersReceipts() {
       });
 
       setUsers(merged);
-      console.log(`✅ Successfully loaded ${merged.length} users`);
     } catch (err) {
-      console.error('Failed to fetch data:', err);
+      console.error('fetchData error:', err);
       setError(err.message || 'Failed to load data');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const fetchFullUser = async (id) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/users/${id}`, {
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const fullUser = await res.json();
-        fullUser.status = fullUser.status === 'success' ? 'approved' : fullUser.status === 'declined' ? 'rejected' : 'pending';
-        return fullUser;
-      }
-    } catch (err) {
-      console.error('Failed to fetch full user:', err);
-    }
-    return null;
   };
 
   const refreshData = async () => {
@@ -109,6 +152,7 @@ export default function UnifiedUsersReceipts() {
     setIsRefreshing(false);
   };
 
+  /* ---------- Helper / Small UI parts ---------- */
   const statusConfig = {
     approved: {
       label: 'อนุมัติแล้ว',
@@ -127,29 +171,56 @@ export default function UnifiedUsersReceipts() {
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.school.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm);
-    const matchStatus = statusFilter === 'all' || user.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      setSelectedUsers(filteredUsers.map(u => u.id));
-    } else {
-      setSelectedUsers([]);
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch {
+      return dateString;
     }
   };
 
-  const handleSelectOne = (id) => {
-    setSelectedUsers(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+  /* ---------- Fetch detailed user ---------- */
+  const fetchFullUser = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${id}`, { credentials: 'include' });
+      if (!res.ok) {
+        console.error('fetchFullUser failed', res.status);
+        return null;
+      }
+      const fullUser = await res.json();
+      // Map backend status to UI representation (if backend uses success/declined)
+      fullUser.status = fullUser.status === 'success' ? 'approved' : fullUser.status === 'declined' ? 'rejected' : 'pending';
+      return fullUser;
+    } catch (err) {
+      console.error('fetchFullUser error:', err);
+      return null;
+    }
   };
 
+  /* ---------- Open modals ---------- */
+  const openUserModal = async (user) => {
+    const fullUser = await fetchFullUser(user.id);
+    if (fullUser) {
+      // Attach receipt if we had merged it previously
+      fullUser.receipt = user.receipt ?? null;
+      setViewingUser(fullUser);
+    } else {
+      alert('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+    }
+  };
+
+  const handleEdit = async (id) => {
+    const user = await fetchFullUser(id);
+    if (user) {
+      setEditingUser(user);
+    } else {
+      alert('ไม่สามารถโหลดข้อมูลผู้ใช้สำหรับแก้ไขได้');
+    }
+  };
+
+  /* ---------- Actions ---------- */
   const handleStatusChange = async (userId, newStatus) => {
     const statusMap = { approved: 'success', pending: 'pending', rejected: 'declined' };
     try {
@@ -160,12 +231,12 @@ export default function UnifiedUsersReceipts() {
         body: JSON.stringify({ status: statusMap[newStatus] })
       });
       if (res.ok) {
+        // Update local list fast
         setUsers(prev => prev.map(u => u.id === userId ? { ...u, status: newStatus } : u));
         if (viewingUser && viewingUser._id === userId) {
           setViewingUser(prev => ({ ...prev, status: newStatus }));
         }
-
-        // Also update receipt status if exists
+        // update receipt status too (best-effort)
         const user = users.find(u => u.id === userId);
         if (user?.receipt) {
           await fetch(`${API_BASE}/api/payments/${user.receipt.id}/status`, {
@@ -175,79 +246,49 @@ export default function UnifiedUsersReceipts() {
             body: JSON.stringify({ status: newStatus })
           });
         }
-
-        setTimeout(() => fetchData(), 300);
+      } else {
+        console.error('status change failed', res.status);
       }
     } catch (err) {
-      console.error('Failed to update status:', err);
+      console.error('handleStatusChange error', err);
     }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('คุณต้องการลบผู้สมัครนี้ใช่หรือไม่?')) {
-      try {
-        const res = await fetch(`${API_BASE}/api/users/${id}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        if (res.ok) {
-          setUsers(prev => prev.filter(u => u.id !== id));
-          setSelectedUsers(prev => prev.filter(i => i !== id));
-          if (viewingUser && viewingUser._id === id) {
-            setViewingUser(null);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to delete user:', err);
+    if (!confirm('คุณต้องการลบผู้สมัครนี้ใช่หรือไม่?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${id}`, { method: 'DELETE', credentials: 'include' });
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u.id !== id));
+        setSelectedUsers(prev => prev.filter(i => i !== id));
+        if (viewingUser && viewingUser._id === id) setViewingUser(null);
+      } else {
+        toast.error('ลบไม่สำเร็จ');
       }
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedUsers.length === 0) return;
-    if (confirm(`คุณต้องการลบผู้สมัคร ${selectedUsers.length} คนใช่หรือไม่?`)) {
-      try {
-        await Promise.all(
-          selectedUsers.map(id =>
-            fetch(`${API_BASE}/api/users/${id}`, {
-              method: 'DELETE',
-              credentials: 'include'
-            })
-          )
-        );
-        setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)));
-        setSelectedUsers([]);
-      } catch (err) {
-        console.error('Failed to delete users:', err);
-      }
+    } catch (err) {
+      console.error('delete error', err);
+      toast.error('เกิดข้อผิดพลาดในการลบ');
     }
   };
 
   const deleteReceipt = async (receiptId, userId) => {
-    const removeUser = confirm('ต้องการลบชื่อผู้สมัครพร้อมสลิปหรือไม่?\n\nกด OK = ลบทั้งชื่อและสลิป, กด Cancel = ลบเฉพาะสลิป');
+    const removeUser = confirm('ต้องการลบชื่อผู้สมัครพร้อมสลิปหรือไม่?\n\nOK = ลบทั้งชื่อและสลิป, Cancel = ลบเฉพาะสลิป');
     if (!confirm('ยืนยันการลบสลิปนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
-
     try {
       const url = `${API_BASE}/api/payments/${receiptId}${removeUser ? '?removeUser=true' : ''}`;
-      const res = await fetch(url, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+      const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        if (data.userDeleted) {
-          setUsers(prev => prev.filter(u => u.id !== userId));
-        } else {
-          setUsers(prev => prev.map(u => u.id === userId ? { ...u, receipt: null } : u));
-        }
-        setTimeout(() => fetchData(), 500);
-        alert(data.userDeleted ? 'ลบชื่อและสลิปเรียบร้อย' : 'ลบสลิปเรียบร้อย');
+        if (data.userDeleted) setUsers(prev => prev.filter(u => u.id !== userId));
+        else setUsers(prev => prev.map(u => u.id === userId ? { ...u, receipt: null } : u));
+        setViewingUser(null);
+       toast.success(data.userDeleted ? 'ลบชื่อและสลิปเรียบร้อย' : 'ลบสลิปเรียบร้อย');
       } else {
-        alert(data.error || data.message || 'ลบสลิปไม่สำเร็จ');
+        toast.error(data.error || 'ลบสลิปไม่สำเร็จ');
       }
     } catch (err) {
-      console.error('Failed to delete receipt:', err);
-      alert('เกิดข้อผิดพลาดในการลบสลิป');
+      console.error('deleteReceipt error', err);
+      toast.error('เกิดข้อผิดพลาดในการลบสลิป');
     }
   };
 
@@ -258,50 +299,99 @@ export default function UnifiedUsersReceipts() {
     link.click();
   };
 
-  const exportData = () => {
-    const csvContent = [
-      ['ID', 'ชื่อ', 'อีเมล', 'เบอร์โทร', 'โรงเรียน', 'สถานะ', 'มีสลิป', 'สถานะสลิป'],
-      ...filteredUsers.map(u => [
-        u.id,
-        u.name,
-        u.email,
-        u.phone,
-        u.school,
-        statusConfig[u.status].label,
-        u.receipt ? 'มี' : 'ไม่มี',
-        u.receipt ? statusConfig[u.receipt.status].label : '-'
-      ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'users_receipts_export.csv';
-    link.click();
-  };
-
-  const openUserModal = async (user) => {
-    const fullUser = await fetchFullUser(user.id);
-    if (fullUser) {
-      fullUser.receipt = user.receipt;
-      setViewingUser(fullUser);
+  /* Bulk delete */
+  const handleBulkDelete = async () => {
+    if (selectedUsers.length === 0) return;
+    if (!confirm(`คุณต้องการลบผู้สมัคร ${selectedUsers.length} คนใช่หรือไม่?`)) return;
+    try {
+      await Promise.all(selectedUsers.map(id => fetch(`${API_BASE}/api/users/${id}`, { method: 'DELETE', credentials: 'include' })));
+      setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)));
+      setSelectedUsers([]);
+    } catch (err) {
+      console.error('bulk delete error', err);
     }
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  /* ---------- Edit Modal Save ---------- */
+  const handleSaveEdit = async (updatedFields) => {
+    if (!editingUser) return;
+    setSaving(true);
+    try {
+      const id = editingUser._id ?? editingUser.id;
+      // Normalize laptop to Yes/No (adjust if backend expects other)
+      if (updatedFields.laptop !== undefined) {
+        const lv = String(updatedFields.laptop).toLowerCase();
+        updatedFields.laptop = (lv === 'yes' || lv === 'y') ? 'Yes' : (lv === 'no' || lv === 'n' ? 'No' : updatedFields.laptop);
+      }
+
+      const res = await fetch(`${API_BASE}/api/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updatedFields)
+      });
+
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(txt || 'Update failed');
+      }
+
+      const updated = await res.json();
+
+      // Map backend status
+      const mappedStatus = updated.status === 'success' ? 'approved' : updated.status === 'declined' ? 'rejected' : 'pending';
+
+      // Update local users list (optimized)
+      setUsers(prev => prev.map(u => u.id === (updated._id ?? updated.id) ? {
+        ...u,
+        name: `${updated.firstName || ''} ${updated.lastName || ''}`.trim(),
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        email: updated.email || u.email,
+        phone: updated.phone || u.phone,
+        school: updated.school || u.school,
+        status: mappedStatus
+      } : u));
+
+      // Update viewingUser/editingUser
+      setEditingUser(null);
+      setViewingUser(prev => prev && (prev._id === updated._id || prev._id === updated.id) ? { ...prev, ...updated, status: mappedStatus } : prev);
+
+      notify.success('บันทึกข้อมูลเรียบร้อย');
+    } catch (err) {
+      console.error('handleSaveEdit error', err);
+      notify.error('เกิดข้อผิดพลาดในการบันทึก: ' + (err.message || 'Unknown'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /* ---------- Filtering / selection ---------- */
+  const filteredUsers = users.filter(user => {
+    const term = searchTerm.trim().toLowerCase();
+    const matchSearch = !term || (
+      (user.name || '').toLowerCase().includes(term) ||
+      (user.email || '').toLowerCase().includes(term) ||
+      (user.school || '').toLowerCase().includes(term) ||
+      (user.phone || '').includes(term)
+    );
+    const matchStatus = statusFilter === 'all' || user.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) setSelectedUsers(filteredUsers.map(u => u.id));
+    else setSelectedUsers([]);
+  };
+
+  const handleSelectOne = (id) => {
+    setSelectedUsers(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
   const usersWithReceipts = users.filter(u => u.receipt).length;
-  const usersWithoutReceipts = users.length - usersWithReceipts;
   const pendingReceipts = users.filter(u => u.receipt?.status === 'pending').length;
 
+  /* ---------- Render ---------- */
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -312,7 +402,6 @@ export default function UnifiedUsersReceipts() {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">จัดการผู้สมัครและตรวจสอบสลิป</h1>
               <p className="text-gray-600">ทั้งหมด {users.length} คน | กำลังแสดง {filteredUsers.length} คน</p>
             </div>
-            
           </div>
         </div>
 
@@ -368,7 +457,6 @@ export default function UnifiedUsersReceipts() {
         {/* Filters & Actions */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
@@ -380,7 +468,6 @@ export default function UnifiedUsersReceipts() {
               />
             </div>
 
-            {/* Status Filter */}
             <div className="relative">
               <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <select
@@ -395,7 +482,6 @@ export default function UnifiedUsersReceipts() {
               </select>
             </div>
 
-            {/* Refresh Button */}
             <button
               onClick={refreshData}
               disabled={isRefreshing}
@@ -405,9 +491,20 @@ export default function UnifiedUsersReceipts() {
               {isRefreshing ? 'กำลังโหลด...' : 'รีเฟรช'}
             </button>
 
-            {/* Export Button */}
             <button
-              onClick={exportData}
+              onClick={() => {
+                // export CSV minimal (reuse previous logic simplified)
+                const csvContent = [
+                  ['ID', 'ชื่อ', 'อีเมล', 'เบอร์โทร', 'โรงเรียน', 'สถานะ', 'มีสลิป'],
+                  ...filteredUsers.map(u => [u.id, u.name, u.email, u.phone, u.school, statusConfig[u.status].label, u.receipt ? 'มี' : 'ไม่มี'])
+                ].map(r => r.join(',')).join('\n');
+
+                const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'users_receipts_export.csv';
+                link.click();
+              }}
               className="cursor-pointer flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
             >
               <Download size={20} />
@@ -421,53 +518,27 @@ export default function UnifiedUsersReceipts() {
               <span className="text-blue-800 font-medium">เลือกแล้ว {selectedUsers.length} คน</span>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => {
-                    selectedUsers.forEach(id => handleStatusChange(id, 'approved'));
-                    setSelectedUsers([]);
-                  }}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  onClick={() => { selectedUsers.forEach(id => handleStatusChange(id, 'approved')); setSelectedUsers([]); }}
+                  className="cursor-pointer flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <CheckCircle size={16} />
                   อนุมัติทั้งหมด
                 </button>
                 <button
-                  onClick={() => {
-                    selectedUsers.forEach(id => handleStatusChange(id, 'rejected'));
-                    setSelectedUsers([]);
-                  }}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  onClick={() => { selectedUsers.forEach(id => handleStatusChange(id, 'rejected')); setSelectedUsers([]); }}
+                  className="cursor-pointer flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <XCircle size={16} />
                   ปฏิเสธทั้งหมด
                 </button>
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="cursor-pointer flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <Trash2 size={16} />
                   ลบที่เลือก
                 </button>
               </div>
-            </div>
-          )}
-
-          {/* Quick Actions - Pending Receipts */}
-          {pendingReceipts > 0 && (
-            <div className="mt-4 flex flex-wrap items-center gap-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-              <span className="text-purple-800 font-medium">
-                มี {pendingReceipts} รายการสลิปรอตรวจสอบ
-              </span>
-              <button
-                onClick={() => {
-                  users
-                    .filter(u => u.receipt?.status === 'pending')
-                    .forEach(u => handleStatusChange(u.id, 'approved'));
-                }}
-                className="cursor-pointer flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                <CheckCircle size={16} />
-                อนุมัติสลิปรอตรวจทั้งหมด
-              </button>
             </div>
           )}
         </div>
@@ -507,10 +578,7 @@ export default function UnifiedUsersReceipts() {
                   </tr>
                 ) : (
                   filteredUsers.map((user, index) => (
-                    <tr
-                      key={user.id}
-                      className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
-                    >
+                    <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
@@ -527,27 +595,15 @@ export default function UnifiedUsersReceipts() {
                       <td className="px-6 py-4 text-sm text-gray-600">{user.school}</td>
                       <td className="px-6 py-4">
                         {user.receipt ? (
-                          <button
-                            onClick={() => setViewingSlip({ ...user.receipt, userName: user.name, userId: user.id })}
-                            className="relative group cursor-pointer"
-                          >
-                            <img
-                              src={user.receipt.slipImage}
-                              alt="สลิป"
-                              className="w-12 h-12 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all cursor-pointer"
-                            />
+                          <button onClick={() => setViewingSlip({ ...user.receipt, userName: user.name, userId: user.id })} className="relative group cursor-pointer">
+                            <img src={user.receipt.slipImage} alt="สลิป" className="w-12 h-12 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-500 transition-all cursor-pointer" />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
                               <Image size={20} className="text-white" />
                             </div>
-                            {user.receipt.status === 'pending' && (
-                              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                            )}
+                            {user.receipt.status === 'pending' && <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>}
                           </button>
                         ) : (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <XCircle size={14} />
-                            ไม่มีสลิป
-                          </span>
+                          <span className="text-xs text-gray-400 flex items-center gap-1"><XCircle size={14} /> ไม่มีสลิป</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -563,29 +619,21 @@ export default function UnifiedUsersReceipts() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => openUserModal(user)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="ดูรายละเอียด"
-                          >
+                          <button onClick={() => openUserModal(user)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="ดูรายละเอียด">
                             <Eye size={18} />
                           </button>
+
                           {user.receipt && (
-                            <>
-                              <button
-                                onClick={() => downloadSlip(user.receipt.slipImage, user.name)}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="ดาวน์โหลดสลิป"
-                              >
-                                <Download size={18} />
-                              </button>
-                            </>
+                            <button onClick={() => downloadSlip(user.receipt.slipImage, user.name)} className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="ดาวน์โหลดสลิป">
+                              <Download size={18} />
+                            </button>
                           )}
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="ลบผู้สมัคร"
-                          >
+
+                          <button onClick={() => handleEdit(user.id)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="แก้ไข">
+                            <Edit2 size={18} />
+                          </button>
+
+                          <button onClick={() => handleDelete(user.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="ลบผู้สมัคร">
                             <Trash2 size={18} />
                           </button>
                         </div>
@@ -599,195 +647,36 @@ export default function UnifiedUsersReceipts() {
         </div>
       </div>
 
-      {/* Modal แสดงรายละเอียดผู้ใช้ */}
+      {/* View User Modal */}
       {viewingUser && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-          onClick={() => setViewingUser(null)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setViewingUser(null)}
-              className="cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
-            >
-              ×
-            </button>
-
-            <h3 className="text-xl font-bold mb-4">รายละเอียดผู้สมัคร</h3>
-
-            {/* User Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <div>
-                <div className="text-sm text-gray-500">คำนำหน้า</div>
-                <div className="font-medium">{viewingUser.prefix || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">ชื่อ</div>
-                <div className="font-medium">{viewingUser.firstName || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">นามสกุล</div>
-                <div className="font-medium">{viewingUser.lastName || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">ชื่อเล่น</div>
-                <div className="font-medium">{viewingUser.nickname || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">วันเกิด</div>
-                <div className="font-medium">{formatDate(viewingUser.birthDate)}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">อายุ</div>
-                <div className="font-medium">{viewingUser.age || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">เพศ</div>
-                <div className="font-medium">{viewingUser.gender || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">โรงเรียน</div>
-                <div className="font-medium">{viewingUser.school || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">ชั้น</div>
-                <div className="font-medium">{viewingUser.grade || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">จังหวัด</div>
-                <div className="font-medium">{viewingUser.province || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">เบอร์โทร</div>
-                <div className="font-medium">{viewingUser.phone || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">เบอร์โทรผู้ปกครอง</div>
-                <div className="font-medium">{viewingUser.parentPhone || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">อีเมล</div>
-                <div className="font-medium">{viewingUser.email || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Line ID</div>
-                <div className="font-medium">{viewingUser.lineId || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">ขนาดเสื้อ</div>
-                <div className="font-medium">{viewingUser.shirtSize || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">อาการแพ้</div>
-                <div className="font-medium">{viewingUser.allergies || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">โรคประจำตัว</div>
-                <div className="font-medium">{viewingUser.medicalConditions || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">ผู้ติดต่อฉุกเฉิน</div>
-                <div className="font-medium">{viewingUser.emergencyContact || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">เบอร์โทรฉุกเฉิน</div>
-                <div className="font-medium">{viewingUser.emergencyPhone || '-'}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">สถานะ</div>
-                <div className="flex items-center gap-2 mt-1">
-                  {statusConfig[viewingUser.status]?.icon}
-                  <span className="font-medium">{statusConfig[viewingUser.status]?.label}</span>
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">มีแล็ปท็อป</div>
-                <div className="font-medium">{viewingUser.laptop === 'Yes' ? 'ใช่' : viewingUser.laptop === 'No' ? 'ไม่' : '-'}</div>
-              </div>
-            </div>
-
-            {/* Receipt Section */}
-            {viewingUser.receipt && (
-              <div className="border-t pt-4">
-                <h4 className="text-lg font-bold mb-3">ข้อมูลสลิปการชำระเงิน</h4>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <div className="text-sm text-gray-500">วันที่อัพโหลด</div>
-                    <div className="font-medium">
-                      {new Date(viewingUser.receipt.uploadDate).toLocaleString('th-TH')}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">สถานะสลิป</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      {statusConfig[viewingUser.receipt.status]?.icon}
-                      <span className="font-medium">{statusConfig[viewingUser.receipt.status]?.label}</span>
-                    </div>
-                  </div>
-                  {viewingUser.receipt.note && (
-                    <div className="col-span-2">
-                      <div className="text-sm text-gray-500">หมายเหตุ</div>
-                      <div className="font-medium flex items-center gap-1">
-                        <AlertCircle size={14} />
-                        {viewingUser.receipt.note}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <img
-                  src={viewingUser.receipt.slipImage}
-                  alt="สลิปการชำระเงิน"
-                  className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200 mb-4"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => downloadSlip(viewingUser.receipt.slipImage, viewingUser.firstName)}
-                    className="cursor-pointer flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
-                    <Download size={18} />
-                    ดาวน์โหลดสลิป
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm('ต้องการลบสลิปนี้?')) {
-                        deleteReceipt(viewingUser.receipt.id, viewingUser._id);
-                        setViewingUser(null);
-                      }
-                    }}
-                    className="cursor-pointer flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
-                    <Trash2 size={18} />
-                    ลบสลิป
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <ModalWrapper onClose={() => setViewingUser(null)}>
+          <ViewUserModal
+            viewingUser={viewingUser}
+            setViewingUser={setViewingUser}
+            deleteReceipt={deleteReceipt}
+            downloadSlip={downloadSlip}
+            statusConfig={statusConfig}
+          />
+        </ModalWrapper>
       )}
 
-      {/* Modal แสดงสลิป */}
+      {/* Edit User Modal */}
+      {editingUser && (
+        <ModalWrapper onClose={() => { if (!saving) setEditingUser(null); }}>
+          <EditUserModal
+            editingUser={editingUser}
+            setEditingUser={setEditingUser}
+            onSave={handleSaveEdit}
+            saving={saving}
+          />
+        </ModalWrapper>
+      )}
+
+      {/* View Slip Modal */}
       {viewingSlip && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-          onClick={() => setViewingSlip(null)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setViewingSlip(null)}
-              className="cursor-pointer absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
-            >
-              ×
-            </button>
-
+        <ModalWrapper onClose={() => setViewingSlip(null)}>
+          <div>
             <h3 className="text-xl font-bold mb-4">รายละเอียดสลิปการชำระเงิน</h3>
-
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <div className="text-sm text-gray-500">ชื่อผู้สมัคร</div>
@@ -795,9 +684,7 @@ export default function UnifiedUsersReceipts() {
               </div>
               <div>
                 <div className="text-sm text-gray-500">วันที่อัพโหลด</div>
-                <div className="font-medium">
-                  {new Date(viewingSlip.uploadDate).toLocaleString('th-TH')}
-                </div>
+                <div className="font-medium">{new Date(viewingSlip.uploadDate).toLocaleString('th-TH')}</div>
               </div>
               <div>
                 <div className="text-sm text-gray-500">สถานะสลิป</div>
@@ -816,43 +703,20 @@ export default function UnifiedUsersReceipts() {
                 </div>
               )}
             </div>
-
-            <img
-              src={viewingSlip.slipImage}
-              alt="สลิปการชำระเงิน"
-              className="w-full rounded-lg border-2 border-gray-200 mb-4"
-            />
-
+            <img src={viewingSlip.slipImage} alt="สลิปการชำระเงิน" className="w-full rounded-lg border-2 border-gray-200 mb-4" />
             <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  handleStatusChange(viewingSlip.userId, 'approved');
-                  setViewingSlip(null);
-                }}
-                className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-              >
-                <CheckCircle size={20} />
-                อนุมัติ
+              <button onClick={() => { handleStatusChange(viewingSlip.userId, 'approved'); setViewingSlip(null); }} className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <CheckCircle size={20} /> อนุมัติ
               </button>
-              <button
-                onClick={() => {
-                  handleStatusChange(viewingSlip.userId, 'rejected');
-                  setViewingSlip(null);
-                }}
-                className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-              >
-                <XCircle size={20} />
-                ปฏิเสธ
+              <button onClick={() => { handleStatusChange(viewingSlip.userId, 'rejected'); setViewingSlip(null); }} className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                <XCircle size={20} /> ปฏิเสธ
               </button>
-              <button
-                onClick={() => downloadSlip(viewingSlip.slipImage, viewingSlip.userName)}
-                className="cursor-pointer flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors"
-              >
+              <button onClick={() => downloadSlip(viewingSlip.slipImage, viewingSlip.userName)} className="cursor-pointer flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors">
                 <Download size={20} />
               </button>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
 
       {/* Loading overlay */}
@@ -864,6 +728,248 @@ export default function UnifiedUsersReceipts() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ===========================
+   ViewUserModal Component
+   - read-only detail view (ใช้ viewingUser)
+   =========================== */
+function ViewUserModal({ viewingUser, setViewingUser, deleteReceipt, downloadSlip, statusConfig }) {
+  const formatDateSafe = (d) => {
+    if (!d) return '-';
+    try {
+      const dt = new Date(d);
+      return dt.toLocaleDateString('th-TH');
+    } catch {
+      return d;
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-xl font-bold mb-4">รายละเอียดผู้สมัคร</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div>
+          <div className="text-sm text-gray-500">คำนำหน้า</div>
+          <div className="font-medium">{viewingUser.prefix || '-'}</div>
+        </div>
+        <div>
+          <div className="text-sm text-gray-500">ชื่อ</div>
+          <div className="font-medium">{viewingUser.firstName || '-'}</div>
+        </div>
+        <div>
+          <div className="text-sm text-gray-500">นามสกุล</div>
+          <div className="font-medium">{viewingUser.lastName || '-'}</div>
+        </div>
+        <div>
+          <div className="text-sm text-gray-500">ชื่อเล่น</div>
+          <div className="font-medium">{viewingUser.nickname || '-'}</div>
+        </div>
+        <div>
+          <div className="text-sm text-gray-500">วันเกิด</div>
+          <div className="font-medium">{formatDateSafe(viewingUser.birthDate)}</div>
+        </div>
+        <div>
+          <div className="text-sm text-gray-500">อายุ</div>
+          <div className="font-medium">{viewingUser.age || '-'} ปี</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">เพศ</div>
+          <div className="font-medium">{viewingUser.gender || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">โรงเรียน</div>
+          <div className="font-medium">{viewingUser.school || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">ชั้น</div>
+          <div className="font-medium">{viewingUser.grade || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">จังหวัด</div>
+          <div className="font-medium">{viewingUser.province || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">เบอร์โทร</div>
+          <div className="font-medium">{viewingUser.phone || '-'}</div>
+        </div>
+
+
+        <div>
+          <div className="text-sm text-gray-500">อีเมล</div>
+          <div className="font-medium">{viewingUser.email || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">Line ID</div>
+          <div className="font-medium">{viewingUser.lineId || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">ขนาดเสื้อ</div>
+          <div className="font-medium">{viewingUser.shirtSize || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">อาการแพ้</div>
+          <div className="font-medium">{viewingUser.allergies || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">โรคประจำตัว</div>
+          <div className="font-medium">{viewingUser.medicalConditions || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">ผู้ติดต่อฉุกเฉิน</div>
+          <div className="font-medium">{viewingUser.emergencyContact || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">เบอร์โทรฉุกเฉิน</div>
+          <div className="font-medium">{viewingUser.emergencyPhone || '-'}</div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">สถานะ</div>
+          <div className="flex items-center gap-2 mt-1">
+            {statusConfig[viewingUser.status]?.icon}
+            <span className="font-medium">{statusConfig[viewingUser.status]?.label}</span>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-sm text-gray-500">มีแล็ปท็อป</div>
+          <div className="font-medium">{String(viewingUser.laptop).toLowerCase() === 'yes' ? 'ใช่' : String(viewingUser.laptop).toLowerCase() === 'no' ? 'ไม่' : (viewingUser.laptop || '-')}</div>
+        </div>
+      </div>
+
+      {/* Receipt Section */}
+      {viewingUser.receipt && (
+        <div className="border-t pt-4">
+          <h4 className="text-lg font-bold mb-3">ข้อมูลสลิปการชำระเงิน</h4>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <div className="text-sm text-gray-500">วันที่อัพโหลด</div>
+              <div className="font-medium">{new Date(viewingUser.receipt.uploadDate).toLocaleString('th-TH')}</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">สถานะสลิป</div>
+              <div className="flex items-center gap-2 mt-1">
+                {statusConfig[viewingUser.receipt.status]?.icon}
+                <span className="font-medium">{statusConfig[viewingUser.receipt.status]?.label}</span>
+              </div>
+            </div>
+            {viewingUser.receipt.note && (
+              <div className="col-span-2">
+                <div className="text-sm text-gray-500">หมายเหตุ</div>
+                <div className="font-medium flex items-center gap-1">
+                  <AlertCircle size={14} />
+                  {viewingUser.receipt.note}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <img src={viewingUser.receipt.slipImage} alt="สลิปการชำระเงิน" className="w-full max-w-md mx-auto rounded-lg border-2 border-gray-200 mb-4" />
+
+          <div className="flex gap-2">
+            <button onClick={() => downloadSlip(viewingUser.receipt.slipImage, viewingUser.firstName)} className="cursor-pointer flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              <Download size={18} /> ดาวน์โหลดสลิป
+            </button>
+            <button onClick={() => { if (confirm('ต้องการลบสลิปนี้?')) { deleteReceipt(viewingUser.receipt.id, viewingUser._id); setViewingUser(null); } }} className="cursor-pointer flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              <Trash2 size={18} /> ลบสลิป
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===========================
+   EditUserModal Component
+   - editable form (ใช้ editingUser)
+   - onSave(updatedFields) จะถูกเรียกเมื่อกดบันทึก
+   =========================== */
+function EditUserModal({ editingUser, setEditingUser, onSave, saving }) {
+  const [form, setForm] = useState(null);
+
+  useEffect(() => {
+    if (editingUser) {
+      setForm({
+        prefix: editingUser.prefix || '',
+        firstName: editingUser.firstName || '',
+        lastName: editingUser.lastName || '',
+        nickname: editingUser.nickname || '',
+        birthDate: editingUser.birthDate ? editingUser.birthDate.split('T')[0] : '',
+        age: editingUser.age ?? '',
+        gender: editingUser.gender || '',
+        school: editingUser.school || '',
+        grade: editingUser.grade || '',
+        province: editingUser.province || '',
+        phone: editingUser.phone || '',
+        parentPhone: editingUser.parentPhone || '',
+        email: editingUser.email || '',
+        lineId: editingUser.lineId || '',
+        shirtSize: editingUser.shirtSize || '',
+        allergies: editingUser.allergies || '',
+        medicalConditions: editingUser.medicalConditions || '',
+        emergencyContact: editingUser.emergencyContact || '',
+        emergencyPhone: editingUser.emergencyPhone || '',
+        status: editingUser.status || 'pending',
+        laptop: editingUser.laptop ? String(editingUser.laptop).toLowerCase() : ''
+      });
+    } else {
+      setForm(null);
+    }
+  }, [editingUser]);
+
+  const handleChange = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+
+  if (!editingUser || !form) return null;
+
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold">แก้ไขข้อมูลผู้สมัคร</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <FieldRow label="คำนำหน้า" editingValue={form.prefix} onChange={(v) => handleChange('prefix', v)} options={[{value:'', label:'เลือก'},{value:'นาย',label:'นาย'},{value:'นางสาว',label:'นางสาว'},{value:'เด็กชาย',label:'เด็กชาย'},{value:'เด็กหญิง',label:'เด็กหญิง'}]} />
+        <FieldRow label="ชื่อ" editingValue={form.firstName} onChange={(v) => handleChange('firstName', v)} />
+        <FieldRow label="นามสกุล" editingValue={form.lastName} onChange={(v) => handleChange('lastName', v)} />
+        <FieldRow label="ชื่อเล่น" editingValue={form.nickname} onChange={(v) => handleChange('nickname', v)} />
+<FieldRow label="วันเกิด" editingValue={form.birthDate} onChange={(v) => handleChange('birthDate', v)} type="date" /> 
+        <FieldRow label="อายุ" editingValue={form.age} onChange={(v) => handleChange('age', Number(v || 0))} type="number" />
+        <FieldRow label="เพศ" editingValue={form.gender} onChange={(v) => handleChange('gender', v)} options={[{value:'', label:'เลือก'},{value:'ชาย',label:'ชาย'},{value:'หญิง',label:'หญิง'},{value:'ไม่ระบุ',label:'ไม่ระบุ'}]} />
+        <FieldRow label="โรงเรียน" editingValue={form.school} onChange={(v) => handleChange('school', v)} />
+        <FieldRow label="ชั้น" editingValue={form.grade} onChange={(v) => handleChange('grade', v)} options={[{value:'', label:'เลือก'},{value:'ม.4',label:'ม.4'},{value:'ม.5',label:'ม.5'},{value:'ม.6',label:'ม.6'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 1',label:'ประกาศนียบัตรวิชาชีพปีที่ 1'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 2',label:'ประกาศนียบัตรวิชาชีพปีที่ 2'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 3',label:'ประกาศนียบัตรวิชาชีพปีที่ 3'}]}/>
+        <FieldRow label="จังหวัด" editingValue={form.province} onChange={(v) => handleChange('province', v)} />
+        <FieldRow label="เบอร์โทร" editingValue={form.phone} onChange={(v) => handleChange('phone', v)} />
+        <FieldRow label="อีเมล" editingValue={form.email} onChange={(v) => handleChange('email', v)} type="email" />
+        <FieldRow label="Line ID" editingValue={form.lineId} onChange={(v) => handleChange('lineId', v)} />
+        <FieldRow label="ขนาดเสื้อ" editingValue={form.shirtSize} onChange={(v) => handleChange('shirtSize', v)} />
+        <FieldRow label="อาการแพ้" editingValue={form.allergies} onChange={(v) => handleChange('allergies', v)} textarea />
+        <FieldRow label="โรคประจำตัว" editingValue={form.medicalConditions} onChange={(v) => handleChange('medicalConditions', v)} textarea />
+        <FieldRow label="ผู้ติดต่อฉุกเฉิน" editingValue={form.emergencyContact} onChange={(v) => handleChange('emergencyContact', v)} />
+        <FieldRow label="เบอร์โทรฉุกเฉิน" editingValue={form.emergencyPhone} onChange={(v) => handleChange('emergencyPhone', v)} />
+        <FieldRow label="สถานะ" editingValue={form.status} onChange={(v) => handleChange('status', v)} options={[{value:'pending',label:'pending'},{value:'approved',label:'approved'},{value:'rejected',label:'rejected'}]} />
+        <FieldRow label="มีแล็ปท็อป" editingValue={form.laptop} onChange={(v) => handleChange('laptop', v)} options={[{value:'' ,label:'เลือก'},{value:'yes',label:'มี'},{value:'no',label:'ไม่มี'}]} />
+      </div>
+      <div className="flex justify-end items-center gap-2">
+          <button onClick={() => setEditingUser(null)} className="cursor-pointer px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm" disabled={saving}>ยกเลิก</button>
+          <button onClick={() => onSave(form)} className="cursor-pointer px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึก'}</button>
+        </div>
     </div>
   );
 }

@@ -68,32 +68,32 @@ export default function RegisterForm() {
     const validateStep = () => {
         const newErrors = {};
 
-        // if (currentStep === 1) {
-        //     if (!formData.prefix) newErrors.prefix = "กรุณาเลือกคำนำหน้า";
-        //     if (!formData.firstName) newErrors.firstName = "กรุณากรอกชื่อ";
-        //     if (!formData.lastName) newErrors.lastName = "กรุณากรอกนามสกุล";
-        //     if (!formData.nickname) newErrors.nickname = "กรุณากรอกชื่อเล่น";
-        //     if (!formData.birthDate) newErrors.birthDate = "กรุณาเลือกวันเกิด";
-        //     if (!formData.gender) newErrors.gender = "กรุณาเลือกเพศ";
-        // }
-        // if (currentStep === 2) {
-        //     if (!formData.school) newErrors.school = "กรุณากรอกชื่อโรงเรียน";
-        //     if (!formData.grade) newErrors.grade = "กรุณาเลือกระดับชั้น";
-        //     if (!formData.province) newErrors.province = "กรุณากรอกจังหวัด";
-        // }
-        // if (currentStep === 3) {
-        //     if (!formData.phone) newErrors.phone = "กรุณากรอกเบอร์โทรศัพท์";
-        //     if (!formData.email) newErrors.email = "กรุณากรอกอีเมล";
-        //     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-        //         newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
-        //     }
-        //     if (!formData.emergencyContact) newErrors.emergencyContact = "กรุณากรอกชื่อผู้ติดต่อฉุกเฉิน";
-        //     if (!formData.emergencyPhone) newErrors.emergencyPhone = "กรุณากรอกเบอร์ผู้ติดต่อฉุกเฉิน";
-        // }
-        // if (currentStep === 4) {
-        //     if (!formData.shirtSize) newErrors.shirtSize = "กรุณาเลือกไซส์เสื้อ";
-        //     if (!formData.motivation) newErrors.motivation = "กรุณากรอกเหตุผลที่สมัคร";
-        // }
+        if (currentStep === 1) {
+            if (!formData.prefix) newErrors.prefix = "กรุณาเลือกคำนำหน้า";
+            if (!formData.firstName) newErrors.firstName = "กรุณากรอกชื่อ";
+            if (!formData.lastName) newErrors.lastName = "กรุณากรอกนามสกุล";
+            if (!formData.nickname) newErrors.nickname = "กรุณากรอกชื่อเล่น";
+            if (!formData.birthDate) newErrors.birthDate = "กรุณาเลือกวันเกิด";
+            if (!formData.gender) newErrors.gender = "กรุณาเลือกเพศ";
+        }
+        if (currentStep === 2) {
+            if (!formData.school) newErrors.school = "กรุณากรอกชื่อโรงเรียน";
+            if (!formData.grade) newErrors.grade = "กรุณาเลือกระดับชั้น";
+            if (!formData.province) newErrors.province = "กรุณากรอกจังหวัด";
+        }
+        if (currentStep === 3) {
+            if (!formData.phone) newErrors.phone = "กรุณากรอกเบอร์โทรศัพท์";
+            if (!formData.email) newErrors.email = "กรุณากรอกอีเมล";
+            if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+                newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
+            }
+            if (!formData.emergencyContact) newErrors.emergencyContact = "กรุณากรอกชื่อผู้ติดต่อฉุกเฉิน";
+            if (!formData.emergencyPhone) newErrors.emergencyPhone = "กรุณากรอกเบอร์ผู้ติดต่อฉุกเฉิน";
+        }
+        if (currentStep === 4) {
+            if (!formData.shirtSize) newErrors.shirtSize = "กรุณาเลือกไซส์เสื้อ";
+            if (!formData.motivation) newErrors.motivation = "กรุณากรอกเหตุผลที่สมัคร";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -209,20 +209,20 @@ export default function RegisterForm() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อ <span className="text-red-400">*</span></label>
-                                                <input type="text" name="firstName" placeholder="เช่น สมชาย" value={formData.firstName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.firstName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                                <input type="text" name="firstName" placeholder="ชื่อ" value={formData.firstName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.firstName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
                                             </div>
 
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">นามสกุล <span className="text-red-400">*</span></label>
-                                                <input type="text" name="lastName" placeholder="เช่น ใจดี" value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.lastName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                                <input type="text" name="lastName" placeholder="นามสกุล" value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.lastName ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                 {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
                                             </div>
                                         </div>
 
                                         <div className="group">
                                             <label className="block text-sm font-medium text-gray-300 mb-2">ชื่อเล่น <span className="text-red-400">*</span></label>
-                                            <input type="text" name="nickname" placeholder="เช่น ออก้า" value={formData.nickname} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.nickname ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                            <input type="text" name="nickname" placeholder="ชื่อเล่น" value={formData.nickname} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.nickname ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                             {errors.nickname && <p className="text-red-400 text-xs mt-1">{errors.nickname}</p>}
                                         </div>
 
@@ -255,7 +255,7 @@ export default function RegisterForm() {
                                                     min="0" 
                                                     max="99" 
                                                     name="age" 
-                                                    placeholder="ป้อนอายุ" 
+                                                    placeholder="อายุ" 
                                                     value={formData.age} 
                                                     onChange={handleChange}
                                                     onKeyDown={(e) => {
@@ -343,7 +343,7 @@ export default function RegisterForm() {
 
                                         <div className="group">
                                             <label className="block text-sm font-medium text-gray-300 mb-2">LINE ID</label>
-                                            <input type="text" name="lineId" placeholder="your_line_id" value={formData.lineId} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
+                                            <input type="text" name="lineId" placeholder="Line ID" value={formData.lineId} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" />
                                         </div>
 
                                         <div className="border-t border-gray-700 pt-4 mt-6">
@@ -358,7 +358,7 @@ export default function RegisterForm() {
 
                                                 <div className="group">
                                                     <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์ฉุกเฉิน <span className="text-red-400">*</span></label>
-                                                    <input type="tel" name="emergencyPhone" placeholder="0812345678" value={formData.emergencyPhone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyPhone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
+                                                    <input type="tel" name="emergencyPhone" placeholder="เบอร์โทรศัพท์" value={formData.emergencyPhone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyPhone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                     {errors.emergencyPhone && <p className="text-red-400 text-xs mt-1">{errors.emergencyPhone}</p>}
                                                 </div>
                                             </div>
@@ -389,12 +389,12 @@ export default function RegisterForm() {
 
                                         <div className="group">
                                             <label className="block text-sm font-medium text-gray-300 mb-2">อาหารที่แพ้</label>
-                                            <textarea name="allergies" rows="2" placeholder="เช่น แพ้กุ้ง, แพ้นม" value={formData.allergies} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
+                                            <textarea name="allergies" rows="2" placeholder="เช่น แพ้กุ้ง, แพ้นม หากไม่มีเว้นว่าง" value={formData.allergies} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
                                         </div>
 
                                         <div className="group">
                                             <label className="block text-sm font-medium text-gray-300 mb-2">โรคประจำตัว</label>
-                                            <textarea name="medicalConditions" rows="2" placeholder="เช่น โรคหอบหืด" value={formData.medicalConditions} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
+                                            <textarea name="medicalConditions" rows="2" placeholder="เช่น โรคหอบหืด หากไม่มีเว้นว่าง" value={formData.medicalConditions} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none resize-none" />
                                         </div>
 
                                         <div className="group">

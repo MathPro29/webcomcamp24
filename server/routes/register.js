@@ -1,6 +1,6 @@
 // backend/routes/register.js
 import express from "express";
-import User from "../models/users.js";   // หรือ "../models/User.js"
+import User from "../models/users.js"; 
 
 const router = express.Router();
 

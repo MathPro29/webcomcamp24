@@ -133,6 +133,26 @@ userRouter.delete("/:id", async (req, res) => {
   }
 });
 
+// 4. Update user (PUT ต้องอยู่ก่อน GET /:id)
+userRouter.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`📝 PUT /api/users/${id}`);
+    
+    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    console.log(`✅ User updated`);
+    res.json(user);
+  } catch (err) {
+    console.error("❌ Error:", err);
+    res.status(500).json({ error: "Failed to update user" });
+  }
+});
+
 // 5. Get single user (ต้องอยู่ท้ายสุด!)
 userRouter.get("/:id", async (req, res) => {
   try {
