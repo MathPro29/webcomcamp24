@@ -181,29 +181,29 @@ export default function PaymentSection() {
 
 
   return (
-    <div className="py-16 sm:py-20 text-white relative overflow-hidden min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-10">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+    <div className="py-8 sm:py-16 lg:py-20 text-white relative overflow-hidden min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-4 sm:mt-10">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
             ชำระเงิน
           </h2>
-          <p className="text-white/70 mt-4">
+          <p className="text-white/70 mt-3 sm:mt-4 text-sm sm:text-base">
             กรุณาโอนเงินและอัปโหลดสลิปเพื่อยืนยันการชำระเงิน
           </p>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {/* ===== ฝั่งซ้าย: ฟอร์มข้อมูลการชำระเงิน (ตามคำขอ) ===== */}
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/20">
-              <h3 className="text-2xl font-bold mb-6 text-yellow-300">
+            <div className="bg-white/10 backdrop-blur-md p-5 sm:p-8 rounded-2xl shadow-lg border border-white/20">
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-yellow-300">
                 ข้อมูลการชำระเงิน
               </h3>
 
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* ชื่อ-นามสกุล */}
                 <div>
-                  <label htmlFor="name" className="block text-left mb-2 font-medium">
+                  <label htmlFor="name" className="block text-left mb-2 font-medium text-sm sm:text-base">
                     ชื่อ-นามสกุล <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -223,11 +223,11 @@ export default function PaymentSection() {
 
                 {/* เบอร์โทรศัพท์ + ปุ่มตรวจสอบข้างๆ */}
                 <div>
-                  <label htmlFor="phone" className="block text-left mb-2 font-medium">
+                  <label htmlFor="phone" className="block text-left mb-2 font-medium text-sm sm:text-base">
                     เบอร์โทรศัพท์ <span className="text-red-400">*</span>
                   </label>
 
-                  <div className="flex gap-3 items-center">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
                     <input
                       type="text"
                       id="phone"
@@ -246,7 +246,7 @@ export default function PaymentSection() {
                       type="button"
                       onClick={handleCheck}
                       disabled={checking}
-                      className="cursor-pointer whitespace-nowrap bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 px-4 rounded-lg transition-all"
+                      className="cursor-pointer whitespace-nowrap bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 px-4 rounded-lg transition-all text-sm sm:text-base w-full sm:w-auto"
                     >
                       {checking ? "กำลังตรวจสอบ..." : "ตรวจสอบข้อมูล"}
                     </button>
@@ -264,23 +264,23 @@ export default function PaymentSection() {
 
                 {/* ช่องอัปโหลดสลิป — ปิดจนกว่าจะ isVerified === true */}
                 <div>
-                  <label className="block text-left mb-2 font-medium">
+                  <label className="block text-left mb-2 font-medium text-sm sm:text-base">
                     อัปโหลดสลิปการโอนเงิน <span className="text-red-400">*</span>
                   </label>
 
                   {/* ถ้ายังไม่ตรวจสอบ จะแสดงกล่อง disabled */}
                   {!isVerified ? (
-                    <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center opacity-60 pointer-events-none">
-                      <Upload className="w-12 h-12 mx-auto mb-3 text-white/60" />
-                      <p className="text-white/60 mb-1">กรุณากดปุ่ม "ตรวจสอบข้อมูล" ก่อนอัปโหลดสลิป</p>
+                    <div className="border-2 border-dashed border-white/30 rounded-lg p-6 sm:p-8 text-center opacity-60 pointer-events-none">
+                      <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-white/60" />
+                      <p className="text-white/60 mb-1 text-sm sm:text-base">กรุณากดปุ่ม "ตรวจสอบข้อมูล" ก่อนอัปโหลดสลิป</p>
                     </div>
                   ) : (
                     !previewUrl ? (
                       <label className="block cursor-pointer">
-                        <div className="border-2 border-dashed border-white/30 rounded-lg p-8 text-center hover:border-yellow-400 hover:bg-white/5 transition-all">
-                          <Upload className="w-12 h-12 mx-auto mb-3 text-white/60" />
-                          <p className="text-white/80 mb-1">คลิกเพื่อเลือกไฟล์</p>
-                          <p className="text-white/50 text-sm">รองรับไฟล์ JPG, PNG (ไม่เกิน 5MB)</p>
+                        <div className="border-2 border-dashed border-white/30 rounded-lg p-6 sm:p-8 text-center hover:border-yellow-400 hover:bg-white/5 transition-all">
+                          <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-white/60" />
+                          <p className="text-white/80 mb-1 text-sm sm:text-base">คลิกเพื่อเลือกไฟล์</p>
+                          <p className="text-white/50 text-xs sm:text-sm">รองรับไฟล์ JPG, PNG (ไม่เกิน 5MB)</p>
                         </div>
                         <input
                           type="file"
@@ -312,9 +312,9 @@ export default function PaymentSection() {
 
                 {/* ถ้าตรวจสอบผ่าน ให้โชว์สรุปและ checkbox ยืนยันโดยผู้ใช้ */}
                 {isVerified && (
-                  <div className="mt-4 bg-white/5 border border-yellow-400/30 rounded-lg p-4">
-                    <p className="text-yellow-300 font-semibold mb-2">พบข้อมูล!</p>
-                    <ul className="text-white/80 text-sm space-y-1 mb-3">
+                  <div className="mt-4 bg-white/5 border border-yellow-400/30 rounded-lg p-3 sm:p-4">
+                    <p className="text-yellow-300 font-semibold mb-2 text-sm sm:text-base">พบข้อมูล!</p>
+                    <ul className="text-white/80 text-xs sm:text-sm space-y-1 mb-3">
                       <li>ชื่อ-นามสกุล: <strong className="text-white">{name}</strong></li>
                       <li>เบอร์โทรศัพท์: <strong className="text-white">{clean_phone(phone)}</strong></li>
                       <li>จำนวนเงินที่โอน: <strong className="text-white">{amountText}</strong></li>
@@ -357,60 +357,60 @@ export default function PaymentSection() {
             </div>
 
             {/* ===== ข้อมูลบัญชีธนาคาร ===== */}
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-white/20">
-              <h3 className="text-2xl font-bold mb-6 text-yellow-300">ข้อมูลบัญชีธนาคาร</h3>
+            <div className="bg-white/10 backdrop-blur-md p-5 sm:p-8 rounded-2xl shadow-lg border border-white/20">
+              <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-yellow-300">ข้อมูลบัญชีธนาคาร</h3>
 
-              <div className="mb-6 bg-white rounded-xl p-6 flex items-center justify-center">
+              <div className="mb-4 sm:mb-6 bg-white rounded-xl p-4 sm:p-6 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-48 h-48 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                    <span className="text-white text-6xl font-bold">QR</span>
+                  <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center mb-3 sm:mb-4 mx-auto">
+                    <span className="text-white text-5xl sm:text-6xl font-bold">QR</span>
                   </div>
-                  <p className="text-gray-600 text-sm">สแกน QR Code เพื่อชำระเงิน</p>
+                  <p className="text-gray-600 text-xs sm:text-sm">สแกน QR Code เพื่อชำระเงิน</p>
                 </div>
               </div>
 
-              <div className="space-y-4 bg-white/5 p-6 rounded-xl">
+              <div className="space-y-3 sm:space-y-4 bg-white/5 p-4 sm:p-6 rounded-xl">
                 <div>
-                  <p className="text-white/60 text-sm mb-1">ธนาคาร</p>
-                  <p className="text-white font-semibold text-lg">{bankName}</p>
+                  <p className="text-white/60 text-xs sm:text-sm mb-1">ธนาคาร</p>
+                  <p className="text-white font-semibold text-base sm:text-lg">{bankName}</p>
                 </div>
 
                 <div>
-                  <p className="text-white/60 text-sm mb-1">ชื่อบัญชี</p>
-                  <p className="text-white font-semibold">{accountName}</p>
+                  <p className="text-white/60 text-xs sm:text-sm mb-1">ชื่อบัญชี</p>
+                  <p className="text-white font-semibold text-sm sm:text-base">{accountName}</p>
                 </div>
 
                 <div>
-                  <p className="text-white/60 text-sm mb-1">เลขที่บัญชี</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-white font-mono text-xl font-bold flex-1">{bankAccount}</span>
+                  <p className="text-white/60 text-xs sm:text-sm mb-1">เลขที่บัญชี</p>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 mt-2">
+                    <span className="text-white font-mono text-lg sm:text-xl font-bold flex-1">{bankAccount}</span>
                     <button
                       type="button"
                       onClick={handleCopy}
-                      className="cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white p-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center gap-2"
+                      className="cursor-pointer bg-yellow-500 hover:bg-yellow-600 text-white p-2.5 rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                       {copied ? (
                         <>
-                          <Check className="w-5 h-5" />
-                          <span className="text-sm font-medium">คัดลอกแล้ว</span>
+                          <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span className="text-xs sm:text-sm font-medium">คัดลอกแล้ว</span>
                         </>
                       ) : (
                         <>
-                          <Copy className="w-5 h-5" />
-                          <span className="text-sm font-medium">คัดลอก</span>
+                          <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span className="text-xs sm:text-sm font-medium">คัดลอก</span>
                         </>
                       )}
                     </button>
                     
                   </div>
-                  <div className="pt-4 border-t border-white/20">
-                  <p className="text-yellow-300 font-semibold text-lg">จำนวนเงิน: {amountText}</p>
+                  <div className="pt-3 sm:pt-4 border-t border-white/20">
+                  <p className="text-yellow-300 font-semibold text-base sm:text-lg">จำนวนเงิน: {amountText}</p>
                 </div>
                 </div>
 
                 {/* หมายเหตุ */}
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-                  <p className="text-yellow-300 text-sm">
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 sm:p-4">
+                  <p className="text-yellow-300 text-xs sm:text-sm">
                     <strong>หมายเหตุ:</strong> หลังตรวจสอบแล้วจึงสามารถอัปโหลดสลิปและกดยืนยันการชำระเงินได้ — ทีมงานจะตรวจสอบสลิปและยืนยันสถานะภายหลัง
                   </p>
                 </div>

@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [gradeData, setGradeData] = useState([]);
   const [schoolData, setSchoolData] = useState([]);
   const [provinceData, setProvinceData] = useState([]);
+  const [shirtSizeData, setShirtSizeData] = useState([]);
 
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState('schools'); // 'schools', 'provinces', 'allergies'
@@ -215,6 +216,30 @@ export default function Dashboard() {
 
       setProvinceData(topProvinces);
 
+      // Shirt Size Distribution
+      const shirtSizeCounts = data.reduce((acc, u) => {
+        const size = (u.shirtSize || 'ไม่ระบุ').trim();
+        acc[size] = (acc[size] || 0) + 1;
+        return acc;
+      }, {});
+
+      const sizeOrder = {
+        "S": 1,
+        "M": 2,
+        "L": 3,
+        "XL": 4,
+        "2XL": 5,
+        "3XL": 6,
+        "4XL": 7,
+        "ไม่ระบุ": 999
+      };
+
+      const shirtSizeArray = Object.entries(shirtSizeCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => (sizeOrder[a.name] || 999) - (sizeOrder[b.name] || 999));
+
+      setShirtSizeData(shirtSizeArray);
+
     } catch (err) {
       console.error('fetch error', err);
     } finally {
@@ -339,6 +364,86 @@ export default function Dashboard() {
     }
   };
 
+  // Export Shirt Size Data to CSV
+  const exportShirtSizeCSV = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/all`);
+      if (!res.ok) throw new Error(`status ${res.status}`);
+
+      const data = await res.json();
+
+      // Count shirt sizes
+      const shirtSizeCounts = {};
+      data.forEach(user => {
+        const size = user.shirtSize || 'ไม่ระบุ';
+        shirtSizeCounts[size] = (shirtSizeCounts[size] || 0) + 1;
+      });
+
+      // Create summary CSV
+      const summaryHeaders = ['ไซส์เสื้อ', 'จำนวน (คน)'];
+      const summaryRows = Object.entries(shirtSizeCounts)
+        .sort((a, b) => {
+          const sizeOrder = { "S": 1, "M": 2, "L": 3, "XL": 4, "2XL": 5, "3XL": 6, "4XL": 7 };
+          return (sizeOrder[a[0]] || 999) - (sizeOrder[b[0]] || 999);
+        })
+        .map(([size, count]) => [size, count]);
+
+      // Add total
+      const total = Object.values(shirtSizeCounts).reduce((sum, count) => sum + count, 0);
+      summaryRows.push(['รวมทั้งหมด', total]);
+
+      const summaryCsv = [
+        summaryHeaders.join(','),
+        ...summaryRows.map(row => row.join(','))
+      ].join('\n');
+
+      // Create detailed CSV with user info
+      const detailHeaders = ['ชื่อ-นามสกุล', 'ไซส์เสื้อ', 'โรงเรียน', 'เบอร์โทร'];
+      const detailRows = data
+        .sort((a, b) => {
+          const sizeOrder = { "S": 1, "M": 2, "L": 3, "XL": 4, "2XL": 5, "3XL": 6, "4XL": 7 };
+          const sizeA = a.shirtSize || 'ไม่ระบุ';
+          const sizeB = b.shirtSize || 'ไม่ระบุ';
+          return (sizeOrder[sizeA] || 999) - (sizeOrder[sizeB] || 999);
+        })
+        .map(user => [
+          `${user.prefix || ''} ${user.firstName || ''} ${user.lastName || ''}`.trim(),
+          user.shirtSize || 'ไม่ระบุ',
+          user.school || '',
+          user.phone || ''
+        ]);
+
+      const detailCsv = [
+        detailHeaders.join(','),
+        ...detailRows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      // Combine both CSVs
+      const fullCsv = `สรุปไซส์เสื้อ\n${summaryCsv}\n\n\nรายละเอียดผู้สมัคร\n${detailCsv}`;
+
+      // Create blob with UTF-8 BOM
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + fullCsv], { type: 'text/csv;charset=utf-8;' });
+
+      // Download
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `shirt_sizes_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error('Shirt size CSV export error', err);
+      alert('เกิดข้อผิดพลาดในการ export ข้อมูลไซส์เสื้อ');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-6">
       {/* Header */}
@@ -347,16 +452,29 @@ export default function Dashboard() {
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">Admin Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">ภาพรวมข้อมูลผู้สมัคร</p>
         </div>
-        <button
-          onClick={fetchDashboardData}
-          className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-        >
-          <RotateCcw size={16} />
-          รีเฟรช
-        </button>
-
-
-
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={exportShirtSizeCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition cursor-pointer"
+          >
+            <Download size={16} />
+            Export ไซส์เสื้อ
+          </button>
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition cursor-pointer"
+          >
+            <Download size={16} />
+            Export ข้อมูลทั้งหมด
+          </button>
+          <button
+            onClick={fetchDashboardData}
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition cursor-pointer"
+          >
+            <RotateCcw size={16} />
+            รีเฟรช
+          </button>
+        </div>
       </div>
 
       {/* Stat cards */}
@@ -446,6 +564,32 @@ export default function Dashboard() {
               >
                 <span>{g.name}</span>
                 <span className="font-semibold">{g.value} คน</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Shirt Size Distribution */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold">ไซส์เสื้อ</h3>
+            <button
+              onClick={exportShirtSizeCSV}
+              className="text-xs flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition cursor-pointer"
+            >
+              <Download size={12} />
+              Export
+            </button>
+          </div>
+
+          <ul className="space-y-2">
+            {shirtSizeData.map((s) => (
+              <li
+                key={s.name}
+                className="flex justify-between bg-gray-50 p-3 rounded-lg"
+              >
+                <span>{s.name}</span>
+                <span className="font-semibold">{s.value} คน</span>
               </li>
             ))}
           </ul>

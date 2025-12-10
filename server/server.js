@@ -11,6 +11,7 @@ import paymentsRouter from "./routes/payments.js";
 import { limitsignup } from "./middleware/ratelimit.js";
 import { loginlimit } from "./middleware/ratelimit.js";
 import settingsRouter from "./routes/settings.js";
+import certificatesRouter from "./routes/certificates.js";
 
 
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/register', limitsignup);
 app.use('/api/auth', authRouter, loginlimit);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/settings', settingsRouter);
+app.use('/api/certificates', certificatesRouter);
 
 // เชื่อมต่อ DB และเปิด server
 DBconnect().then(() => {

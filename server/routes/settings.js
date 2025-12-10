@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 // Update settings (admin only)
 router.put('/', verifyAdmin, async (req, res) => {
   try {
-    const { isRegistrationOpen, maxCapacity } = req.body;
+    const { isRegistrationOpen, maxCapacity, certificateDownloadDate } = req.body;
     
     const updates = {};
     if (typeof isRegistrationOpen !== 'undefined') {
@@ -26,6 +26,9 @@ router.put('/', verifyAdmin, async (req, res) => {
     }
     if (typeof maxCapacity !== 'undefined') {
       updates.maxCapacity = maxCapacity;
+    }
+    if (typeof certificateDownloadDate !== 'undefined') {
+      updates.certificateDownloadDate = certificateDownloadDate;
     }
     
     const settings = await Settings.updateSettings(updates);

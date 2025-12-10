@@ -9,6 +9,10 @@ const settingsSchema = new mongoose.Schema({
     type: Number,
     default: 100
   },
+  certificateDownloadDate: {
+    type: Date,
+    default: null
+  },
   lastUpdated: {
     type: Date,
     default: Date.now

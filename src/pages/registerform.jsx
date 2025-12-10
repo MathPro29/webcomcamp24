@@ -425,13 +425,13 @@ export default function RegisterForm() {
 
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="group">
-                                                    <label className="block text-sm font-medium text-gray-300 mb-2">ผู้ติดต่อฉุกเฉิน <span className="text-red-400">*</span></label>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">มีความเกี่ยวข้องเป็น <span className="text-red-400">*</span></label>
                                                     <input type="text" name="emergencyContact" placeholder="ชื่อผู้ปกครอง/ญาติ" value={formData.emergencyContact} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyContact ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                     {errors.emergencyContact && <p className="text-red-400 text-xs mt-1">{errors.emergencyContact}</p>}
                                                 </div>
 
                                                 <div className="group">
-                                                    <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์ฉุกเฉิน <span className="text-red-400">*</span></label>
+                                                    <label className="block text-sm font-medium text-gray-300 mb-2">เบอร์โทรศัพท์ฉุกเฉิน <span className="text-red-400">*</span></label>
                                                     <input type="tel" name="emergencyPhone" placeholder="เบอร์โทรศัพท์" value={formData.emergencyPhone} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.emergencyPhone ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`} />
                                                     {errors.emergencyPhone && <p className="text-red-400 text-xs mt-1">{errors.emergencyPhone}</p>}
                                                 </div>
@@ -450,13 +450,13 @@ export default function RegisterForm() {
                                             <label className="block text-sm font-medium text-gray-300 mb-2">ไซส์เสื้อ <span className="text-red-400">*</span></label>
                                             <select name="shirtSize" value={formData.shirtSize} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.shirtSize ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}>
                                                 <option value="" disabled>เลือกไซส์เสื้อ</option>
-                                                <option value="XS">XS</option>
-                                                <option value="S">S</option>
-                                                <option value="M">M</option>
-                                                <option value="L">L</option>
-                                                <option value="XL">XL</option>
-                                                <option value="XXL">XXL</option>
-                                                <option value="3XL">3XL</option>
+                                                <option value="S">S (รอบอก 32นิ้ว ยาว 24นิ้ว)</option>
+                                                <option value="M">M (รอบอก 36นิ้ว ยาว 26นิ้ว)</option>
+                                                <option value="L">L (รอบอก 40นิ้ว ยาว 28นิ้ว)</option>
+                                                <option value="XL">XL (รอบอก 42นิ้ว ยาว 29นิ้ว)</option>
+                                                <option value="2XL">2XL (รอบอก 44นิ้ว ยาว 29นิ้ว)</option>
+                                                <option value="3XL">3XL (รอบอก 46นิ้ว ยาว 30นิ้ว)</option>
+                                                <option value="4XL">4XL (รอบอก 48นิ้ว ยาว 30นิ้ว)</option>
                                             </select>
                                             {errors.shirtSize && <p className="text-red-400 text-xs mt-1">{errors.shirtSize}</p>}
                                         </div>
