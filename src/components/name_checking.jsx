@@ -12,8 +12,7 @@ const NameChecking = () => {
 
   // สร้าง API instance
   const api = useMemo(() => {
-    const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const baseURL = isDev ? "http://202.28.37.166:5000" : "";
+    const baseURL = "http://202.28.37.166:5000";
     
     return {
       get: async (endpoint) => {

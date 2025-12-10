@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 
 export const limitsignup = rateLimit({
   windowMs: 60 * 1000, // 1 นาที
-  max: 2,              // 2 requests ต่อ IP ต่อ window
+  max: 10,              // 2 requests ต่อ IP ต่อ window
   standardHeaders: true, // ส่ง X-RateLimit-* headers
   legacyHeaders: false,
   message: {

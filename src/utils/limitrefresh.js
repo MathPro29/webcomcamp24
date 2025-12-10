@@ -1,7 +1,7 @@
 import { notify } from './toast';
 
 // Configuration
-const MAX_REQUESTS = 3; // Maximum number of requests allowed
+const MAX_REQUESTS = 10; // Maximum number of requests allowed
 const TIME_WINDOW = 60000; // Time window in milliseconds (60 seconds)
 const BLOCK_DURATION = 10000; // Block duration in milliseconds (10 seconds)
 
