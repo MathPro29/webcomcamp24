@@ -20,20 +20,35 @@ export default function PaymentSection() {
   const accountName = "นายภานุวัฒน์ เมฆะ นายอรรถวิท ชังคมานนท์ และ นางปราณี กันธิมา";
   const amountText = "899 บาท";
 
-  
+
 
 
   const handleCopy = async () => {
+    const cleanedAccount = bankAccount.replace(/-/g, "");
+
     try {
-      const cleanedAccount = bankAccount.replace(/-/g, "");
       await navigator.clipboard.writeText(cleanedAccount);
       notify.success("คัดลอกเลขที่บัญชีเรียบร้อย");
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      notify.error("คัดลอกเลขที่บัญชีไม่สำเร็จ");
+      // fallback สำหรับ HTTP หรือ clipboard ใช้ไม่ได้
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = cleanedAccount;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+
+        notify.success("คัดลอกเลขที่บัญชีเรียบร้อย");
+      } catch (err2) {
+        notify.error("คัดลอกเลขที่บัญชีไม่สำเร็จ");
+      }
     }
   };
+
 
   const clean_phone = (phone) => phone.replace(/\D/g, "");
 
@@ -78,107 +93,107 @@ export default function PaymentSection() {
 
   // ปุ่มตรวจสอบ (อยู่ถัดจากช่องเบอร์)
   const handleCheck = async (e) => {
-  e?.preventDefault();
-  setChecking(true);
-  setErrors([]);
-  setIsVerified(false);
-  setConfirmedByUser(false);
-
-  const { ok, newErrors } = runValidation();
-  if (!ok) {
-    setErrors(newErrors);
-    setChecking(false);
-    return;
-  }
-
-  try {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
-    const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
-    const res = await fetch(`${API_BASE}/api/payments/check?${params.toString()}`);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Server error");
-    }
-    const data = await res.json();
-    
-    // ตรวจสอบว่ามีผู้สมัครในฐานข้อมูลหรือไม่
-    if (!data.userExists) {
-      setErrors(["❌ ไม่พบชื่อและเบอร์โทรนี้ในรายชื่อผู้สมัคร กรุณาตรวจสอบข้อมูลอีกครั้ง"]);
-      setIsVerified(false);
-      return;
-    }
-    
-    // ตรวจสอบว่าจ่ายเงินแล้วหรือไม่
-    if (data.exists) {
-      setErrors(["❌ ผู้สมัครรายนี้ได้ชำระเงินแล้ว ไม่สามารถชำระซ้ำได้"]);
-      setIsVerified(false);
-      return;
-    }
-    
-    // ผ่านการตรวจสอบ - มีผู้สมัครและยังไม่ชำระเงิน
-    setIsVerified(true);
+    e?.preventDefault();
+    setChecking(true);
     setErrors([]);
-  } catch (err) {
-    console.error("Check error:", err);
-    setErrors(["⚠️ เกิดข้อผิดพลาดในการตรวจสอบ กรุณาลองใหม่ภายหลัง"]);
-  } finally {
-    setChecking(false);
-  }
-};
-
-  const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!isVerified) {
-   notify.error("กรุณากด 'ตรวจสอบข้อมูล' ก่อนยืนยันการชำระเงิน");
-    return;
-  }
-  if (!confirmedByUser) {
-    notify.error("กรุณาติ๊ก 'ฉันยืนยันว่าตรวจสอบเรียบร้อย' ก่อนยืนยันการชำระเงิน");
-    return;
-  }
-  if (!slip) {
-    notify.error("กรุณาอัปโหลดสลิปการโอนเงิน");
-    return;
-  }
-
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
-  const formData = new FormData();
-  formData.append("name", name.trim());
-  formData.append("phone", clean_phone(phone));
-  formData.append("slip", slip);
-
-  try {
-    const res = await fetch(`${API_BASE}/api/payments`, {
-      method: "POST",
-      body: formData,
-      credentials: 'include'
-    });
-
-    if (res.status === 409) {
-      // ซ้ำ — backend ป้องกันไว้
-      const body = await res.json();
-      notify.error(body.message || "รายการนี้มีการชำระแล้ว ไม่สามารถยืนยันซ้ำได้");
-      return;
-    }
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "เกิดข้อผิดพลาดในการส่งข้อมูล");
-    }
-
-    notify.success("ส่งข้อมูลการชำระเงินเรียบร้อยแล้ว!");
-    // รีเซ็ตฟอร์ม
-    setName("");
-    setPhone("");
-    handleRemoveSlip();
     setIsVerified(false);
     setConfirmedByUser(false);
-    setErrors([]);
-  } catch (err) {
-    console.error(err);
-    notify.error("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่ภายหลัง");
-  }
-};
+
+    const { ok, newErrors } = runValidation();
+    if (!ok) {
+      setErrors(newErrors);
+      setChecking(false);
+      return;
+    }
+
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+      const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
+      const res = await fetch(`${API_BASE}/api/payments/check?${params.toString()}`);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Server error");
+      }
+      const data = await res.json();
+
+      // ตรวจสอบว่ามีผู้สมัครในฐานข้อมูลหรือไม่
+      if (!data.userExists) {
+        setErrors(["❌ ไม่พบชื่อและเบอร์โทรนี้ในรายชื่อผู้สมัคร กรุณาตรวจสอบข้อมูลอีกครั้ง"]);
+        setIsVerified(false);
+        return;
+      }
+
+      // ตรวจสอบว่าจ่ายเงินแล้วหรือไม่
+      if (data.exists) {
+        setErrors(["❌ ผู้สมัครรายนี้ได้ชำระเงินแล้ว ไม่สามารถชำระซ้ำได้"]);
+        setIsVerified(false);
+        return;
+      }
+
+      // ผ่านการตรวจสอบ - มีผู้สมัครและยังไม่ชำระเงิน
+      setIsVerified(true);
+      setErrors([]);
+    } catch (err) {
+      console.error("Check error:", err);
+      setErrors(["⚠️ เกิดข้อผิดพลาดในการตรวจสอบ กรุณาลองใหม่ภายหลัง"]);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!isVerified) {
+      notify.error("กรุณากด 'ตรวจสอบข้อมูล' ก่อนยืนยันการชำระเงิน");
+      return;
+    }
+    if (!confirmedByUser) {
+      notify.error("กรุณาติ๊ก 'ฉันยืนยันว่าตรวจสอบเรียบร้อย' ก่อนยืนยันการชำระเงิน");
+      return;
+    }
+    if (!slip) {
+      notify.error("กรุณาอัปโหลดสลิปการโอนเงิน");
+      return;
+    }
+
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+    const formData = new FormData();
+    formData.append("name", name.trim());
+    formData.append("phone", clean_phone(phone));
+    formData.append("slip", slip);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/payments`, {
+        method: "POST",
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (res.status === 409) {
+        // ซ้ำ — backend ป้องกันไว้
+        const body = await res.json();
+        notify.error(body.message || "รายการนี้มีการชำระแล้ว ไม่สามารถยืนยันซ้ำได้");
+        return;
+      }
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "เกิดข้อผิดพลาดในการส่งข้อมูล");
+      }
+
+      notify.success("ส่งข้อมูลการชำระเงินเรียบร้อยแล้ว!");
+      // รีเซ็ตฟอร์ม
+      setName("");
+      setPhone("");
+      handleRemoveSlip();
+      setIsVerified(false);
+      setConfirmedByUser(false);
+      setErrors([]);
+    } catch (err) {
+      console.error(err);
+      notify.error("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่ภายหลัง");
+    }
+  };
 
 
   return (
@@ -337,23 +352,22 @@ export default function PaymentSection() {
                     </label>
                   </div>
                 )}
-                
+
 
                 {/* ปุ่มยืนยันการชำระเงิน อยู่ท้ายฝั่งบัญชี (แต่เป็น submit ของฟอร์ม) */}
                 <div className="mt-6">
                   <button
                     type="submit"
-                    className={`w-full ${
-                      isVerified && confirmedByUser
+                    className={`w-full ${isVerified && confirmedByUser
                         ? "cursor-pointer bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600"
                         : "bg-gray-600/30 cursor-not-allowed"
-                    } text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300`}
+                      } text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300`}
                     disabled={!isVerified || !confirmedByUser}
                   >
                     ยืนยันการชำระเงิน
                   </button>
                 </div>
-                
+
               </div>
             </div>
 
@@ -363,7 +377,7 @@ export default function PaymentSection() {
 
               <div className="mb-4 sm:mb-6 bg-white rounded-xl p-4 sm:p-6 flex items-center justify-center">
                 <div className="text-center">
-                 <img src="src/assets/bookbank.jpg" alt="bookbank" className="w-full h-full object-contain" />
+                  <img src="src/assets/bookbank.jpg" alt="bookbank" className="w-full h-full object-contain" />
                 </div>
               </div>
 
@@ -399,11 +413,11 @@ export default function PaymentSection() {
                         </>
                       )}
                     </button>
-                    
+
                   </div>
                   <div className="pt-3 sm:pt-4 border-t border-white/20">
-                  <p className="text-yellow-300 font-semibold text-base sm:text-lg">จำนวนเงิน: {amountText}</p>
-                </div>
+                    <p className="text-yellow-300 font-semibold text-base sm:text-lg">จำนวนเงิน: {amountText}</p>
+                  </div>
                 </div>
 
                 {/* หมายเหตุ */}
