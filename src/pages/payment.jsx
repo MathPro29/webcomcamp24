@@ -15,9 +15,9 @@ export default function PaymentSection() {
   const [confirmedByUser, setConfirmedByUser] = useState(false);
   const [checking, setChecking] = useState(false);
 
-  const bankAccount = "123-4-56789-0";
-  const bankName = "ธนาคารกรุงกสิไทย";
-  const accountName = "คณะกรรมการจัดงาน Comcamp";
+  const bankAccount = "678-0-07822-3";
+  const bankName = "ธนาคารกรุงเทพ";
+  const accountName = "นายภานุวัฒน์ เมฆะ นายอรรถวิท ชังคมานนท์ และ นางปราณี กันธิมา";
   const amountText = "899 บาท";
 
   
@@ -27,10 +27,11 @@ export default function PaymentSection() {
     try {
       const cleanedAccount = bankAccount.replace(/-/g, "");
       await navigator.clipboard.writeText(cleanedAccount);
+      notify.success("คัดลอกเลขที่บัญชีเรียบร้อย");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy:", err);
+      notify.error("คัดลอกเลขที่บัญชีไม่สำเร็จ");
     }
   };
 
@@ -128,15 +129,15 @@ export default function PaymentSection() {
   const handleSubmit = async (e) => {
   e.preventDefault();
   if (!isVerified) {
-    alert("กรุณากด 'ตรวจสอบข้อมูล' ก่อนยืนยันการชำระเงิน");
+   notify.error("กรุณากด 'ตรวจสอบข้อมูล' ก่อนยืนยันการชำระเงิน");
     return;
   }
   if (!confirmedByUser) {
-    alert("กรุณาติ๊ก 'ฉันยืนยันว่าตรวจสอบเรียบร้อย' ก่อนยืนยันการชำระเงิน");
+    notify.error("กรุณาติ๊ก 'ฉันยืนยันว่าตรวจสอบเรียบร้อย' ก่อนยืนยันการชำระเงิน");
     return;
   }
   if (!slip) {
-    alert("กรุณาอัปโหลดสลิปการโอนเงิน");
+    notify.error("กรุณาอัปโหลดสลิปการโอนเงิน");
     return;
   }
 
@@ -156,7 +157,7 @@ export default function PaymentSection() {
     if (res.status === 409) {
       // ซ้ำ — backend ป้องกันไว้
       const body = await res.json();
-      alert(body.message || "รายการนี้มีการชำระแล้ว ไม่สามารถยืนยันซ้ำได้");
+      notify.error(body.message || "รายการนี้มีการชำระแล้ว ไม่สามารถยืนยันซ้ำได้");
       return;
     }
 
@@ -165,7 +166,7 @@ export default function PaymentSection() {
       throw new Error(text || "เกิดข้อผิดพลาดในการส่งข้อมูล");
     }
 
-    alert("ส่งข้อมูลการชำระเงินเรียบร้อยแล้ว!");
+    notify.success("ส่งข้อมูลการชำระเงินเรียบร้อยแล้ว!");
     // รีเซ็ตฟอร์ม
     setName("");
     setPhone("");
@@ -175,7 +176,7 @@ export default function PaymentSection() {
     setErrors([]);
   } catch (err) {
     console.error(err);
-    alert("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่ภายหลัง");
+    notify.error("เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่ภายหลัง");
   }
 };
 
@@ -362,10 +363,7 @@ export default function PaymentSection() {
 
               <div className="mb-4 sm:mb-6 bg-white rounded-xl p-4 sm:p-6 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center mb-3 sm:mb-4 mx-auto">
-                    <span className="text-white text-5xl sm:text-6xl font-bold">QR</span>
-                  </div>
-                  <p className="text-gray-600 text-xs sm:text-sm">สแกน QR Code เพื่อชำระเงิน</p>
+                 <img src="src/assets/bookbank.jpg" alt="bookbank" className="w-full h-full object-contain" />
                 </div>
               </div>
 

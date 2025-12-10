@@ -156,7 +156,7 @@ export default function RegisterForm() {
 
     const handleSubmit = async () => {
         const requiredFields = [
-            "prefix", "firstName", "lastName", "nickname", "birthDate", "gender",
+            "prefix", "firstName", "lastName", "nickname", "birthDate", "age", "gender",
             "school", "grade", "province", "phone","email",
             "emergencyContact", "emergencyPhone", "shirtSize"
         ];
@@ -303,22 +303,24 @@ export default function RegisterForm() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">วันเกิด <span className="text-red-400">*</span></label>
-                                                <DatePicker
-                                                    selected={birthDateObj}
-                                                    onChange={(date) => {
-                                                        setBirthDateObj(date);
-                                                        setFormData(s => ({ ...s, birthDate: date ? format(date, 'dd/MM/yyyy') : '' }));
-                                                    }}
-                                                    dateFormat="dd/MM/yyyy"
-                                                    placeholderText="เลือกวันเกิด"
-                                                    showYearDropdown
-                                                    showMonthDropdown
-                                                    dropdownMode="select"
-                                                    yearDropdownItemNumber={100}
-                                                    scrollableYearDropdown
-                                                    maxDate={new Date()}
-                                                    className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}
-                                                />
+                                                <div className="w-full">
+                                                    <DatePicker
+                                                        selected={birthDateObj}
+                                                        onChange={(date) => {
+                                                            setBirthDateObj(date);
+                                                            setFormData(s => ({ ...s, birthDate: date ? format(date, 'dd/MM/yyyy') : '' }));
+                                                        }}
+                                                        dateFormat="dd/MM/yyyy"
+                                                        placeholderText="เลือกวันเกิด"
+                                                        showYearDropdown
+                                                        showMonthDropdown
+                                                        dropdownMode="select"
+                                                        yearDropdownItemNumber={100}
+                                                        scrollableYearDropdown
+                                                        maxDate={new Date()}
+                                                        className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.birthDate ? 'border-red-400' : 'border-gray-600'} text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}
+                                                    />
+                                                </div>
                                                 {errors.birthDate && <p className="text-red-400 text-xs mt-1">{errors.birthDate}</p>}
                                             </div>
 

@@ -1,5 +1,6 @@
 @import "tailwindcss";
-body{
+
+body {
   margin: 0;
   padding: 0;
   background-color: #101330;
@@ -8,21 +9,25 @@ body{
 .fade-up {
   transform: translateY(12px);
   opacity: 0;
-  transition: transform 600ms cubic-bezier(.22,.9,.3,1), opacity 600ms;
+  transition: transform 600ms cubic-bezier(.22, .9, .3, 1), opacity 600ms;
 }
+
 .fade-up.is-visible {
   transform: translateY(0);
   opacity: 1;
 }
 
-//* ซ่อน scrollbar แบบ cross-browser */
+/* ซ่อน scrollbar แบบ cross-browser */
 .no-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
+
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
   /* modern browsers: สำรองที่สำหรับ scrollbar เพื่อไม่ให้ layout กระโดด */
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
@@ -33,4 +38,132 @@ body{
   min-height: 0;
 }
 
+/* ===== Custom DatePicker Styling ===== */
+/* Main calendar container */
+.react-datepicker {
+  font-family: inherit;
+  background-color: #1A1E4A !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
 
+/* Header */
+.react-datepicker__header {
+  background-color: #0D1028 !important;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.2) !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding-top: 12px !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name {
+  color: #FDE68A !important;
+  font-weight: 600 !important;
+}
+
+.react-datepicker__month-select,
+.react-datepicker__year-select {
+  color: #E5E7EB !important;
+}
+
+/* Navigation arrows */
+.react-datepicker__navigation {
+  top: 14px !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #FBBF24 !important;
+}
+
+.react-datepicker__navigation:hover *::before {
+  border-color: #FDE68A !important;
+}
+
+/* Day cells */
+.react-datepicker__day {
+  color: #E5E7EB !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: rgba(251, 191, 36, 0.2) !important;
+  color: #FBBF24 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #FBBF24 !important;
+  color: #0D1028 !important;
+  font-weight: 700 !important;
+}
+
+.react-datepicker__day--today {
+  font-weight: 600 !important;
+  color: #FDE68A !important;
+  border: 1px solid rgba(251, 191, 36, 0.5) !important;
+}
+
+.react-datepicker__day--disabled {
+  color: #6B7280 !important;
+  cursor: not-allowed !important;
+}
+
+.react-datepicker__day--disabled:hover {
+  background-color: transparent !important;
+}
+
+/* Month container */
+.react-datepicker__month {
+  margin: 8px !important;
+}
+
+/* Dropdown selectors (month/year) */
+.react-datepicker__month-dropdown,
+.react-datepicker__year-dropdown {
+  background-color: #0D1028 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  border-radius: 8px !important;
+  color: #E5E7EB !important;
+}
+
+.react-datepicker__month-option,
+.react-datepicker__year-option {
+  color: #E5E7EB !important;
+  padding: 8px 12px !important;
+}
+
+.react-datepicker__month-option:hover,
+.react-datepicker__year-option:hover {
+  background-color: rgba(251, 191, 36, 0.2) !important;
+  color: #FBBF24 !important;
+}
+
+.react-datepicker__month-option--selected,
+.react-datepicker__year-option--selected {
+  background-color: #FBBF24 !important;
+  color: #0D1028 !important;
+  font-weight: 600 !important;
+}
+
+/* Input field styling when datepicker is focused */
+.react-datepicker-wrapper {
+  width: 100% !important;
+  display: block !important;
+}
+
+.react-datepicker__input-container {
+  width: 100% !important;
+  display: block !important;
+}
+
+.react-datepicker__input-container input {
+  cursor: pointer !important;
+  width: 100% !important;
+}
+
+/* Triangle pointer */
+.react-datepicker__triangle {
+  display: none !important;
+}

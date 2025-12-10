@@ -1,7 +1,6 @@
 import React from "react";
-// ถ้าใช้ Framer Motion v11+:
+
 import { motion } from "framer-motion";
-// ถ้าใช้เวอร์ชันเดิม ให้เปลี่ยนเป็น: import { motion } from "framer-motion";
 
 import Countdown from "./countdown";
 import { Link } from "react-router-dom";
