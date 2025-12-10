@@ -14,8 +14,6 @@ import NotFound from "./pages/notfound.jsx";
 import Users from "./pages/admin/users.jsx";
 import Inboxpage from "./pages/admin/inbox.jsx";
 import Payment from "./pages/payment.jsx";
-import Certificates from "./pages/certificates.jsx";
-import CertificatesAdmin from "./pages/admin/certificates.jsx";
 
 export default function App() {
   return (
@@ -31,7 +29,6 @@ export default function App() {
           <Route path="/admin/users" element={<Users />} />
           {/* <Route path="/admin/receipts" element={<Receipts />} /> */}
           <Route path="/admin/inbox" element={<Inboxpage />} />
-          <Route path="/admin/certificates" element={<CertificatesAdmin />} />
         </Route>
 
         {/* --- 🏠 Routes สำหรับผู้ใช้งานทั่วไป (มี Navbar) 🏠 --- */}
@@ -41,7 +38,6 @@ export default function App() {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/check-registration" element={<CheckRegistration />} />
           <Route path="/payment" element={<Payment />} />
-          <Route path="/certificates" element={<Certificates />} />
         </Route>
 
         {/* ⚠️ Route สำหรับหน้า Not Found ⚠️ */}

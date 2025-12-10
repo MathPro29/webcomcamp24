@@ -6,7 +6,6 @@ const sidebarItems = [
     { name: 'หน้าหลัก', path: '/admin/dashboard', icon: Home },
     { name: 'สมาชิก', path: '/admin/users', icon: Users },
     { name: 'ควบคุมฟอร์ม', path: '/admin/inbox', icon: MessageSquare },
-    { name: 'เกียรติบัตร', path: '/admin/certificates', icon: FileText },
     { name: 'กลับสู่หน้าเว็บไซต์', path: '/', icon: ArrowLeft },
 ];
 
