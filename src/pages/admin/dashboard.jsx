@@ -220,14 +220,6 @@ export default function Dashboard() {
         return acc;
       }, {});
 
-      // Debug logging
-      console.log('📊 Sample user shirt sizes:', data.slice(0, 5).map(u => ({ 
-        name: `${u.firstName} ${u.lastName}`, 
-        shirtSize: u.shirtSize,
-        allFields: Object.keys(u)
-      })));
-      console.log('👕 Shirt size counts:', shirtSizeCounts);
-
       const sizeOrder = {
         "S": 1,
         "M": 2,
