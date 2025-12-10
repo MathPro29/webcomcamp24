@@ -84,9 +84,6 @@ export default function Dashboard() {
 
       const data = await res.json();
 
-      console.log('📊 Sample user data:', data[0]);
-      console.log('📚 Grades found:', [...new Set(data.map(u => u.grade))]);
-      console.log('📍 Provinces found:', [...new Set(data.map(u => u.province))]);
 
       const pendingCount = data.filter((u) => u.status === 'pending').length;
       const approvedCount = data.filter((u) => u.status === 'success').length;
@@ -222,6 +219,14 @@ export default function Dashboard() {
         acc[size] = (acc[size] || 0) + 1;
         return acc;
       }, {});
+
+      // Debug logging
+      console.log('📊 Sample user shirt sizes:', data.slice(0, 5).map(u => ({ 
+        name: `${u.firstName} ${u.lastName}`, 
+        shirtSize: u.shirtSize,
+        allFields: Object.keys(u)
+      })));
+      console.log('👕 Shirt size counts:', shirtSizeCounts);
 
       const sizeOrder = {
         "S": 1,
