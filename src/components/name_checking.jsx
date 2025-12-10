@@ -263,26 +263,7 @@ const NameChecking = () => {
                     </div>
                   </div>
 
-                  {/* Additional Info based on status */}
-                  {searchResult.status === "success" && (
-                    <>
-                      <div className="mt-6 p-4 bg-green-400/10 border border-green-400/30 rounded-lg">
-                        <p className="text-green-400 text-sm">
-                          🎉 ยินดีด้วย! น้าาาา น้องผ่านการคัดเลือกเข้าค่าย ComCamp 24<sup>th</sup> แล้ว เจอกันที่ค่ายนะ
-                        </p>
-                      </div>
-                      <div className="mt-4">
-                        <a
-                          href="/certificates"
-                          className="block w-full text-center bg-yellow-500 hover:bg-yellow-600 
-                                   text-white font-semibold py-3 px-6 rounded-lg transition-all"
-                        >
-                          📜 ดาวน์โหลดเกียรติบัตร
-                        </a>
-                      </div>
-                    </>
-                  )}
-
+                 
                   {searchResult.status === "pending" && (
                     <div className="mt-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
                       <p className="text-yellow-400 text-sm text-center">
