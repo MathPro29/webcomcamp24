@@ -1,11 +1,12 @@
 import express from 'express';
 import User from '../models/users.js';
 import Payment from '../models/payment.js';
+import { limitPaymentCheck } from '../middleware/ratelimit.js';
 
 const router = express.Router();
 
 // Check if user exists and if payment already submitted
-router.get('/check', async (req, res) => {
+router.get('/check', limitPaymentCheck, async (req, res) => {
   try {
     const { name, phone } = req.query;
     if (!name || !phone) {

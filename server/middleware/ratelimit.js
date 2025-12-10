@@ -25,3 +25,15 @@ export const loginlimit = rateLimit({
   max: 10,
   message: "Too many login attempts. Try again later."
 });
+
+// Payment check limiter - more lenient for user verification
+export const limitPaymentCheck = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,              // 30 requests per minute (more lenient)
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    error: "กรุณารอสักครู่ก่อนตรวจสอบอีกครั้ง"
+  }
+});

@@ -18,7 +18,7 @@ export default function PaymentSection() {
   const bankAccount = "123-4-56789-0";
   const bankName = "ธนาคารกรุงกสิไทย";
   const accountName = "คณะกรรมการจัดงาน Comcamp";
-  const amountText = "5,000 บาท";
+  const amountText = "899 บาท";
 
   
 
@@ -36,7 +36,7 @@ export default function PaymentSection() {
 
   const clean_phone = (phone) => phone.replace(/\D/g, "");
 
-  const validatePhoneFormat = (phoneDigits) => /^0\d{8,9}$/.test(phoneDigits);
+  const validatePhoneFormat = (phoneDigits) => /^0\d{9}$/.test(phoneDigits);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -71,7 +71,7 @@ export default function PaymentSection() {
     const phoneDigits = clean_phone(phone);
     if (!phoneDigits) newErrors.push("กรุณากรอกเบอร์โทรศัพท์");
     else if (!validatePhoneFormat(phoneDigits))
-      newErrors.push("รูปแบบเบอร์ไม่ถูกต้อง (ควรเริ่มด้วย 0 และยาว 9–10 หลัก)");
+      newErrors.push("รูปแบบเบอร์ไม่ถูกต้อง (ต้องเริ่มด้วย 0 และยาว 10 หลัก)");
     return { ok: newErrors.length === 0, newErrors };
   };
 
@@ -140,7 +140,7 @@ export default function PaymentSection() {
     return;
   }
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
   const formData = new FormData();
   formData.append("name", name.trim());
   formData.append("phone", clean_phone(phone));
