@@ -200,7 +200,7 @@ export default function PaymentSection() {
     <div className="py-8 sm:py-16 lg:py-20 text-white relative overflow-hidden min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-4 sm:mt-10">
         <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl mt-14 font-bold bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
             ชำระเงิน
           </h2>
           <p className="text-white/70 mt-3 sm:mt-4 text-sm sm:text-base">
@@ -210,7 +210,7 @@ export default function PaymentSection() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto">
-            {/* ===== ฝั่งซ้าย: ฟอร์มข้อมูลการชำระเงิน (ตามคำขอ) ===== */}
+
             <div className="bg-white/10 backdrop-blur-md p-5 sm:p-8 rounded-2xl shadow-lg border border-white/20">
               <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-yellow-300">
                 ข้อมูลการชำระเงิน
@@ -359,8 +359,8 @@ export default function PaymentSection() {
                   <button
                     type="submit"
                     className={`w-full ${isVerified && confirmedByUser
-                        ? "cursor-pointer bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600"
-                        : "bg-gray-600/30 cursor-not-allowed"
+                      ? "cursor-pointer bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600"
+                      : "bg-gray-600/30 cursor-not-allowed"
                       } text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300`}
                     disabled={!isVerified || !confirmedByUser}
                   >
