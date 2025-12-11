@@ -70,16 +70,26 @@ function FieldRow({ label, value, editingValue, onChange, type = 'text', textare
 /* ===========================
    UploadCertificateModal Component
    =========================== */
-function UploadCertificateModal({ user, onClose, onUploadSuccess }) {
+/* ===========================
+   CertificateManagerModal Component
+   =========================== */
+function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
   const [file, setFile] = useState(null);
-  const [releaseDate, setReleaseDate] = useState('');
+  const [releaseDate, setReleaseDate] = useState(
+    user.certificate?.releaseDate
+      ? new Date(user.certificate.releaseDate).toISOString().split('T')[0]
+      : ''
+  );
   const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState(user.certificate ? 'view' : 'upload'); // view | upload
 
-  // Set default date to tomorrow
+  // Set default date to tomorrow if not set
   useEffect(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setReleaseDate(tomorrow.toISOString().split('T')[0]);
+    if (!releaseDate) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setReleaseDate(tomorrow.toISOString().split('T')[0]);
+    }
   }, []);
 
   const handleFileChange = (e) => {
@@ -90,35 +100,31 @@ function UploadCertificateModal({ user, onClose, onUploadSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file || !releaseDate) {
-      notify.error('กรุณาเลือกไฟล์และวันที่');
+    if (!file && !user.certificate) {
+      notify.error('กรุณาเลือกไฟล์');
       return;
     }
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('certificate', file);
+    if (file) formData.append('certificate', file);
     formData.append('releaseDate', releaseDate);
 
     try {
-      // Use parent's API_BASE if possible, or context. Here hardcoded to match file convention or passed in props?
-      // Convention in this file seems to be local `API_BASE` variable. 
-      // Safest is to use the global or assume the url.
-      const API_BASE = 'http://localhost:5000'; // Copied from UnifiedUsersReceipts
-
+      const API_BASE = 'http://localhost:5000';
       const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
         method: 'POST',
         body: formData,
-        credentials: 'include' // Important for cookie/admin check
+        credentials: 'include'
       });
 
       if (res.ok) {
-        notify.success('อัพโหลดเกียรติบัตรสำเร็จ');
-        onUploadSuccess(user.id, releaseDate, file.name); // Optimistic update callback
+        notify.success('บันทึกข้อมูลเกียรติบัตรสำเร็จ');
+        onUpdateSuccess(user.id, releaseDate, file ? file.name : user.certificate.filename);
         onClose();
       } else {
         const data = await res.json();
-        notify.error(data.error || 'อัพโหลดล้มเหลว');
+        notify.error(data.error || 'บันทึกล้มเหลว');
       }
     } catch (err) {
       console.error(err);
@@ -130,47 +136,117 @@ function UploadCertificateModal({ user, onClose, onUploadSuccess }) {
 
   return (
     <div>
-      <h3 className="text-xl font-bold mb-4">อัพโหลดเกียรติบัตร</h3>
-      <p className="mb-4 text-gray-600">สำหรับ: <strong>{user.name}</strong></p>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์ (PDF หรือ รูปภาพ)</label>
-          <input
-            type="file"
-            accept=".pdf,image/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-          />
+          <h3 className="text-xl font-bold">จัดการเกียรติบัตร</h3>
+          <p className="text-gray-600">สำหรับ: <strong>{user.name}</strong></p>
         </div>
+        {user.certificate && (
+          <div className="flex bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setActiveTab('view')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'view' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              ดูข้อมูล
+            </button>
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'upload' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+            >
+              แก้ไข / อัพโหลดใหม่
+            </button>
+          </div>
+        )}
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">วันที่ปล่อยให้ดาวน์โหลด</label>
-          <input
-            type="date"
-            value={releaseDate}
-            onChange={(e) => setReleaseDate(e.target.value)}
-            className="mt-1 block w-full border rounded px-3 py-2"
-          />
-          <p className="text-xs text-gray-500 mt-1">ผู้สมัครจะเห็นปุ่มดาวน์โหลดเมื่อถึงวันที่นี้</p>
-        </div>
+      {activeTab === 'view' && user.certificate ? (
+        <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+          <div className="flex flex-col items-center justify-center text-center">
+            {/* Image Preview */}
+            {['.jpg', '.jpeg', '.png'].some(ext => user.certificate.filename.toLowerCase().endsWith(ext)) ? (
+              <div className="mb-4 w-full">
+                <img
+                  src={`http://localhost:5000/api/users/${user.id}/certificate/download?view=true`}
+                  alt="Certificate"
+                  className="max-w-full max-h-[400px] object-contain mx-auto rounded-lg shadow-sm border border-gray-200"
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle size={32} />
+              </div>
+            )}
+            {/* <h4 className="text-lg font-bold text-gray-900 mb-1">มีเกียรติบัตรแล้ว</h4> */}
+            <p className="text-sm text-gray-500 mb-6">อัพโหลดเมื่อ: {new Date(user.certificate.uploadedAt).toLocaleString('th-TH')}</p>
 
-        <div className="flex justify-end gap-2 pt-4">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">ยกเลิก</button>
-          <button
-            type="submit"
-            disabled={uploading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            {uploading ? 'กำลังอัพโหลด...' : 'อัพโหลด'}
-          </button>
+            <a
+              href={`http://localhost:5000/api/users/${user.id}/certificate/download`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              <Download size={20} />
+              ดาวน์โหลด / ดูไฟล์
+            </a>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">วันที่เปิดให้ดาวน์โหลด:</span>
+              <span className="font-medium">{user.certificate.releaseDate ? new Date(user.certificate.releaseDate).toLocaleDateString('th-TH') : 'ยังไม่กำหนด'}</span>
+            </div>
+          </div>
         </div>
-      </form>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <Upload className="text-blue-600 mt-1" size={20} />
+              <div>
+                <h4 className="font-medium text-blue-900">อัพโหลดไฟล์ใหม่</h4>
+                <p className="text-sm text-blue-700 mt-1">การอัพโหลดจะแทนที่ไฟล์เดิมที่มีอยู่ (ถ้ามี)</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์ (PDF หรือ รูปภาพ)</label>
+            <input
+              type="file"
+              accept=".pdf,image/*"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">วันที่ปล่อยให้ดาวน์โหลด</label>
+            <input
+              type="date"
+              value={releaseDate}
+              onChange={(e) => setReleaseDate(e.target.value)}
+              className="mt-1 block w-full border rounded px-3 py-2"
+            />
+            <p className="text-xs text-gray-500 mt-1">ผู้สมัครจะเห็นปุ่มดาวน์โหลดเมื่อถึงวันที่นี้</p>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t mt-6">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">ปิด</button>
+            <button
+              type="submit"
+              disabled={uploading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {uploading ? 'กำลังบันทึก...' : 'บันทึก'}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
@@ -750,21 +826,9 @@ export default function UnifiedUsersReceipts() {
                             <Trash2 size={18} />
                           </button>
 
-                          <button onClick={() => setUploadingUser(user)} className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="อัพโหลดเกียรติบัตร">
-                            <Upload size={18} />
+                          <button onClick={() => setUploadingUser(user)} className={`p-2 rounded-lg transition-colors ${user.certificate ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`} title="จัดการเกียรติบัตร">
+                            <CheckCircle size={18} />
                           </button>
-
-                          {user.certificate && (
-                            <a
-                              href={`${API_BASE}/api/users/${user.id}/certificate/download`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                              title="ดู/ดาวน์โหลดเกียรติบัตร"
-                            >
-                              <CheckCircle size={18} />
-                            </a>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -801,19 +865,20 @@ export default function UnifiedUsersReceipts() {
         </ModalWrapper>
       )}
 
-      {/* Upload Certificate Modal */}
+      {/* Certificate Manager Modal */}
       {uploadingUser && (
         <ModalWrapper onClose={() => setUploadingUser(null)}>
-          <UploadCertificateModal
+          <CertificateManagerModal
             user={uploadingUser}
             onClose={() => setUploadingUser(null)}
-            onUploadSuccess={(userId, releaseDate, filename) => {
+            onUpdateSuccess={(userId, releaseDate, filename) => {
               setUsers(prev => prev.map(u => u.id === userId ? {
                 ...u,
                 certificate: {
+                  ...u.certificate, // keep other fields if any
                   filename,
                   releaseDate,
-                  uploadedAt: new Date()
+                  uploadedAt: u.certificate?.uploadedAt || new Date() // preserve or new
                 }
               } : u));
             }}

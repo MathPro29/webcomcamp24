@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { optionalAuth } from '../middleware/auth.js';
+import { CERTIFICATE_UPLOAD_PATH } from '../config/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,18 @@ const userRouter = express.Router();
 // 1. Upload Certificate
 userRouter.post("/:id/certificate", async (req, res) => {
   try {
+    // Check if file is uploaded
     if (!req.files || !req.files.certificate) {
+      if (req.body.releaseDate) {
+        // Allow updating only releaseDate
+        const user = await User.findById(req.params.id);
+        if (user && user.certificate && user.certificate.filename) {
+          user.certificate.releaseDate = new Date(req.body.releaseDate);
+          await user.save();
+          console.log(`✅ Certificate release date updated for user ${req.params.id}`);
+          return res.json({ success: true, user });
+        }
+      }
       return res.status(400).json({ error: "No file uploaded" });
     }
 
@@ -35,7 +47,7 @@ userRouter.post("/:id/certificate", async (req, res) => {
 
     const timestamp = Date.now();
     const filename = `cert_${id}_${timestamp}${ext}`;
-    const uploadPath = path.join(__dirname, '../uploads/certificates', filename);
+    const uploadPath = path.join(CERTIFICATE_UPLOAD_PATH, filename);
 
     // Move file
     await file.mv(uploadPath);
@@ -48,9 +60,16 @@ userRouter.post("/:id/certificate", async (req, res) => {
       uploadedAt: new Date()
     };
 
+    console.log(`Debug: Updating user ${id} with cert data:`, certificateData);
+
     const user = await User.findByIdAndUpdate(id, { certificate: certificateData }, { new: true });
 
-    console.log(`✅ Certificate uploaded for user ${id}`);
+    if (!user) {
+      console.error(`❌ User not found for ID: ${id}`);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log(`✅ Certificate uploaded for user ${id}. User updated.`);
     res.json({ success: true, user });
   } catch (err) {
     console.error("❌ Upload error:", err);
@@ -74,10 +93,13 @@ userRouter.get("/:id/certificate/download", optionalAuth, async (req, res) => {
       return res.status(403).json({ error: "Certificate not yet released" });
     }
 
-    const filePath = path.join(__dirname, '../uploads/certificates', user.certificate.filename);
+    const filePath = path.join(CERTIFICATE_UPLOAD_PATH, user.certificate.filename);
     if (fs.existsSync(filePath)) {
-      // Set correct headers for download
-      res.download(filePath, `Certificate-${user.firstName}-${user.lastName}${path.extname(user.certificate.filename)}`);
+      if (req.query.view === 'true') {
+        res.sendFile(filePath);
+      } else {
+        res.download(filePath, `Certificate-${user.firstName}-${user.lastName}${path.extname(user.certificate.filename)}`);
+      }
     } else {
       res.status(404).json({ error: "File not found on server" });
     }
