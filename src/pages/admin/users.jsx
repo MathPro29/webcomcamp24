@@ -163,7 +163,7 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
         <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <div className="flex flex-col items-center justify-center text-center">
             {/* Image Preview */}
-            {['.jpg', '.jpeg', '.png'].some(ext => user.certificate.filename.toLowerCase().endsWith(ext)) ? (
+            {['.jpg', '.jpeg', '.png'].some(ext => (user.certificate.filename || '').toLowerCase().endsWith(ext)) ? (
               <div className="mb-4 w-full">
                 <img
                   src={`http://localhost:5000/api/users/${user.id}/certificate/download?view=true`}
