@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { notify } from "../utils/toast";
 
 export default function RegisterForm() {
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
 
     const [formData, setFormData] = useState({
         prefix: "",
@@ -119,6 +119,7 @@ export default function RegisterForm() {
             if (!formData.lastName) newErrors.lastName = "กรุณากรอกนามสกุล";
             if (!formData.nickname) newErrors.nickname = "กรุณากรอกชื่อเล่น";
             if (!formData.birthDate) newErrors.birthDate = "กรุณาเลือกวันเกิด";
+            if (!formData.age) newErrors.age = "กรุณากรอกอายุ";
             if (!formData.gender) newErrors.gender = "กรุณาเลือกเพศ";
         }
         if (step === 2) {
@@ -206,7 +207,7 @@ export default function RegisterForm() {
         <section id="register" className="bg-[#101330] py-16 sm:py-20 text-white relative overflow-hidden min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-8 relative z-10 mt-10">
                 <h2 className="text-4xl sm:text-5xl font-bold bg-linear-to-r from-yellow-200 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
-                    สมัครเข้าร่วม Comcamp 24<sup className="text-amber-300">th</sup>
+                    สมัครเข้าร่วมค่าย Comcamp 24<sup className="text-amber-300">th</sup>
                 </h2>
             </div>
 
@@ -327,8 +328,9 @@ export default function RegisterForm() {
                                             </div>
 
                                             <div className="group">
-                                                <label className="block text-sm font-medium text-gray-300 mb-2">อายุ</label>
+                                                <label className="block text-sm font-medium text-gray-300 mb-2">อายุ<span className="text-red-400">*</span></label>
                                                 <input
+                                                    required
                                                     type="number"
                                                     min="0"
                                                     max="99"
@@ -343,8 +345,9 @@ export default function RegisterForm() {
                                                         }
                                                     }}
                                                     onWheel={(e) => e.target.blur()}
-                                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none"
+                                                    className={`w-full px-4 py-3 rounded-xl bg-[#0D1028] border ${errors.age ? 'border-red-400' : 'border-gray-600'} text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none`}
                                                 />
+                                                {errors.age && <p className="text-red-400 text-xs mt-1">{errors.age}</p>}
                                             </div>
                                         </div>
 

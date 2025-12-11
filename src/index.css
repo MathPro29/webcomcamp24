@@ -65,6 +65,7 @@ body {
 .react-datepicker__month-select,
 .react-datepicker__year-select {
   color: #E5E7EB !important;
+  background-color: #0D1028 !important;
 }
 
 /* Navigation arrows */

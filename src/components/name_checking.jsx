@@ -12,7 +12,7 @@ const NameChecking = () => {
 
   // สร้าง API instance
   const api = useMemo(() => {
-    const baseURL = "http://localhost:5000";
+    const baseURL = "http://202.2:5000";
 
     return {
       get: async (endpoint) => {
@@ -277,13 +277,13 @@ const NameChecking = () => {
                         if (canDownload) {
                           return (
                             <a
-                              href={`http://localhost:5000/api/users/${searchResult._id}/certificate/download`}
+                              href={`http://202.28.37.166:5000/api/users/${searchResult._id}/certificate/download`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center sm:w-auto"
                             >
                               <Download className="w-4 h-4" />
-                              ดู / ดาวน์โหลดเกียรติบัตร
+                              ดาวน์โหลดเกียรติบัตร
                             </a>
                           );
                         } else {
@@ -298,6 +298,7 @@ const NameChecking = () => {
                                   hour: '2-digit',
                                   minute: '2-digit'
                                 })}
+                                น.
                               </p>
                             </div>
                           );

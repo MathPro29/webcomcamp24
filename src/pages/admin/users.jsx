@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, Edit2, Trash2, Eye, Filter, Download, RefreshCcw,
-  CheckCircle, XCircle, Clock, Image, AlertCircle, Upload
+  CheckCircle, XCircle, Clock, Image, AlertCircle, Upload, StickyNote
 } from 'lucide-react';
 import { notify } from '../../utils/toast.js';
 
@@ -80,8 +80,13 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
       ? new Date(user.certificate.releaseDate).toISOString().split('T')[0]
       : ''
   );
+  const [releaseTime, setReleaseTime] = useState(
+    user.certificate?.releaseDate
+      ? new Date(user.certificate.releaseDate).toTimeString().slice(0, 5)
+      : '09:00'
+  );
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState(user.certificate ? 'view' : 'upload'); // view | upload
+  const [activeTab, setActiveTab] = useState(user.certificate ? 'view' : 'upload');
 
   // Set default date to tomorrow if not set
   useEffect(() => {
@@ -108,10 +113,13 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
     setUploading(true);
     const formData = new FormData();
     if (file) formData.append('certificate', file);
-    formData.append('releaseDate', releaseDate);
+
+    // Combine date and time
+    const combinedDateTime = `${releaseDate}T${releaseTime}:00`;
+    formData.append('releaseDate', combinedDateTime);
 
     try {
-      const API_BASE = 'http://localhost:5000';
+      const API_BASE = 'http://202.28.37.166:5000';
       const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
         method: 'POST',
         body: formData,
@@ -120,7 +128,7 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
 
       if (res.ok) {
         notify.success('บันทึกข้อมูลเกียรติบัตรสำเร็จ');
-        onUpdateSuccess(user.id, releaseDate, file ? file.name : user.certificate.filename);
+        onUpdateSuccess(user.id, combinedDateTime, file ? file.name : user.certificate.filename);
         onClose();
       } else {
         const data = await res.json();
@@ -135,114 +143,296 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6">
+      {/* Header Section */}
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-xl font-bold">จัดการเกียรติบัตร</h3>
-          <p className="text-gray-600">สำหรับ: <strong>{user.name}</strong></p>
+          <h3 className="text-2xl font-bold text-gray-900">จัดการเกียรติบัตร</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            สำหรับ: <span className="font-semibold text-gray-700">{user.name}</span>
+          </p>
         </div>
         {user.certificate && (
-          <div className="flex bg-gray-100 p-1 rounded-lg">
+          <div className="flex bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
             <button
               onClick={() => setActiveTab('view')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'view' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${activeTab === 'view'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
             >
-              ดูข้อมูล
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                ดูข้อมูล
+              </span>
             </button>
             <button
               onClick={() => setActiveTab('upload')}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'upload' ? 'bg-white shadow text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${activeTab === 'upload'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
             >
-              แก้ไข / อัพโหลดใหม่
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                แก้ไข / อัพโหลดใหม่
+              </span>
             </button>
           </div>
         )}
       </div>
 
+      {/* Content Section */}
       {activeTab === 'view' && user.certificate ? (
-        <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-          <div className="flex flex-col items-center justify-center text-center">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm">
+          <div className="flex flex-col items-center justify-center">
             {/* Image Preview */}
             {['.jpg', '.jpeg', '.png'].some(ext => (user.certificate.filename || '').toLowerCase().endsWith(ext)) ? (
-              <div className="mb-4 w-full">
-                <img
-                  src={`http://localhost:5000/api/users/${user.id}/certificate/download?view=true`}
-                  alt="Certificate"
-                  className="max-w-full max-h-[400px] object-contain mx-auto rounded-lg shadow-sm border border-gray-200"
-                />
+              <div className="mb-6 w-full">
+                <div className="relative group">
+                  <img
+                    src={`http://202.28.37.166:5000/api/users/${user.id}/certificate/download?view=true`}
+                    alt="Certificate"
+                    className="max-w-full max-h-[500px] object-contain mx-auto rounded-xl shadow-lg border border-gray-300 transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-xl"></div>
+                </div>
               </div>
             ) : (
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle size={32} />
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                <CheckCircle size={40} />
               </div>
             )}
-            {/* <h4 className="text-lg font-bold text-gray-900 mb-1">มีเกียรติบัตรแล้ว</h4> */}
-            <p className="text-sm text-gray-500 mb-6">อัพโหลดเมื่อ: {new Date(user.certificate.uploadedAt).toLocaleString('th-TH')}</p>
 
-            <a
-              href={`http://localhost:5000/api/users/${user.id}/certificate/download`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              <Download size={20} />
-              ดาวน์โหลด / ดูไฟล์
-            </a>
+            {/* Upload Date */}
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 bg-white px-4 py-2 rounded-full shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>อัพโหลดเมื่อ: <span className="font-medium text-gray-700">{new Date(user.certificate.uploadedAt).toLocaleString('th-TH')}</span></span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <a
+                href={`http://202.28.37.166:5000/api/users/${user.id}/certificate/download?view=true`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>ดู Preview</span>
+              </a>
+              <a
+                href={`http://202.28.37.166:5000/api/users/${user.id}/certificate/download`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
+              >
+                <Download size={22} className="group-hover:animate-bounce" />
+                <span>ดาวน์โหลด</span>
+              </a>
+            </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">วันที่เปิดให้ดาวน์โหลด:</span>
-              <span className="font-medium">{user.certificate.releaseDate ? new Date(user.certificate.releaseDate).toLocaleDateString('th-TH') : 'ยังไม่กำหนด'}</span>
+          {/* Release Date & Time Info */}
+          <div className="mt-8 pt-6 border-t border-gray-300">
+            <div className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-medium">วันที่และเวลาเปิดให้ดาวน์โหลด:</span>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-gray-900 text-lg">
+                    {user.certificate.releaseDate
+                      ? new Date(user.certificate.releaseDate).toLocaleDateString('th-TH', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })
+                      : 'ยังไม่กำหนด'}
+                  </div>
+                  {user.certificate.releaseDate && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      เวลา {new Date(user.certificate.releaseDate).toLocaleTimeString('th-TH', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      })} น.
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <Upload className="text-blue-600 mt-1" size={20} />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Info Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-600 text-white rounded-lg flex items-center justify-center flex-shrink-0">
+                <Upload size={20} />
+              </div>
               <div>
-                <h4 className="font-medium text-blue-900">อัพโหลดไฟล์ใหม่</h4>
-                <p className="text-sm text-blue-700 mt-1">การอัพโหลดจะแทนที่ไฟล์เดิมที่มีอยู่ (ถ้ามี)</p>
+                <h4 className="font-semibold text-blue-900 text-lg mb-1">อัพโหลดไฟล์ใหม่</h4>
+                <p className="text-sm text-blue-700">การอัพโหลดจะแทนที่ไฟล์เดิมที่มีอยู่ (ถ้ามี)</p>
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์ (PDF หรือ รูปภาพ)</label>
-            <input
-              type="file"
-              accept=".pdf,image/*"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-blue-50 file:text-blue-700
-                hover:file:bg-blue-100"
-            />
+          {/* Combined File Upload and Preview */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              ไฟล์เกียรติบัตร (PDF หรือ รูปภาพ)
+            </label>
+
+            <div className="space-y-4">
+              <input
+                type="file"
+                accept=".pdf,image/*"
+                onChange={handleFileChange}
+                className="cursor-pointer block w-full text-sm text-gray-600
+                  file:mr-4 file:py-3 file:px-6
+                  file:rounded-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-gradient-to-r file:from-blue-500 file:to-blue-600 file:text-white
+                  hover:file:from-blue-600 hover:file:to-blue-700
+                  file:shadow-md hover:file:shadow-lg
+                  file:transition-all file:duration-300 file:cursor-pointer"
+              />
+
+              {/* Current Certificate Preview */}
+              {user.certificate && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">ไฟล์ปัจจุบัน</p>
+                        <p className="text-xs text-gray-500">{user.certificate.filename || 'certificate.pdf'}</p>
+                      </div>
+                    </div>
+                    <a
+                      href={`http://202.28.37.166:5000/api/users/${user.id}/certificate/download?view=true`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors cursor-pointer"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      เปิดดู
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">วันที่ปล่อยให้ดาวน์โหลด</label>
-            <input
-              type="date"
-              value={releaseDate}
-              onChange={(e) => setReleaseDate(e.target.value)}
-              className="mt-1 block w-full border rounded px-3 py-2"
-            />
-            <p className="text-xs text-gray-500 mt-1">ผู้สมัครจะเห็นปุ่มดาวน์โหลดเมื่อถึงวันที่นี้</p>
+          {/* Release Date & Time */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              วันที่และเวลาที่ปล่อยให้ดาวน์โหลด
+            </label>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Date Input */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-2">ตั้งวันที่</label>
+                <input
+                  type="date"
+                  value={releaseDate}
+                  onChange={(e) => setReleaseDate(e.target.value)}
+                  className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm cursor-pointer"
+                />
+              </div>
+
+              {/* Time Input */}
+              <div>
+                <label className="block text-xs text-gray-600 mb-2">ตั้งเวลา</label>
+                <div className="flex gap-2">
+                  {/* ชั่วโมง */}
+                  <input
+                    type="number"
+                    min={0}
+                    max={23}
+                    value={parseInt(releaseTime.split(':')[0], 10)}
+                    onChange={(e) => {
+                      let hour = parseInt(e.target.value, 10);
+                      if (isNaN(hour)) hour = 0;
+                      if (hour > 23) hour = 23;
+                      if (hour < 0) hour = 0;
+                      setReleaseTime(`${hour.toString().padStart(2, '0')}:${releaseTime.split(':')[1]}`);
+                    }}
+                    onWheel={(e) => e.target.blur()} // ป้องกัน scroll
+                    className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
+                    placeholder="ชม."
+                  />
+
+                  <input
+                    type="number"
+                    min={0}
+                    max={59}
+                    value={parseInt(releaseTime.split(':')[1], 10)}
+                    onChange={(e) => {
+                      let minute = parseInt(e.target.value, 10);
+                      if (isNaN(minute)) minute = 0;
+                      if (minute > 59) minute = 59;
+                      if (minute < 0) minute = 0;
+                      setReleaseTime(`${releaseTime.split(':')[0]}:${minute.toString().padStart(2, '0')}`);
+                    }}
+                    onWheel={(e) => e.target.blur()} // ป้องกัน scroll
+                    className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
+                    placeholder="นาที"
+                  />
+
+                </div>
+              </div>
+
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t mt-6">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">ปิด</button>
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg font-medium transition-all duration-200 cursor-pointer"
+            >
+              ยกเลิก
+            </button>
             <button
               type="submit"
               disabled={uploading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:hover:translate-y-0 cursor-pointer"
             >
-              {uploading ? 'กำลังบันทึก...' : 'บันทึก'}
+              {uploading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  กำลังบันทึก...
+                </span>
+              ) : (
+                'บันทึกข้อมูล'
+              )}
             </button>
           </div>
         </form>
@@ -272,7 +462,7 @@ export default function UnifiedUsersReceipts() {
 
   const [users, setUsers] = useState([]);
 
-  const API_BASE = 'http://localhost:5000';
+  const API_BASE = 'http://202.28.37.166:5000';
 
   useEffect(() => {
     fetchData();
@@ -827,7 +1017,7 @@ export default function UnifiedUsersReceipts() {
                           </button>
 
                           <button onClick={() => setUploadingUser(user)} className={`p-2 rounded-lg transition-colors ${user.certificate ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`} title="จัดการเกียรติบัตร">
-                            <CheckCircle size={18} />
+                            <StickyNote size={18} />
                           </button>
                         </div>
                       </td>
