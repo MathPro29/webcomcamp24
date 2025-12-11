@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, CheckCircle, XCircle, Clock, AlertCircle, ChevronDown } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, AlertCircle, ChevronDown, Download } from 'lucide-react';
 
 export default function CheckRegistration() {
     const [searchEmail, setSearchEmail] = useState('');
@@ -7,7 +7,7 @@ export default function CheckRegistration() {
     const [isSearching, setIsSearching] = useState(false);
     const [expandedId, setExpandedId] = useState(null);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     const statusConfig = {
         approved: {
@@ -42,7 +42,7 @@ export default function CheckRegistration() {
             const res = await fetch(`${API_BASE}/api/users/all`);
             if (res.ok) {
                 const allUsers = await res.json();
-                const filtered = allUsers.filter(u => 
+                const filtered = allUsers.filter(u =>
                     u.email.toLowerCase().includes(searchEmail.toLowerCase())
                 );
                 const mapped = filtered.map(u => ({
@@ -51,7 +51,8 @@ export default function CheckRegistration() {
                     email: u.email,
                     phone: u.phone,
                     school: u.school,
-                    status: u.status === 'success' ? 'approved' : u.status === 'declined' ? 'rejected' : 'pending'
+                    status: u.status === 'success' ? 'approved' : u.status === 'declined' ? 'rejected' : 'pending',
+                    certificate: u.certificate // Pass certificate data
                 }));
                 setSearchResults(mapped);
             }
@@ -182,6 +183,62 @@ export default function CheckRegistration() {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Certificate Section */}
+                                            {user.certificate && user.certificate.filename && (
+                                                <div className="mt-4 pt-4 border-t border-gray-100">
+                                                    <h4 className="text-lg font-bold text-gray-800 mb-2">เกียรติบัตร</h4>
+                                                    {(() => {
+                                                        const releaseDate = user.certificate.releaseDate ? new Date(user.certificate.releaseDate) : null;
+                                                        const now = new Date();
+                                                        const canDownload = !releaseDate || now >= releaseDate;
+
+                                                        if (canDownload) {
+                                                            return (
+                                                                <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl p-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                                                            <CheckCircle size={24} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="font-semibold text-gray-800">เกียรติบัตรของคุณพร้อมแล้ว</p>
+                                                                            <p className="text-sm text-gray-500">คุณสามารถตรวจสอบและดาวน์โหลดได้ทันที</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <a
+                                                                        href={`${API_BASE}/api/users/${user.id}/certificate/download`}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <Download size={20} />
+                                                                        ดู / ดาวน์โหลด
+                                                                    </a>
+                                                                </div>
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+                                                                    <Clock size={24} className="text-gray-400" />
+                                                                    <div>
+                                                                        <p className="text-gray-600 font-medium">เกียรติบัตรจะเปิดให้ดาวน์โหลดในวันที่</p>
+                                                                        <p className="text-blue-600 font-bold">
+                                                                            {releaseDate.toLocaleDateString('th-TH', {
+                                                                                year: 'numeric',
+                                                                                month: 'long',
+                                                                                day: 'numeric',
+                                                                                hour: '2-digit',
+                                                                                minute: '2-digit'
+                                                                            })}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        }
+                                                    })()}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

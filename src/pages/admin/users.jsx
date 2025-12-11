@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search, Edit2, Trash2, Eye, Filter, Download, RefreshCcw,
-  CheckCircle, XCircle, Clock, Image, AlertCircle } from 'lucide-react';
+  CheckCircle, XCircle, Clock, Image, AlertCircle, Upload
+} from 'lucide-react';
 import { notify } from '../../utils/toast.js';
 
 /* ---------------------------
@@ -64,6 +65,116 @@ function FieldRow({ label, value, editingValue, onChange, type = 'text', textare
   );
 }
 
+
+
+/* ===========================
+   UploadCertificateModal Component
+   =========================== */
+function UploadCertificateModal({ user, onClose, onUploadSuccess }) {
+  const [file, setFile] = useState(null);
+  const [releaseDate, setReleaseDate] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  // Set default date to tomorrow
+  useEffect(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setReleaseDate(tomorrow.toISOString().split('T')[0]);
+  }, []);
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!file || !releaseDate) {
+      notify.error('กรุณาเลือกไฟล์และวันที่');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('certificate', file);
+    formData.append('releaseDate', releaseDate);
+
+    try {
+      // Use parent's API_BASE if possible, or context. Here hardcoded to match file convention or passed in props?
+      // Convention in this file seems to be local `API_BASE` variable. 
+      // Safest is to use the global or assume the url.
+      const API_BASE = 'http://localhost:5000'; // Copied from UnifiedUsersReceipts
+
+      const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include' // Important for cookie/admin check
+      });
+
+      if (res.ok) {
+        notify.success('อัพโหลดเกียรติบัตรสำเร็จ');
+        onUploadSuccess(user.id, releaseDate, file.name); // Optimistic update callback
+        onClose();
+      } else {
+        const data = await res.json();
+        notify.error(data.error || 'อัพโหลดล้มเหลว');
+      }
+    } catch (err) {
+      console.error(err);
+      notify.error('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-xl font-bold mb-4">อัพโหลดเกียรติบัตร</h3>
+      <p className="mb-4 text-gray-600">สำหรับ: <strong>{user.name}</strong></p>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">ไฟล์ (PDF หรือ รูปภาพ)</label>
+          <input
+            type="file"
+            accept=".pdf,image/*"
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-full file:border-0
+              file:text-sm file:font-semibold
+              file:bg-blue-50 file:text-blue-700
+              hover:file:bg-blue-100"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">วันที่ปล่อยให้ดาวน์โหลด</label>
+          <input
+            type="date"
+            value={releaseDate}
+            onChange={(e) => setReleaseDate(e.target.value)}
+            className="mt-1 block w-full border rounded px-3 py-2"
+          />
+          <p className="text-xs text-gray-500 mt-1">ผู้สมัครจะเห็นปุ่มดาวน์โหลดเมื่อถึงวันที่นี้</p>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">ยกเลิก</button>
+          <button
+            type="submit"
+            disabled={uploading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {uploading ? 'กำลังอัพโหลด...' : 'อัพโหลด'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 /* ===========================
    Main component
    =========================== */
@@ -78,13 +189,14 @@ export default function UnifiedUsersReceipts() {
   const [viewingUser, setViewingUser] = useState(null); // view-only modal
   const [viewingSlip, setViewingSlip] = useState(null);
   const [editingUser, setEditingUser] = useState(null); // edit modal
+  const [uploadingUser, setUploadingUser] = useState(null); // upload cert modal
   const [saving, setSaving] = useState(false);
 
-  
+
 
   const [users, setUsers] = useState([]);
 
-  const API_BASE = 'http://202.28.37.166:5000';
+  const API_BASE = 'http://localhost:5000';
 
   useEffect(() => {
     fetchData();
@@ -130,7 +242,8 @@ export default function UnifiedUsersReceipts() {
             uploadDate: receipt.uploadDate,
             status: receipt.status,
             note: receipt.note
-          } : null
+          } : null,
+          certificate: u.certificate // Pass certificate info
         };
       });
 
@@ -282,7 +395,7 @@ export default function UnifiedUsersReceipts() {
         if (data.userDeleted) setUsers(prev => prev.filter(u => u.id !== userId));
         else setUsers(prev => prev.map(u => u.id === userId ? { ...u, receipt: null } : u));
         setViewingUser(null);
-       toast.success(data.userDeleted ? 'ลบชื่อและสลิปเรียบร้อย' : 'ลบสลิปเรียบร้อย');
+        toast.success(data.userDeleted ? 'ลบชื่อและสลิปเรียบร้อย' : 'ลบสลิปเรียบร้อย');
       } else {
         toast.error(data.error || 'ลบสลิปไม่สำเร็จ');
       }
@@ -636,6 +749,22 @@ export default function UnifiedUsersReceipts() {
                           <button onClick={() => handleDelete(user.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="ลบผู้สมัคร">
                             <Trash2 size={18} />
                           </button>
+
+                          <button onClick={() => setUploadingUser(user)} className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="อัพโหลดเกียรติบัตร">
+                            <Upload size={18} />
+                          </button>
+
+                          {user.certificate && (
+                            <a
+                              href={`${API_BASE}/api/users/${user.id}/certificate/download`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              title="ดู/ดาวน์โหลดเกียรติบัตร"
+                            >
+                              <CheckCircle size={18} />
+                            </a>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -668,6 +797,26 @@ export default function UnifiedUsersReceipts() {
             setEditingUser={setEditingUser}
             onSave={handleSaveEdit}
             saving={saving}
+          />
+        </ModalWrapper>
+      )}
+
+      {/* Upload Certificate Modal */}
+      {uploadingUser && (
+        <ModalWrapper onClose={() => setUploadingUser(null)}>
+          <UploadCertificateModal
+            user={uploadingUser}
+            onClose={() => setUploadingUser(null)}
+            onUploadSuccess={(userId, releaseDate, filename) => {
+              setUsers(prev => prev.map(u => u.id === userId ? {
+                ...u,
+                certificate: {
+                  filename,
+                  releaseDate,
+                  uploadedAt: new Date()
+                }
+              } : u));
+            }}
           />
         </ModalWrapper>
       )}
@@ -945,15 +1094,15 @@ function EditUserModal({ editingUser, setEditingUser, onSave, saving }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <FieldRow label="คำนำหน้า" editingValue={form.prefix} onChange={(v) => handleChange('prefix', v)} options={[{value:'', label:'เลือก'},{value:'นาย',label:'นาย'},{value:'นางสาว',label:'นางสาว'},{value:'เด็กชาย',label:'เด็กชาย'},{value:'เด็กหญิง',label:'เด็กหญิง'}]} />
+        <FieldRow label="คำนำหน้า" editingValue={form.prefix} onChange={(v) => handleChange('prefix', v)} options={[{ value: '', label: 'เลือก' }, { value: 'นาย', label: 'นาย' }, { value: 'นางสาว', label: 'นางสาว' }, { value: 'เด็กชาย', label: 'เด็กชาย' }, { value: 'เด็กหญิง', label: 'เด็กหญิง' }]} />
         <FieldRow label="ชื่อ" editingValue={form.firstName} onChange={(v) => handleChange('firstName', v)} />
         <FieldRow label="นามสกุล" editingValue={form.lastName} onChange={(v) => handleChange('lastName', v)} />
         <FieldRow label="ชื่อเล่น" editingValue={form.nickname} onChange={(v) => handleChange('nickname', v)} />
-<FieldRow label="วันเกิด" editingValue={form.birthDate} onChange={(v) => handleChange('birthDate', v)} type="date" /> 
+        <FieldRow label="วันเกิด" editingValue={form.birthDate} onChange={(v) => handleChange('birthDate', v)} type="date" />
         <FieldRow label="อายุ" editingValue={form.age} onChange={(v) => handleChange('age', Number(v || 0))} type="number" />
-        <FieldRow label="เพศ" editingValue={form.gender} onChange={(v) => handleChange('gender', v)} options={[{value:'', label:'เลือก'},{value:'ชาย',label:'ชาย'},{value:'หญิง',label:'หญิง'},{value:'ไม่ระบุ',label:'ไม่ระบุ'}]} />
+        <FieldRow label="เพศ" editingValue={form.gender} onChange={(v) => handleChange('gender', v)} options={[{ value: '', label: 'เลือก' }, { value: 'ชาย', label: 'ชาย' }, { value: 'หญิง', label: 'หญิง' }, { value: 'ไม่ระบุ', label: 'ไม่ระบุ' }]} />
         <FieldRow label="โรงเรียน" editingValue={form.school} onChange={(v) => handleChange('school', v)} />
-        <FieldRow label="ชั้น" editingValue={form.grade} onChange={(v) => handleChange('grade', v)} options={[{value:'', label:'เลือก'},{value:'ม.4',label:'ม.4'},{value:'ม.5',label:'ม.5'},{value:'ม.6',label:'ม.6'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 1',label:'ประกาศนียบัตรวิชาชีพปีที่ 1'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 2',label:'ประกาศนียบัตรวิชาชีพปีที่ 2'},{value:'ประกาศนียบัตรวิชาชีพปีที่ 3',label:'ประกาศนียบัตรวิชาชีพปีที่ 3'}]}/>
+        <FieldRow label="ชั้น" editingValue={form.grade} onChange={(v) => handleChange('grade', v)} options={[{ value: '', label: 'เลือก' }, { value: 'ม.4', label: 'ม.4' }, { value: 'ม.5', label: 'ม.5' }, { value: 'ม.6', label: 'ม.6' }, { value: 'ประกาศนียบัตรวิชาชีพปีที่ 1', label: 'ประกาศนียบัตรวิชาชีพปีที่ 1' }, { value: 'ประกาศนียบัตรวิชาชีพปีที่ 2', label: 'ประกาศนียบัตรวิชาชีพปีที่ 2' }, { value: 'ประกาศนียบัตรวิชาชีพปีที่ 3', label: 'ประกาศนียบัตรวิชาชีพปีที่ 3' }]} />
         <FieldRow label="จังหวัด" editingValue={form.province} onChange={(v) => handleChange('province', v)} />
         <FieldRow label="เบอร์โทร" editingValue={form.phone} onChange={(v) => handleChange('phone', v)} />
         <FieldRow label="อีเมล" editingValue={form.email} onChange={(v) => handleChange('email', v)} type="email" />
@@ -963,13 +1112,13 @@ function EditUserModal({ editingUser, setEditingUser, onSave, saving }) {
         <FieldRow label="โรคประจำตัว" editingValue={form.medicalConditions} onChange={(v) => handleChange('medicalConditions', v)} textarea />
         <FieldRow label="ผู้ติดต่อฉุกเฉิน" editingValue={form.emergencyContact} onChange={(v) => handleChange('emergencyContact', v)} />
         <FieldRow label="เบอร์โทรฉุกเฉิน" editingValue={form.emergencyPhone} onChange={(v) => handleChange('emergencyPhone', v)} />
-        <FieldRow label="สถานะ" editingValue={form.status} onChange={(v) => handleChange('status', v)} options={[{value:'pending',label:'pending'},{value:'approved',label:'approved'},{value:'rejected',label:'rejected'}]} />
-        <FieldRow label="มีแล็ปท็อป" editingValue={form.laptop} onChange={(v) => handleChange('laptop', v)} options={[{value:'' ,label:'เลือก'},{value:'yes',label:'มี'},{value:'no',label:'ไม่มี'}]} />
+        <FieldRow label="สถานะ" editingValue={form.status} onChange={(v) => handleChange('status', v)} options={[{ value: 'pending', label: 'pending' }, { value: 'approved', label: 'approved' }, { value: 'rejected', label: 'rejected' }]} />
+        <FieldRow label="มีแล็ปท็อป" editingValue={form.laptop} onChange={(v) => handleChange('laptop', v)} options={[{ value: '', label: 'เลือก' }, { value: 'yes', label: 'มี' }, { value: 'no', label: 'ไม่มี' }]} />
       </div>
       <div className="flex justify-end items-center gap-2">
-          <button onClick={() => setEditingUser(null)} className="cursor-pointer px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm" disabled={saving}>ยกเลิก</button>
-          <button onClick={() => onSave(form)} className="cursor-pointer px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึก'}</button>
-        </div>
+        <button onClick={() => setEditingUser(null)} className="cursor-pointer px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm" disabled={saving}>ยกเลิก</button>
+        <button onClick={() => onSave(form)} className="cursor-pointer px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm" disabled={saving}>{saving ? 'กำลังบันทึก...' : 'บันทึก'}</button>
+      </div>
     </div>
   );
 }

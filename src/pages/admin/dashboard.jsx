@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [showAllAllergies, setShowAllAllergies] = useState(false);
   const [statusData, setStatusData] = useState([]);
 
-  const API_BASE = 'http://202.28.37.166:5000';
+  const API_BASE = 'http://localhost:5000';
   // helper: laptop detection (stable, moved above fetch so fetch can call it)
   const hasLaptop = (u) => {
     const v = u.laptop;
@@ -144,7 +144,7 @@ export default function Dashboard() {
       const combined = Array.from(personHealthMap, ([name, d]) => ({ name, allergies: [...new Set(d.allergies)], medical: [...new Set(d.medical)] }));
       setAllergyList(combined);
 
-      
+
       const gradeCounts = data.reduce((acc, u) => {
         const g = (u.grade || 'ไม่ระบุ').toString().trim();
         acc[g] = (acc[g] || 0) + 1;
@@ -167,7 +167,7 @@ export default function Dashboard() {
 
       setGradeData(gradeDataArray);
 
-      
+
       const schoolMap = new Map();
 
       data.forEach((u) => {

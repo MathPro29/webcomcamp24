@@ -107,7 +107,7 @@ export default function PaymentSection() {
     }
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
       const res = await fetch(`${API_BASE}/api/payments/check?${params.toString()}`);
       if (!res.ok) {
@@ -156,7 +156,7 @@ export default function PaymentSection() {
       return;
     }
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     const formData = new FormData();
     formData.append("name", name.trim());
     formData.append("phone", clean_phone(phone));

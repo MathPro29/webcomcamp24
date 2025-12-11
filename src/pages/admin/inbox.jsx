@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, Clock, CheckCircle, XCircle, Settings, 
+import {
+  Users, Clock, CheckCircle, XCircle, Settings,
   AlertCircle, Lock, Unlock, Save, BarChart3
 } from 'lucide-react';
 
@@ -19,7 +19,7 @@ const Inboxpage = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = 'http://202.28.37.166:5000';
+  const API_BASE = 'http://localhost:5000';
 
   // Fetch current stats and settings
   useEffect(() => {
@@ -46,7 +46,7 @@ const Inboxpage = () => {
         const pending = users.filter(u => u.status === 'pending').length;
         const approved = users.filter(u => u.status === 'success' || u.status === 'approved').length;
         const rejected = users.filter(u => u.status === 'declined' || u.status === 'rejected').length;
-        
+
         setStats({
           pending,
           approved,
@@ -139,7 +139,7 @@ const Inboxpage = () => {
                 อัพเดทล่าสุด: {lastUpdated.toLocaleString('th-TH')}
               </p>
             </div>
-            
+
             {/* Registration Toggle */}
             <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 rounded-xl border-2 border-blue-200">
               <div className="text-right">
@@ -150,14 +150,12 @@ const Inboxpage = () => {
               </div>
               <button
                 onClick={handleToggleRegistration}
-                className={`cursor-pointer relative w-16 h-8 rounded-full transition-all duration-300 ${
-                  isRegistrationOpen ? 'bg-green-500' : 'bg-red-500'
-                }`}
+                className={`cursor-pointer relative w-16 h-8 rounded-full transition-all duration-300 ${isRegistrationOpen ? 'bg-green-500' : 'bg-red-500'
+                  }`}
               >
                 <div
-                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center ${
-                    isRegistrationOpen ? 'translate-x-8' : 'translate-x-0'
-                  }`}
+                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 flex items-center justify-center ${isRegistrationOpen ? 'translate-x-8' : 'translate-x-0'
+                    }`}
                 >
                   {isRegistrationOpen ? (
                     <Unlock size={14} className="text-green-600" />
@@ -238,26 +236,24 @@ const Inboxpage = () => {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  capacityPercentage >= 100
+                className={`h-full rounded-full transition-all duration-500 ${capacityPercentage >= 100
                     ? 'bg-gradient-to-r from-red-500 to-red-600'
                     : capacityPercentage >= 80
-                    ? 'bg-gradient-to-r from-orange-500 to-yellow-500'
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600'
-                }`}
+                      ? 'bg-gradient-to-r from-orange-500 to-yellow-500'
+                      : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                  }`}
                 style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
               />
             </div>
           </div>
 
           {/* Remaining Seats Alert */}
-          <div className={`mb-6 p-4 rounded-xl border-2 ${
-            remainingSeats <= 0
+          <div className={`mb-6 p-4 rounded-xl border-2 ${remainingSeats <= 0
               ? 'bg-red-50 border-red-200'
               : remainingSeats <= 20
-              ? 'bg-yellow-50 border-yellow-200'
-              : 'bg-green-50 border-green-200'
-          }`}>
+                ? 'bg-yellow-50 border-yellow-200'
+                : 'bg-green-50 border-green-200'
+            }`}>
             <div className="flex items-center gap-3">
               <AlertCircle
                 size={24}
@@ -265,8 +261,8 @@ const Inboxpage = () => {
                   remainingSeats <= 0
                     ? 'text-red-600'
                     : remainingSeats <= 20
-                    ? 'text-yellow-600'
-                    : 'text-green-600'
+                      ? 'text-yellow-600'
+                      : 'text-green-600'
                 }
               />
               <div>
@@ -274,8 +270,8 @@ const Inboxpage = () => {
                   {remainingSeats <= 0
                     ? 'เต็มแล้ว!'
                     : remainingSeats <= 20
-                    ? 'ใกล้เต็มแล้ว!'
-                    : 'ยังมีที่นั่งเหลือ'}
+                      ? 'ใกล้เต็มแล้ว!'
+                      : 'ยังมีที่นั่งเหลือ'}
                 </div>
                 <div className="text-sm text-gray-600">
                   เหลือที่นั่ง: <span className="font-bold">{Math.max(remainingSeats, 0)}</span> ที่

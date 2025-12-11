@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Search, AlertCircle, CheckCircle, Clock, XCircle, Download } from "lucide-react";
 import { limitrefresh } from "../utils/limitrefresh";
 
 const NameChecking = () => {
@@ -12,8 +12,8 @@ const NameChecking = () => {
 
   // สร้าง API instance
   const api = useMemo(() => {
-    const baseURL = "http://202.28.37.166:5000";
-    
+    const baseURL = "http://localhost:5000";
+
     return {
       get: async (endpoint) => {
         const res = await fetch(`${baseURL}${endpoint}`);
@@ -34,7 +34,7 @@ const NameChecking = () => {
 
     const first = firstName.trim();
     const last = lastName.trim();
-    
+
     if (!first || !last) {
       setError("กรุณากรอกชื่อและนามสกุลให้ครบถ้วน");
       return;
@@ -48,7 +48,7 @@ const NameChecking = () => {
     try {
       // เรียก API เพื่อค้นหา
       const res = await api.get(`/api/users/search?firstName=${encodeURIComponent(first)}&lastName=${encodeURIComponent(last)}`);
-      
+
       if (res.data.found) {
         setSearchResult(res.data.user);
       } else {
@@ -187,7 +187,7 @@ const NameChecking = () => {
                 <Search className="w-5 h-5" />
                 {loading ? "กำลังค้นหา..." : "ค้นหา"}
               </button>
-              
+
               {(searchResult || hasSearched) && (
                 <button
                   onClick={handleClear}
@@ -263,7 +263,49 @@ const NameChecking = () => {
                     </div>
                   </div>
 
-                 
+                  {/* Certificate Section */}
+                  {searchResult.certificate && searchResult.certificate.filename && (
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <h4 className="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                        < CheckCircle className="w-4 h-4" /> เกียรติบัตร
+                      </h4>
+                      {(() => {
+                        const releaseDate = searchResult.certificate.releaseDate ? new Date(searchResult.certificate.releaseDate) : null;
+                        const now = new Date();
+                        const canDownload = !releaseDate || now >= releaseDate;
+
+                        if (canDownload) {
+                          return (
+                            <a
+                              href={`http://localhost:5000/api/users/${searchResult._id}/certificate/download`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center sm:w-auto"
+                            >
+                              <Download className="w-4 h-4" />
+                              ดู / ดาวน์โหลดเกียรติบัตร
+                            </a>
+                          );
+                        } else {
+                          return (
+                            <div className="text-sm text-gray-400 bg-gray-800/50 p-3 rounded-lg border border-gray-700">
+                              <p>เกียรติบัตรจะเปิดให้ดาวน์โหลดในวันที่:</p>
+                              <p className="text-yellow-400 font-medium mt-1">
+                                {releaseDate.toLocaleDateString('th-TH', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                          );
+                        }
+                      })()}
+                    </div>
+                  )}
+
                   {searchResult.status === "pending" && (
                     <div className="mt-6 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-lg">
                       <p className="text-yellow-400 text-sm text-center">
@@ -273,7 +315,7 @@ const NameChecking = () => {
                         หรือ หากยังไม่ได้ชำระเงิน <a href="/payment" className="text-[#e38e0e] hover:underline">ชำระเงินตอนนี้!</a>
                       </p>
                     </div>
-                    
+
                   )}
 
                   {searchResult.status === "declined" && (

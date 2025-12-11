@@ -12,13 +12,13 @@ const sidebarItems = [
 export default function Sidebar({ isOpen, toggleSidebar }) {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // State สำหรับควบคุมการขยาย/ย่อบนจอใหญ่
     const [isDesktopExpanded, setIsDesktopExpanded] = useState(true);
 
     // ตรวจสอบว่าอยู่บนจอใหญ่หรือไม่
     const isLargeScreen = typeof window !== 'undefined' && window.innerWidth >= 1024;
-    
+
     // กำหนดว่า sidebar ควรขยายหรือไม่
     // - Mobile: ใช้ isOpen (แสดง/ซ่อน)
     // - Desktop: ใช้ isDesktopExpanded (ขยาย/ย่อ)
@@ -120,7 +120,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 <button
                     onClick={async () => {
                         try {
-                            await fetch((import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000') + '/api/auth/logout', {
+                            await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/logout', {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: { 'Content-Type': 'application/json' }

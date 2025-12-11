@@ -12,7 +12,7 @@ const Receipts = () => {
     const [viewingSlip, setViewingSlip] = useState(null);
     const [receipts, setReceipts] = useState([]);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
     useEffect(() => {
         fetchReceipts();
@@ -90,10 +90,10 @@ const Receipts = () => {
                 setReceipts(prev => prev.map(r =>
                     r.id === id ? { ...r, status: newStatus, note } : r
                 ));
-                
+
                 // Refresh data after status change to sync with dashboard
                 setTimeout(() => fetchReceipts(), 300);
-                
+
                 // Show success message
                 if (newStatus === 'approved') {
                     console.log('✅ Payment approved - user status updated to "success"');
@@ -141,10 +141,10 @@ const Receipts = () => {
                 // Remove from local state first for immediate UI update
                 setReceipts(prev => prev.filter(r => r.id !== id));
                 setSelectedReceipts(prev => prev.filter(i => i !== id));
-                
+
                 // Refresh data from server to ensure consistency
                 setTimeout(() => fetchReceipts(), 500);
-                
+
                 if (data.userDeleted) {
                     alert(`ลบชื่อและสลิปของ ${userName || ''} เรียบร้อย`);
                 } else {
@@ -418,13 +418,13 @@ const Receipts = () => {
                                                     >
                                                         <Download size={18} />
                                                     </button>
-                                                        <button
-                                                            onClick={() => deleteReceipt(receipt.id)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                            title="ลบสลิป"
-                                                        >
-                                                            <XCircle size={18} />
-                                                        </button>
+                                                    <button
+                                                        onClick={() => deleteReceipt(receipt.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="ลบสลิป"
+                                                    >
+                                                        <XCircle size={18} />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

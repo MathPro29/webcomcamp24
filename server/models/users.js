@@ -25,7 +25,13 @@ const userSchema = new mongoose.Schema({
     enum: ["pending", "success", "declined"],
     default: "pending"
   },
-  laptop: String
+  laptop: String,
+  certificate: {
+    filename: String,
+    originalName: String,
+    releaseDate: Date,
+    uploadedAt: { type: Date, default: Date.now }
+  }
 }, { timestamps: true });
 
 export default mongoose.model("User", userSchema);

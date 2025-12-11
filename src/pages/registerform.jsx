@@ -9,6 +9,8 @@ import { format } from "date-fns";
 import { notify } from "../utils/toast";
 
 export default function RegisterForm() {
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     const [formData, setFormData] = useState({
         prefix: "",
         firstName: "",
@@ -57,11 +59,11 @@ export default function RegisterForm() {
     const checkRegistrationStatus = async () => {
         try {
             // Fetch settings
-            const settingsRes = await axios.get('http://202.28.37.166:5000/api/settings');
+            const settingsRes = await axios.get(`${API_BASE}/api/settings`);
             const settings = settingsRes.data;
 
             // Fetch current user count
-            const usersRes = await axios.get('http://202.28.37.166:5000/api/users/all');
+            const usersRes = await axios.get(`${API_BASE}/api/users/all`);
             const currentCount = usersRes.data.length;
 
             setRegistrationStatus({
@@ -90,8 +92,8 @@ export default function RegisterForm() {
         if (name === 'phone' || name === 'parentPhone' || name === 'emergencyPhone') {
             const cleaned = value.replace(/\D/g, '').slice(0, 10);
             let formatted = cleaned;
-            if (cleaned.length > 6) formatted = `${cleaned.slice(0,3)}-${cleaned.slice(3,6)}-${cleaned.slice(6)}`;
-            else if (cleaned.length > 3) formatted = `${cleaned.slice(0,3)}-${cleaned.slice(3)}`;
+            if (cleaned.length > 6) formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+            else if (cleaned.length > 3) formatted = `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
             setFormData((s) => ({ ...s, [name]: formatted }));
             return;
         }
@@ -157,7 +159,7 @@ export default function RegisterForm() {
     const handleSubmit = async () => {
         const requiredFields = [
             "prefix", "firstName", "lastName", "nickname", "birthDate", "age", "gender",
-            "school", "grade", "province", "phone","email",
+            "school", "grade", "province", "phone", "email",
             "emergencyContact", "emergencyPhone", "shirtSize"
         ];
 
@@ -177,7 +179,7 @@ export default function RegisterForm() {
                 status: "pending",
             };
 
-            const res = await axios.post("http://202.28.37.166:5000/api/register", dataToSend);
+            const res = await axios.post(`${API_BASE}/api/register`, dataToSend);
 
             console.log("สมัครสำเร็จ!", res.data);
             notify.success('สมัครสำเร็จ! ขอบคุณที่สมัครเข้าร่วม ค่ายComcamp 24th');
@@ -237,23 +239,23 @@ export default function RegisterForm() {
                                 </h3>
                             </div>
                             <p className="text-gray-300 ml-12">
-  {!registrationStatus.isOpen ? (
-    <>
-      ขณะนี้ระบบปิดรับสมัครชั่วคราว กรุณาติดตามข่าวสารเพิ่มเติมทางช่องทาง{" "}
-      <a 
-        href="https://www.facebook.com/CCCSMJU" 
-        target="_blank"
-        className="text-blue-400 underline"
-      >
-        Facebook Comcamp
-      </a>
-    </>
-  ) : (
-    <>
-      ขออภัย! จำนวนผู้สมัครเต็มแล้ว ({registrationStatus.currentCount}/{registrationStatus.maxCapacity} คน)
-    </>
-  )}
-</p>
+                                {!registrationStatus.isOpen ? (
+                                    <>
+                                        ขณะนี้ระบบปิดรับสมัครชั่วคราว กรุณาติดตามข่าวสารเพิ่มเติมทางช่องทาง{" "}
+                                        <a
+                                            href="https://www.facebook.com/CCCSMJU"
+                                            target="_blank"
+                                            className="text-blue-400 underline"
+                                        >
+                                            Facebook Comcamp
+                                        </a>
+                                    </>
+                                ) : (
+                                    <>
+                                        ขออภัย! จำนวนผู้สมัครเต็มแล้ว ({registrationStatus.currentCount}/{registrationStatus.maxCapacity} คน)
+                                    </>
+                                )}
+                            </p>
 
                         </div>
                     )}
@@ -326,13 +328,13 @@ export default function RegisterForm() {
 
                                             <div className="group">
                                                 <label className="block text-sm font-medium text-gray-300 mb-2">อายุ</label>
-                                                <input 
-                                                    type="number" 
-                                                    min="0" 
-                                                    max="99" 
-                                                    name="age" 
-                                                    placeholder="อายุ" 
-                                                    value={formData.age} 
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    max="99"
+                                                    name="age"
+                                                    placeholder="อายุ"
+                                                    value={formData.age}
                                                     onChange={handleChange}
                                                     onKeyDown={(e) => {
                                                         // Prevent minus, plus, e, E keys
@@ -341,7 +343,7 @@ export default function RegisterForm() {
                                                         }
                                                     }}
                                                     onWheel={(e) => e.target.blur()}
-                                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none" 
+                                                    className="w-full px-4 py-3 rounded-xl bg-[#0D1028] border border-gray-600 text-white placeholder-gray-500 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 focus:outline-none"
                                                 />
                                             </div>
                                         </div>
@@ -522,11 +524,11 @@ export default function RegisterForm() {
                                     ถัดไป →
                                 </Motion.button>
                             ) : (
-                                <Motion.button 
-                                    onClick={handleSubmit} 
+                                <Motion.button
+                                    onClick={handleSubmit}
                                     disabled={!registrationStatus.isOpen || registrationStatus.currentCount >= registrationStatus.maxCapacity}
-                                    whileHover={buttonHover} 
-                                    whileTap={buttonTap} 
+                                    whileHover={buttonHover}
+                                    whileTap={buttonTap}
                                     className="cursor-pointer flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-xl shadow"
                                 >
                                     ส่งแบบฟอร์ม
