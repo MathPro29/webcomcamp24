@@ -31,6 +31,12 @@ app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
 }));
 
+// Serve favicon
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile('favicon.png', { root: './server' });
+});
+
+
 // API Routes
 app.use("/api/users", userRouter);
 // Apply rate limiter BEFORE the register router so it can block requests
