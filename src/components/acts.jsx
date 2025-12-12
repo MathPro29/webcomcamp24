@@ -87,9 +87,9 @@ const Acts = () => {
             className="w-full h-48 object-cover"
           />
           <div className="p-6 text-center">
-            <h3 className="text-xl font-semibold text-yellow-400 mb-2">นำเสนอโปรเจกต์</h3>
+            <h3 className="text-xl font-semibold text-yellow-400 mb-2">นำเสนอผลงาน</h3>
             <p className="text-gray-300 text-sm leading-relaxed">
-              โอกาสของน้องๆที่จะได้นำเสนอโปรเจกต์ที่น้องๆได้พัฒนาขึ้นมา แก่อาจารย์และเพื่อนๆ
+              โอกาสของน้องๆที่จะได้นำเสนอผลงานที่น้องๆได้พัฒนาขึ้นมา แก่คณาจารย์และเพื่อนๆ
             </p>
           </div>
         </div>
