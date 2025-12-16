@@ -12,7 +12,7 @@ const NameChecking = () => {
 
   // สร้าง API instance
   const api = useMemo(() => {
-    const baseURL = "http://202.2:5000";
+    const baseURL = "http://202.28.37.166:5000";
 
     return {
       get: async (endpoint) => {
@@ -264,7 +264,7 @@ const NameChecking = () => {
                   </div>
 
                   {/* Certificate Section */}
-                  {searchResult.certificate && searchResult.certificate.filename && (
+                  {searchResult.certificate && searchResult.certificate.fileData && (
                     <div className="mt-4 pt-4 border-t border-gray-700">
                       <h4 className="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
                         < CheckCircle className="w-4 h-4" /> เกียรติบัตร

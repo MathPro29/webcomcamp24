@@ -27,10 +27,12 @@ const userSchema = new mongoose.Schema({
   },
   laptop: String,
   certificate: {
-    filename: String,
-    originalName: String,
+    filename: String,        // Original filename for download
+    fileData: String,        // Base64 encoded file data
+    mimeType: String,        // MIME type (e.g., 'application/pdf', 'image/jpeg')
+    fileSize: Number,        // File size in bytes
     releaseDate: Date,
-    uploadedAt: { type: Date, default: Date.now }
+    uploadedAt: Date
   }
 }, { timestamps: true });
 

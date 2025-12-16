@@ -11,28 +11,41 @@ import { notify } from "../utils/toast";
 export default function RegisterForm() {
     const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
 
-    const [formData, setFormData] = useState({
-        prefix: "",
-        firstName: "",
-        lastName: "",
-        nickname: "",
-        birthDate: "",
-        age: "",
-        gender: "",
-        school: "",
-        grade: "",
-        province: "",
-        phone: "",
-        parentPhone: "",
-        email: "",
-        lineId: "",
-        shirtSize: "",
-        allergies: "",
-        medicalConditions: "",
-        emergencyContact: "",
-        emergencyPhone: "",
-        laptop: "",
-    });
+    // Load initial form data from sessionStorage if available
+    const loadFormDataFromSession = () => {
+        try {
+            const savedData = sessionStorage.getItem('registerFormData');
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+        } catch (error) {
+            console.error('Error loading form data from sessionStorage:', error);
+        }
+        return {
+            prefix: "",
+            firstName: "",
+            lastName: "",
+            nickname: "",
+            birthDate: "",
+            age: "",
+            gender: "",
+            school: "",
+            grade: "",
+            province: "",
+            phone: "",
+            parentPhone: "",
+            email: "",
+            lineId: "",
+            shirtSize: "",
+            allergies: "",
+            medicalConditions: "",
+            emergencyContact: "",
+            emergencyPhone: "",
+            laptop: "",
+        };
+    };
+
+    const [formData, setFormData] = useState(loadFormDataFromSession);
 
     // Date object for react-datepicker
     const [birthDateObj, setBirthDateObj] = useState(null);
@@ -51,10 +64,38 @@ export default function RegisterForm() {
         loading: true
     });
 
-    // Check registration status on mount
+    // Check registration status on mount and restore birthDateObj from formData
     useEffect(() => {
         checkRegistrationStatus();
+
+        // Restore birthDateObj from saved birthDate string
+        if (formData.birthDate) {
+            try {
+                // Parse the date string (format: dd/MM/yyyy)
+                const parts = formData.birthDate.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+                    const year = parseInt(parts[2], 10);
+                    const dateObj = new Date(year, month, day);
+                    if (!isNaN(dateObj.getTime())) {
+                        setBirthDateObj(dateObj);
+                    }
+                }
+            } catch (error) {
+                console.error('Error parsing saved birth date:', error);
+            }
+        }
     }, []);
+
+    // Save form data to sessionStorage whenever it changes
+    useEffect(() => {
+        try {
+            sessionStorage.setItem('registerFormData', JSON.stringify(formData));
+        } catch (error) {
+            console.error('Error saving form data to sessionStorage:', error);
+        }
+    }, [formData]);
 
     const checkRegistrationStatus = async () => {
         try {
@@ -184,6 +225,14 @@ export default function RegisterForm() {
 
             console.log("สมัครสำเร็จ!", res.data);
             notify.success('สมัครสำเร็จ! ขอบคุณที่สมัครเข้าร่วม ค่ายComcamp 24th');
+
+            // Clear form data from sessionStorage after successful submission
+            try {
+                sessionStorage.removeItem('registerFormData');
+            } catch (error) {
+                console.error('Error clearing sessionStorage:', error);
+            }
+
             setSubmitted(true);
 
         } catch (err) {

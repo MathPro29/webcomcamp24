@@ -41,8 +41,8 @@ const ConfettiParticle = ({ x, y, xOffset, duration, delay, color, rotateDir }) 
 const CampCountdown = () => {
   // ตั้งเวลาที่นี่เป็น ISO string หรือ Date object
   // ตัวอย่าง:
-  const OPEN_TARGET = "2026-02-06T23:59:59";  // เวลาเปิดค่าย
-  const CLOSE_TARGET = "2026-02-08T18:00:00"; // เวลาปิดค่าย
+  const OPEN_TARGET = "2026-02-20T23:59:59";  // เวลาเปิดค่าย
+  const CLOSE_TARGET = "2026-02-22T16:00:00"; // เวลาปิดค่าย
 
   // ตรวจสอบความถูกต้องเบื้องต้น
   if (new Date(CLOSE_TARGET) <= new Date(OPEN_TARGET)) {
@@ -98,7 +98,7 @@ const CampCountdown = () => {
               Countdown เวลาเปิดค่าย
             </h2>
             <p className="text-lg text-white">
-              ค่ายเริ่มวันที่ 7 กุมภาพันธ์ 2569
+              ค่ายเริ่มวันที่ 21 กุมภาพันธ์ 2569
             </p>
 
             <div className="flex gap-2 sm:gap-3 justify-center mb-6 px-4">

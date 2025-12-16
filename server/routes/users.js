@@ -3,13 +3,7 @@ import { getUsers } from "../controllers/users.js";
 import User from "../models/users.js";
 import Payment from "../models/payment.js";
 import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 import { optionalAuth } from '../middleware/auth.js';
-import { CERTIFICATE_UPLOAD_PATH } from '../config/storage.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const userRouter = express.Router();
 
@@ -24,7 +18,7 @@ userRouter.post("/:id/certificate", async (req, res) => {
       if (req.body.releaseDate) {
         // Allow updating only releaseDate
         const user = await User.findById(req.params.id);
-        if (user && user.certificate && user.certificate.filename) {
+        if (user && user.certificate && user.certificate.fileData) {
           user.certificate.releaseDate = new Date(req.body.releaseDate);
           await user.save();
           console.log(`✅ Certificate release date updated for user ${req.params.id}`);
@@ -45,22 +39,35 @@ userRouter.post("/:id/certificate", async (req, res) => {
       return res.status(400).json({ error: "Invalid file type. Only PDF and Images are allowed." });
     }
 
-    const timestamp = Date.now();
-    const filename = `cert_${id}_${timestamp}${ext}`;
-    const uploadPath = path.join(CERTIFICATE_UPLOAD_PATH, filename);
+    // Check file size (max 10MB for database storage)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return res.status(400).json({ error: "File too large. Maximum size is 10MB." });
+    }
 
-    // Move file
-    await file.mv(uploadPath);
+    // Convert file to Base64
+    const fileData = file.data.toString('base64');
+    
+    // Get MIME type
+    const mimeTypes = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png'
+    };
+    const mimeType = mimeTypes[ext];
 
-    // Update user
+    // Update user with Base64 data
     const certificateData = {
-      filename: filename,
-      originalName: file.name,
+      filename: file.name,
+      fileData: fileData,
+      mimeType: mimeType,
+      fileSize: file.size,
       releaseDate: releaseDate ? new Date(releaseDate) : null,
       uploadedAt: new Date()
     };
 
-    console.log(`Debug: Updating user ${id} with cert data:`, certificateData);
+    console.log(`Debug: Updating user ${id} with cert data (size: ${file.size} bytes)`);
 
     const user = await User.findByIdAndUpdate(id, { certificate: certificateData }, { new: true });
 
@@ -69,7 +76,7 @@ userRouter.post("/:id/certificate", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    console.log(`✅ Certificate uploaded for user ${id}. User updated.`);
+    console.log(`✅ Certificate uploaded to database for user ${id}`);
     res.json({ success: true, user });
   } catch (err) {
     console.error("❌ Upload error:", err);
@@ -83,7 +90,7 @@ userRouter.get("/:id/certificate/download", optionalAuth, async (req, res) => {
     const { id } = req.params;
     const user = await User.findById(id);
 
-    if (!user || !user.certificate || !user.certificate.filename) {
+    if (!user || !user.certificate || !user.certificate.fileData) {
       return res.status(404).json({ error: "Certificate not found" });
     }
 
@@ -93,19 +100,55 @@ userRouter.get("/:id/certificate/download", optionalAuth, async (req, res) => {
       return res.status(403).json({ error: "Certificate not yet released" });
     }
 
-    const filePath = path.join(CERTIFICATE_UPLOAD_PATH, user.certificate.filename);
-    if (fs.existsSync(filePath)) {
-      if (req.query.view === 'true') {
-        res.sendFile(filePath);
-      } else {
-        res.download(filePath, `Certificate-${user.firstName}-${user.lastName}${path.extname(user.certificate.filename)}`);
-      }
+    // Convert Base64 back to Buffer
+    const fileBuffer = Buffer.from(user.certificate.fileData, 'base64');
+    
+    // Set appropriate headers
+    res.setHeader('Content-Type', user.certificate.mimeType);
+    res.setHeader('Content-Length', fileBuffer.length);
+    
+    if (req.query.view === 'true') {
+      // For viewing in browser
+      res.setHeader('Content-Disposition', 'inline');
     } else {
-      res.status(404).json({ error: "File not found on server" });
+      // For downloading - sanitize filename to avoid header issues
+      const ext = path.extname(user.certificate.filename) || '.pdf';
+      // Use simple ASCII-safe filename
+      const safeFirstName = user.firstName ? user.firstName.replace(/[^\w\s-]/g, '') : 'User';
+      const safeLastName = user.lastName ? user.lastName.replace(/[^\w\s-]/g, '') : '';
+      const baseName = `Certificate-${safeFirstName}${safeLastName ? '-' + safeLastName : ''}${ext}`;
+      
+      // Use RFC 5987 encoding for better compatibility
+      const encodedName = encodeURIComponent(baseName).replace(/['()]/g, escape).replace(/\*/g, '%2A');
+      res.setHeader('Content-Disposition', `attachment; filename="${baseName}"; filename*=UTF-8''${encodedName}`);
     }
+    
+    res.send(fileBuffer);
   } catch (err) {
     console.error("❌ Download error:", err);
     res.status(500).json({ error: "Download failed" });
+  }
+});
+
+// 1.6 Delete Certificate
+userRouter.delete("/:id/certificate", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user || !user.certificate || !user.certificate.fileData) {
+      return res.status(404).json({ error: "Certificate not found" });
+    }
+
+    // Remove certificate from user document (no need to delete file from filesystem)
+    user.certificate = undefined;
+    await user.save();
+
+    console.log(`✅ Certificate deleted from database for user ${id}`);
+    res.json({ success: true, message: "Certificate deleted successfully" });
+  } catch (err) {
+    console.error("❌ Delete certificate error:", err);
+    res.status(500).json({ error: "Delete failed" });
   }
 });
 

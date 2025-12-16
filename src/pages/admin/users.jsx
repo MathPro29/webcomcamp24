@@ -73,27 +73,31 @@ function FieldRow({ label, value, editingValue, onChange, type = 'text', textare
 /* ===========================
    CertificateManagerModal Component
    =========================== */
-function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
+function CertificateManagerModal({
+  user,
+  onClose,
+  onUpdateSuccess,
+  globalReleaseDate,
+  globalReleaseTime,
+  setGlobalReleaseDate,
+  setGlobalReleaseTime
+}) {
   const [file, setFile] = useState(null);
-  const [releaseDate, setReleaseDate] = useState(
-    user.certificate?.releaseDate
-      ? new Date(user.certificate.releaseDate).toISOString().split('T')[0]
-      : ''
-  );
-  const [releaseTime, setReleaseTime] = useState(
-    user.certificate?.releaseDate
-      ? new Date(user.certificate.releaseDate).toTimeString().slice(0, 5)
-      : '09:00'
-  );
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState(user.certificate ? 'view' : 'upload');
 
-  // Set default date to tomorrow if not set
+  // Use global state, but initialize from user's certificate if available and global is empty
   useEffect(() => {
-    if (!releaseDate) {
+    if (user.certificate?.releaseDate && !globalReleaseDate) {
+      const certDate = new Date(user.certificate.releaseDate);
+      setGlobalReleaseDate(certDate.toISOString().split('T')[0]);
+      setGlobalReleaseTime(certDate.toTimeString().slice(0, 5));
+    } else if (!globalReleaseDate) {
+      // Set default date to tomorrow if not set
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      setReleaseDate(tomorrow.toISOString().split('T')[0]);
+      setGlobalReleaseDate(tomorrow.toISOString().split('T')[0]);
+      setGlobalReleaseTime('09:00');
     }
   }, []);
 
@@ -115,7 +119,7 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
     if (file) formData.append('certificate', file);
 
     // Combine date and time
-    const combinedDateTime = `${releaseDate}T${releaseTime}:00`;
+    const combinedDateTime = `${globalReleaseDate}T${globalReleaseTime}:00`;
     formData.append('releaseDate', combinedDateTime);
 
     try {
@@ -133,6 +137,33 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
       } else {
         const data = await res.json();
         notify.error(data.error || 'บันทึกล้มเหลว');
+      }
+    } catch (err) {
+      console.error(err);
+      notify.error('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteCertificate = async () => {
+    if (!confirm('คุณต้องการลบไฟล์เกียรติบัตรนี้ใช่หรือไม่?')) return;
+
+    setUploading(true);
+    try {
+      const API_BASE = 'http://202.28.37.166:5000';
+      const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (res.ok) {
+        notify.success('ลบไฟล์เกียรติบัตรสำเร็จ');
+        onUpdateSuccess(user.id, null, null);
+        onClose();
+      } else {
+        const data = await res.json();
+        notify.error(data.error || 'ลบไฟล์ล้มเหลว');
       }
     } catch (err) {
       console.error(err);
@@ -192,7 +223,7 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8 border border-gray-200 shadow-sm">
           <div className="flex flex-col items-center justify-center">
             {/* Image Preview */}
-            {['.jpg', '.jpeg', '.png'].some(ext => (user.certificate.filename || '').toLowerCase().endsWith(ext)) ? (
+            {user.certificate.mimeType && user.certificate.mimeType.startsWith('image/') ? (
               <div className="mb-6 w-full">
                 <div className="relative group">
                   <img
@@ -240,6 +271,14 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
                 <Download size={22} className="group-hover:animate-bounce" />
                 <span>ดาวน์โหลด</span>
               </a>
+              <button
+                onClick={handleDeleteCertificate}
+                disabled={uploading}
+                className="group flex items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Trash2 size={22} />
+                <span>ลบไฟล์</span>
+              </button>
             </div>
           </div>
 
@@ -325,7 +364,7 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">ไฟล์ปัจจุบัน</p>
-                        <p className="text-xs text-gray-500">{user.certificate.filename || 'certificate.pdf'}</p>
+                        <p className="text-xs text-gray-500">{user.certificate.filename || 'certificate'} ({(user.certificate.fileSize / 1024).toFixed(1)} KB)</p>
                       </div>
                     </div>
                     <a
@@ -357,8 +396,8 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
                 <label className="block text-xs text-gray-600 mb-2">ตั้งวันที่</label>
                 <input
                   type="date"
-                  value={releaseDate}
-                  onChange={(e) => setReleaseDate(e.target.value)}
+                  value={globalReleaseDate}
+                  onChange={(e) => setGlobalReleaseDate(e.target.value)}
                   className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm cursor-pointer"
                 />
               </div>
@@ -372,13 +411,13 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
                     type="number"
                     min={0}
                     max={23}
-                    value={parseInt(releaseTime.split(':')[0], 10)}
+                    value={parseInt(globalReleaseTime.split(':')[0], 10)}
                     onChange={(e) => {
                       let hour = parseInt(e.target.value, 10);
                       if (isNaN(hour)) hour = 0;
                       if (hour > 23) hour = 23;
                       if (hour < 0) hour = 0;
-                      setReleaseTime(`${hour.toString().padStart(2, '0')}:${releaseTime.split(':')[1]}`);
+                      setGlobalReleaseTime(`${hour.toString().padStart(2, '0')}:${globalReleaseTime.split(':')[1]}`);
                     }}
                     onWheel={(e) => e.target.blur()} // ป้องกัน scroll
                     className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
@@ -389,13 +428,13 @@ function CertificateManagerModal({ user, onClose, onUpdateSuccess }) {
                     type="number"
                     min={0}
                     max={59}
-                    value={parseInt(releaseTime.split(':')[1], 10)}
+                    value={parseInt(globalReleaseTime.split(':')[1], 10)}
                     onChange={(e) => {
                       let minute = parseInt(e.target.value, 10);
                       if (isNaN(minute)) minute = 0;
                       if (minute > 59) minute = 59;
                       if (minute < 0) minute = 0;
-                      setReleaseTime(`${releaseTime.split(':')[0]}:${minute.toString().padStart(2, '0')}`);
+                      setGlobalReleaseTime(`${globalReleaseTime.split(':')[0]}:${minute.toString().padStart(2, '0')}`);
                     }}
                     onWheel={(e) => e.target.blur()} // ป้องกัน scroll
                     className="block w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
@@ -458,7 +497,9 @@ export default function UnifiedUsersReceipts() {
   const [uploadingUser, setUploadingUser] = useState(null); // upload cert modal
   const [saving, setSaving] = useState(false);
 
-
+  // Global certificate release date/time - shared across all certificate modals
+  const [globalReleaseDate, setGlobalReleaseDate] = useState('');
+  const [globalReleaseTime, setGlobalReleaseTime] = useState('09:00');
 
   const [users, setUsers] = useState([]);
 
@@ -1016,8 +1057,8 @@ export default function UnifiedUsersReceipts() {
                             <Trash2 size={18} />
                           </button>
 
-                          <button onClick={() => setUploadingUser(user)} className={`p-2 rounded-lg transition-colors ${user.certificate ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`} title="จัดการเกียรติบัตร">
-                            <StickyNote size={18} />
+                          <button onClick={() => setUploadingUser(user)} className={`p-2 rounded-lg transition-colors ${user.certificate ? 'text-green-600 hover:bg-green-50' : 'text-red-400 hover:bg-red-50'}`} title={user.certificate ? "จัดการเกียรติบัตร" : "ยังไม่มีเกียรติบัตร"}>
+                            {user.certificate ? <StickyNote size={18} /> : <StickyNote size={18} />}
                           </button>
                         </div>
                       </td>
@@ -1061,15 +1102,19 @@ export default function UnifiedUsersReceipts() {
           <CertificateManagerModal
             user={uploadingUser}
             onClose={() => setUploadingUser(null)}
+            globalReleaseDate={globalReleaseDate}
+            globalReleaseTime={globalReleaseTime}
+            setGlobalReleaseDate={setGlobalReleaseDate}
+            setGlobalReleaseTime={setGlobalReleaseTime}
             onUpdateSuccess={(userId, releaseDate, filename) => {
               setUsers(prev => prev.map(u => u.id === userId ? {
                 ...u,
-                certificate: {
+                certificate: filename ? {
                   ...u.certificate, // keep other fields if any
                   filename,
                   releaseDate,
                   uploadedAt: u.certificate?.uploadedAt || new Date() // preserve or new
-                }
+                } : null // Set to null when file is deleted
               } : u));
             }}
           />

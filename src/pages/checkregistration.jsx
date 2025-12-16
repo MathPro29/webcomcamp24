@@ -185,7 +185,7 @@ export default function CheckRegistration() {
                                             </div>
 
                                             {/* Certificate Section */}
-                                            {user.certificate && user.certificate.filename && user.status !== 'rejected' && (
+                                            {user.certificate && user.certificate.fileData && user.status !== 'rejected' && (
                                                 <div className="mt-4 pt-4 border-t border-gray-100">
                                                     <h4 className="text-lg font-bold text-gray-800 mb-2">เกียรติบัตร</h4>
                                                     {(() => {

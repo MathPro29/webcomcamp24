@@ -11,6 +11,8 @@ import paymentsRouter from "./routes/payments.js";
 import { limitsignup } from "./middleware/ratelimit.js";
 import { loginlimit } from "./middleware/ratelimit.js";
 import settingsRouter from "./routes/settings.js";
+import { ensureStorageExists } from "./config/storage.js";
+import fs from 'fs';
 
 
 dotenv.config();
@@ -48,6 +50,9 @@ app.use('/api/settings', settingsRouter);
 
 // เชื่อมต่อ DB และเปิด server
 DBconnect().then(() => {
+    // Ensure storage directories exist
+    ensureStorageExists(fs);
+    
     app.get('/', (req, res) => {
         res.send('Server is running and connected to MongoDB!');
     });
