@@ -134,6 +134,19 @@ const NameChecking = () => {
           </p>
         </div>
 
+        {/* Parental Consent Download Button */}
+        <div className="max-w-sm mx-auto mb-6">
+          <a
+            href="https://drive.google.com/file/d/1Rpe3AW60AHT3xDDZR5QlxJPPWczhhVjL/view"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cursor-pointer flex items-center justify-center gap-1 bg-gradient-to-r px-3 py-4 rounded-lg from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-[1.02] border border-red-400/30"
+          >
+            <Download className="w-5 h-5" />
+            <span>ดาวน์โหลดเอกสารขออนุญาตผู้ปกครอง</span>
+          </a>
+        </div>
+
         {/* Search Form */}
         <div className="max-w-2xl mx-auto mb-8">
           <div className="bg-[#1a1d3b] p-6 rounded-xl border border-gray-700 shadow-lg">

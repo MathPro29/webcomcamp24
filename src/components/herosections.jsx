@@ -133,7 +133,7 @@ const HeroSections = () => {
             <p className="text-white/70 text-sm sm:text-base leading-relaxed font-light">
               คณะวิทยาศาสตร์ มหาวิทยาลัยแม่โจ้
             </p>
-          
+
           </motion.div>
         </motion.div>
       </div>
