@@ -5,6 +5,10 @@ import App from "./app.jsx";
 import "./index.css";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { initSecurity } from './utils/security.js';
+
+// Initialize security measures (DevTools prevention, console disable, etc.)
+initSecurity();
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
