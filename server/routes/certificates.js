@@ -55,7 +55,12 @@ settingsRouter.put('/certificate-release', async (req, res) => {
       settings = new Settings();
     }
     
-    settings.certificateReleaseDate = releaseDate ? new Date(releaseDate) : null;
+    // Parse the datetime string as Thailand local time (UTC+7)
+    // Append timezone offset to ensure correct interpretation
+    const dateTimeWithTZ = releaseDate && (releaseDate.includes('+') || releaseDate.includes('Z'))
+      ? releaseDate 
+      : releaseDate + '+07:00';
+    settings.certificateReleaseDate = releaseDate ? new Date(dateTimeWithTZ) : null;
     await settings.save();
     
     console.log('✅ Certificate release date updated:', releaseDate);

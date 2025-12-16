@@ -90,13 +90,22 @@ function CertificateManagerModal({
   useEffect(() => {
     if (user.certificate?.releaseDate && !globalReleaseDate) {
       const certDate = new Date(user.certificate.releaseDate);
-      setGlobalReleaseDate(certDate.toISOString().split('T')[0]);
-      setGlobalReleaseTime(certDate.toTimeString().slice(0, 5));
+      // Use local date components to avoid timezone shift
+      const year = certDate.getFullYear();
+      const month = String(certDate.getMonth() + 1).padStart(2, '0');
+      const day = String(certDate.getDate()).padStart(2, '0');
+      const hours = String(certDate.getHours()).padStart(2, '0');
+      const minutes = String(certDate.getMinutes()).padStart(2, '0');
+      setGlobalReleaseDate(`${year}-${month}-${day}`);
+      setGlobalReleaseTime(`${hours}:${minutes}`);
     } else if (!globalReleaseDate) {
       // Set default date to tomorrow if not set
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
-      setGlobalReleaseDate(tomorrow.toISOString().split('T')[0]);
+      const year = tomorrow.getFullYear();
+      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const day = String(tomorrow.getDate()).padStart(2, '0');
+      setGlobalReleaseDate(`${year}-${month}-${day}`);
       setGlobalReleaseTime('09:00');
     }
   }, []);
@@ -118,7 +127,8 @@ function CertificateManagerModal({
     const formData = new FormData();
     if (file) formData.append('certificate', file);
 
-    // Combine date and time
+    // Combine date and time - create local datetime and send as ISO string
+    // This preserves the user's intended local time
     const combinedDateTime = `${globalReleaseDate}T${globalReleaseTime}:00`;
     formData.append('releaseDate', combinedDateTime);
 

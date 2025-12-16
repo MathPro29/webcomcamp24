@@ -19,7 +19,12 @@ userRouter.post("/:id/certificate", async (req, res) => {
         // Allow updating only releaseDate
         const user = await User.findById(req.params.id);
         if (user && user.certificate && user.certificate.fileData) {
-          user.certificate.releaseDate = new Date(req.body.releaseDate);
+          // Parse the datetime string as Thailand local time (UTC+7)
+          // Append timezone offset to ensure correct interpretation
+          const dateTimeWithTZ = req.body.releaseDate.includes('+') || req.body.releaseDate.includes('Z') 
+            ? req.body.releaseDate 
+            : req.body.releaseDate + '+07:00';
+          user.certificate.releaseDate = new Date(dateTimeWithTZ);
           await user.save();
           console.log(`✅ Certificate release date updated for user ${req.params.id}`);
           return res.json({ success: true, user });
@@ -63,7 +68,14 @@ userRouter.post("/:id/certificate", async (req, res) => {
       fileData: fileData,
       mimeType: mimeType,
       fileSize: file.size,
-      releaseDate: releaseDate ? new Date(releaseDate) : null,
+      // Parse the datetime string as Thailand local time (UTC+7)
+      // Append timezone offset to ensure correct interpretation
+      releaseDate: releaseDate ? (() => {
+        const dateTimeWithTZ = releaseDate.includes('+') || releaseDate.includes('Z') 
+          ? releaseDate 
+          : releaseDate + '+07:00';
+        return new Date(dateTimeWithTZ);
+      })() : null,
       uploadedAt: new Date()
     };
 
