@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
 const app = express();
 
 /* ======================
-   CORS CONFIG (สำคัญ)
+   CORS CONFIG
 ====================== */
 const allowedOrigins = [
   "http://comcamp.csmju.com",
@@ -31,23 +31,18 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow server-to-server / curl
+  origin(origin, callback) {
     if (!origin) return callback(null, true);
-
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS not allowed"));
+      return callback(null, true);
     }
+    return callback(new Error("CORS not allowed"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-// handle preflight
-app.options("*", cors());
+// ❌ ห้ามใช้ app.options("*")
+// app.options("*", cors());
 
 /* ======================
    GLOBAL MIDDLEWARE
@@ -56,27 +51,15 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(fileUpload({
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  limits: { fileSize: 50 * 1024 * 1024 },
 }));
 
 /* ======================
-   STATIC / MISC
-====================== */
-app.get("/favicon.ico", (req, res) => {
-  res.sendFile("favicon.png", { root: "./server" });
-});
-
-/* ======================
-   API ROUTES
+   ROUTES
 ====================== */
 app.use("/api/users", userRouter);
-
-// register (rate-limit BEFORE router)
 app.use("/api/register", limitsignup, registerRouter);
-
-// auth (rate-limit BEFORE router)
 app.use("/api/auth", loginlimit, authRouter);
-
 app.use("/api/payments", paymentsRouter);
 app.use("/api/settings", settingsRouter);
 
@@ -88,11 +71,12 @@ DBconnect()
     ensureStorageExists(fs);
 
     app.get("/", (req, res) => {
-      res.send("🚀 Backend is running and connected to MongoDB");
+      res.send("Backend is running and connected to MongoDB");
     });
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server listening on port ${PORT}`);
+    // ⭐ สำคัญมากสำหรับ Docker
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server listening on 0.0.0.0:${PORT}`);
     });
   })
   .catch((err) => {
