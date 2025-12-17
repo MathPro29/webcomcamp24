@@ -13,8 +13,8 @@ export default defineConfig({
     terserOptions: {
       compress: {
         // ลบ console และ debugger ทั้งหมดตอน build
-        drop_console: true,
-        drop_debugger: true,
+        // drop_console: true,
+        // drop_debugger: true,
         // ลบโค้ดที่ไม่ได้ใช้
         dead_code: true,
       },
