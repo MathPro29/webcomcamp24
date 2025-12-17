@@ -120,7 +120,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                 <button
                     onClick={async () => {
                         try {
-                            await fetch((import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000') + '/api/auth/logout', {
+                            await fetch((import.meta.env.VITE_API_URL || 'https://comcamp.csmju.com:5000') + '/api/auth/logout', {
                                 method: 'POST',
                                 credentials: 'include',
                                 headers: { 'Content-Type': 'application/json' }
