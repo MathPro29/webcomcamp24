@@ -13,9 +13,9 @@
 
 // ========== CONFIGURATION ==========
 const CONFIG = {
-  disableRightClick: false,
-  disableKeyboardShortcuts: false,
-  showWarnings: false,
+  disableRightClick: true,
+  disableKeyboardShortcuts: true,
+  showWarnings: true,
   warningMessage: '⚠️ การกระทำนี้ถูกปิดใช้งานเพื่อความปลอดภัย',
 };
 
