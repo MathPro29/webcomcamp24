@@ -7,7 +7,7 @@ export default function CheckRegistration() {
     const [isSearching, setIsSearching] = useState(false);
     const [expandedId, setExpandedId] = useState(null);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://202.28.37.166:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000';
 
     const statusConfig = {
         approved: {
