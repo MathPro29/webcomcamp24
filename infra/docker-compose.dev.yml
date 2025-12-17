@@ -8,7 +8,7 @@ services:
     # ports:
     #   - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: webcomamp
+      MONGO_INITDB_DATABASE: webcomampdb
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -24,7 +24,7 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/webcomamp
+      - MONGODB_URI=mongodb://mongodb:27017/webcomampdb
     volumes:
       - ../server:/app
       - /app/node_modules
@@ -44,7 +44,7 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=http://202.28.37.166:5000
     volumes:
       - ..:/app
       - /app/node_modules
