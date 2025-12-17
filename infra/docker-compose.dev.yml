@@ -44,7 +44,7 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://202.28.37.166:5000
+      - VITE_API_URL=http://comcamp.csmju.com:5000
     volumes:
       - ..:/app
       - /app/node_modules
