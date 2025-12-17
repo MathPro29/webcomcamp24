@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: webcomcamp24-mongodb-prod
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: webcomcamp24
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - webcomcamp24-network
+    restart: always
+
+  # Backend Server
+  server:
+    build:
+      context: ../server
+      dockerfile: infra/Dockerfile.prod
+    container_name: webcomcamp24-server-prod
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/webcomcamp24
+    depends_on:
+      - mongodb
+    networks:
+      - webcomcamp24-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend (Nginx)
+  frontend:
+    build:
+      context: ..
+      dockerfile: src/infra/Dockerfile.prod
+    container_name: webcomcamp24-frontend-prod
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - webcomcamp24-network
+    restart: always
+
+volumes:
+  mongodb_data:
+
+networks:
+  webcomcamp24-network:
+    driver: bridge

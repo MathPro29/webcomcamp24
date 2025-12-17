@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: webcomcamp24-mongodb-dev
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: webcomcamp24
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - webcomcamp24-network
+
+  # Backend Server
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+    container_name: webcomcamp24-server-dev
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/webcomcamp24
+    volumes:
+      - ../server:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - webcomcamp24-network
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ..
+      dockerfile: src/Dockerfile.dev
+    container_name: webcomcamp24-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:5000
+    volumes:
+      - ..:/app
+      - /app/node_modules
+      - /app/server/node_modules
+    depends_on:
+      - server
+    networks:
+      - webcomcamp24-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+
+networks:
+  webcomcamp24-network:
+    driver: bridge
