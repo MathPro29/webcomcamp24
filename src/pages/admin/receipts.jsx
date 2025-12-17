@@ -21,7 +21,7 @@ const Receipts = () => {
     const fetchReceipts = async () => {
         try {
             setIsLoading(true);
-            const res = await fetch(`${API_BASE}/payments/admin/all`, {
+            const res = await fetch(`${API_BASE}/api/payments/admin/all`, {
                 credentials: 'include'
             });
             if (res.ok) {
@@ -80,7 +80,7 @@ const Receipts = () => {
     // จัดการสถานะ
     const handleStatusChange = async (id, newStatus, note = '') => {
         try {
-            const res = await fetch(`${API_BASE}/payments/${id}/status`, {
+            const res = await fetch(`${API_BASE}/api/payments/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -131,7 +131,7 @@ const Receipts = () => {
         if (!confirm('ยืนยันการลบสลิปนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
 
         try {
-            const url = `${API_BASE}/payments/${id}${removeUser ? '?removeUser=true' : ''}`;
+            const url = `${API_BASE}/api/payments/${id}${removeUser ? '?removeUser=true' : ''}`;
             const res = await fetch(url, {
                 method: 'DELETE',
                 credentials: 'include'

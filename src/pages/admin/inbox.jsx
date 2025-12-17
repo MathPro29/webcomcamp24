@@ -30,7 +30,7 @@ const Inboxpage = () => {
     setIsLoading(true);
     try {
       // Fetch settings
-      const settingsRes = await fetch(`${API_BASE}/settings`);
+      const settingsRes = await fetch(`${API_BASE}/api/settings`);
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         setIsRegistrationOpen(settingsData.isRegistrationOpen);
@@ -40,7 +40,7 @@ const Inboxpage = () => {
       }
 
       // Fetch user stats
-      const usersRes = await fetch(`${API_BASE}/users/all`);
+      const usersRes = await fetch(`${API_BASE}/api/users/all`);
       if (usersRes.ok) {
         const users = await usersRes.json();
         const pending = users.filter(u => u.status === 'pending').length;
@@ -65,7 +65,7 @@ const Inboxpage = () => {
   const handleToggleRegistration = async () => {
     try {
       const newStatus = !isRegistrationOpen;
-      const res = await fetch(`${API_BASE}/settings`, {
+      const res = await fetch(`${API_BASE}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -237,10 +237,10 @@ const Inboxpage = () => {
             <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${capacityPercentage >= 100
-                    ? 'bg-gradient-to-r from-red-500 to-red-600'
-                    : capacityPercentage >= 80
-                      ? 'bg-gradient-to-r from-orange-500 to-yellow-500'
-                      : 'bg-gradient-to-r from-blue-500 to-purple-600'
+                  ? 'bg-gradient-to-r from-red-500 to-red-600'
+                  : capacityPercentage >= 80
+                    ? 'bg-gradient-to-r from-orange-500 to-yellow-500'
+                    : 'bg-gradient-to-r from-blue-500 to-purple-600'
                   }`}
                 style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
               />
@@ -249,10 +249,10 @@ const Inboxpage = () => {
 
           {/* Remaining Seats Alert */}
           <div className={`mb-6 p-4 rounded-xl border-2 ${remainingSeats <= 0
-              ? 'bg-red-50 border-red-200'
-              : remainingSeats <= 20
-                ? 'bg-yellow-50 border-yellow-200'
-                : 'bg-green-50 border-green-200'
+            ? 'bg-red-50 border-red-200'
+            : remainingSeats <= 20
+              ? 'bg-yellow-50 border-yellow-200'
+              : 'bg-green-50 border-green-200'
             }`}>
             <div className="flex items-center gap-3">
               <AlertCircle

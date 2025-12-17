@@ -25,7 +25,7 @@ const Login = () => {
 
         // Try server authentication first (if backend available)
         try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // accept HttpOnly cookie from server
