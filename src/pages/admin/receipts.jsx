@@ -12,7 +12,7 @@ const Receipts = () => {
     const [viewingSlip, setViewingSlip] = useState(null);
     const [receipts, setReceipts] = useState([]);
 
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://comcamp.csmju.com:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000';
 
     useEffect(() => {
         fetchReceipts();

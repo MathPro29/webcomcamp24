@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [showAllAllergies, setShowAllAllergies] = useState(false);
   const [statusData, setStatusData] = useState([]);
 
-  const API_BASE = 'https://comcamp.csmju.com:5000';
+  const API_BASE = 'http://comcamp.csmju.com:5000';
   // helper: laptop detection (stable, moved above fetch so fetch can call it)
   const hasLaptop = (u) => {
     const v = u.laptop;
@@ -365,7 +365,7 @@ export default function Dashboard() {
   const exportShirtSizeCSV = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/users/all`);
+      const res = await fetch(`${API_BASE}/api/users/all`);
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const data = await res.json();

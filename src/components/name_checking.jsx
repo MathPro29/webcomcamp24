@@ -12,7 +12,7 @@ const NameChecking = () => {
 
   // สร้าง API instance
   const api = useMemo(() => {
-    const baseURL = import.meta.env.VITE_API_URL || "https://comcamp.csmju.com:5000";
+    const baseURL = import.meta.env.VITE_API_URL || "http://comcamp.csmju.com:5000";
 
     return {
       get: async (endpoint) => {
@@ -290,7 +290,7 @@ const NameChecking = () => {
                         if (canDownload) {
                           return (
                             <a
-                              href={`https://comcamp.csmju.com:5000/api/users/${searchResult._id}/certificate/download`}
+                              href={`http://comcamp.csmju.com:5000/api/users/${searchResult._id}/certificate/download`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center sm:w-auto"

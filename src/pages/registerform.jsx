@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { notify } from "../utils/toast";
 
 export default function RegisterForm() {
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://comcamp.csmju.com:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000';
 
     // Load initial form data from sessionStorage if available
     const loadFormDataFromSession = () => {

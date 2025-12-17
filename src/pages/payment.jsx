@@ -107,7 +107,7 @@ export default function PaymentSection() {
     }
 
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://comcamp.csmju.com:5000';
+      const API_BASE = import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000';
       const params = new URLSearchParams({ name: name.trim(), phone: clean_phone(phone) });
       const res = await fetch(`${API_BASE}/api/payments/check?${params.toString()}`);
       if (!res.ok) {

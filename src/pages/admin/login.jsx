@@ -11,7 +11,7 @@ const Login = () => {
     const location = useLocation();
 
     // API base (optional). If you have a backend, set VITE_API_URL.
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://comcamp.csmju.com:5000';
+    const API_BASE = import.meta.env.VITE_API_URL || 'http://comcamp.csmju.com:5000';
     const from = location.state?.from?.pathname || '/admin/dashboard';
 
     const handleSubmit = async (e) => {
