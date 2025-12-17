@@ -30,6 +30,8 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
 ];
 
+app.set('trust proxy', 1); 
+
 app.use(cors({
   origin(origin, callback) {
     if (!origin) return callback(null, true);
