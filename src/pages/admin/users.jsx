@@ -134,7 +134,7 @@ function CertificateManagerModal({
 
     try {
       const API_BASE = 'https://comcamp.csmju.com:5000';
-      const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
+      const res = await fetch(`${API_BASE}/users/${user.id}/certificate`, {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -162,7 +162,7 @@ function CertificateManagerModal({
     setUploading(true);
     try {
       const API_BASE = 'https://comcamp.csmju.com:5000';
-      const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
+      const res = await fetch(`${API_BASE}/users/${user.id}/certificate`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -237,7 +237,7 @@ function CertificateManagerModal({
               <div className="mb-6 w-full">
                 <div className="relative group">
                   <img
-                    src={`https://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                    src={`https://comcamp.csmju.com:5000/users/${user.id}/certificate/download?view=true`}
                     alt="Certificate"
                     className="max-w-full max-h-[500px] object-contain mx-auto rounded-xl shadow-lg border border-gray-300 transition-transform duration-300 group-hover:scale-[1.02]"
                   />
@@ -261,7 +261,7 @@ function CertificateManagerModal({
             {/* Action Buttons */}
             <div className="flex gap-3">
               <a
-                href={`https://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                href={`https://comcamp.csmju.com:5000/users/${user.id}/certificate/download?view=true`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
@@ -273,7 +273,7 @@ function CertificateManagerModal({
                 <span>ดู Preview</span>
               </a>
               <a
-                href={`https://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download`}
+                href={`https://comcamp.csmju.com:5000/users/${user.id}/certificate/download`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
@@ -378,7 +378,7 @@ function CertificateManagerModal({
                       </div>
                     </div>
                     <a
-                      href={`https://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                      href={`https://comcamp.csmju.com:5000/users/${user.id}/certificate/download?view=true`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors cursor-pointer"
@@ -526,8 +526,8 @@ export default function UnifiedUsersReceipts() {
       setError(null);
 
       const [usersRes, receiptsRes] = await Promise.all([
-        fetch(`${API_BASE}/api/users/all`),
-        fetch(`${API_BASE}/api/payments/admin/all`, { credentials: 'include' })
+        fetch(`${API_BASE}/users/all`),
+        fetch(`${API_BASE}/payments/admin/all`, { credentials: 'include' })
       ]);
 
       if (!usersRes.ok) throw new Error(`Users fetch failed (${usersRes.status})`);
@@ -614,7 +614,7 @@ export default function UnifiedUsersReceipts() {
   /* ---------- Fetch detailed user ---------- */
   const fetchFullUser = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/${id}`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE}/users/${id}`, { credentials: 'include' });
       if (!res.ok) {
         console.error('fetchFullUser failed', res.status);
         return null;
@@ -654,7 +654,7 @@ export default function UnifiedUsersReceipts() {
   const handleStatusChange = async (userId, newStatus) => {
     const statusMap = { approved: 'success', pending: 'pending', rejected: 'declined' };
     try {
-      const res = await fetch(`${API_BASE}/api/users/${userId}/status`, {
+      const res = await fetch(`${API_BASE}/users/${userId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -669,7 +669,7 @@ export default function UnifiedUsersReceipts() {
         // update receipt status too (best-effort)
         const user = users.find(u => u.id === userId);
         if (user?.receipt) {
-          await fetch(`${API_BASE}/api/payments/${user.receipt.id}/status`, {
+          await fetch(`${API_BASE}/payments/${user.receipt.id}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -687,7 +687,7 @@ export default function UnifiedUsersReceipts() {
   const handleDelete = async (id) => {
     if (!confirm('คุณต้องการลบผู้สมัครนี้ใช่หรือไม่?')) return;
     try {
-      const res = await fetch(`${API_BASE}/api/users/${id}`, { method: 'DELETE', credentials: 'include' });
+      const res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE', credentials: 'include' });
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== id));
         setSelectedUsers(prev => prev.filter(i => i !== id));
@@ -705,7 +705,7 @@ export default function UnifiedUsersReceipts() {
     const removeUser = confirm('ต้องการลบชื่อผู้สมัครพร้อมสลิปหรือไม่?\n\nOK = ลบทั้งชื่อและสลิป, Cancel = ลบเฉพาะสลิป');
     if (!confirm('ยืนยันการลบสลิปนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
     try {
-      const url = `${API_BASE}/api/payments/${receiptId}${removeUser ? '?removeUser=true' : ''}`;
+      const url = `${API_BASE}/payments/${receiptId}${removeUser ? '?removeUser=true' : ''}`;
       const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -734,7 +734,7 @@ export default function UnifiedUsersReceipts() {
     if (selectedUsers.length === 0) return;
     if (!confirm(`คุณต้องการลบผู้สมัคร ${selectedUsers.length} คนใช่หรือไม่?`)) return;
     try {
-      await Promise.all(selectedUsers.map(id => fetch(`${API_BASE}/api/users/${id}`, { method: 'DELETE', credentials: 'include' })));
+      await Promise.all(selectedUsers.map(id => fetch(`${API_BASE}/users/${id}`, { method: 'DELETE', credentials: 'include' })));
       setUsers(prev => prev.filter(u => !selectedUsers.includes(u.id)));
       setSelectedUsers([]);
     } catch (err) {
@@ -754,7 +754,7 @@ export default function UnifiedUsersReceipts() {
         updatedFields.laptop = (lv === 'yes' || lv === 'y') ? 'Yes' : (lv === 'no' || lv === 'n' ? 'No' : updatedFields.laptop);
       }
 
-      const res = await fetch(`${API_BASE}/api/users/${id}`, {
+      const res = await fetch(`${API_BASE}/users/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

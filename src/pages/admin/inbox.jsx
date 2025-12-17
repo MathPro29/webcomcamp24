@@ -30,7 +30,7 @@ const Inboxpage = () => {
     setIsLoading(true);
     try {
       // Fetch settings
-      const settingsRes = await fetch(`${API_BASE}/api/settings`);
+      const settingsRes = await fetch(`${API_BASE}/settings`);
       if (settingsRes.ok) {
         const settingsData = await settingsRes.json();
         setIsRegistrationOpen(settingsData.isRegistrationOpen);
@@ -40,7 +40,7 @@ const Inboxpage = () => {
       }
 
       // Fetch user stats
-      const usersRes = await fetch(`${API_BASE}/api/users/all`);
+      const usersRes = await fetch(`${API_BASE}/users/all`);
       if (usersRes.ok) {
         const users = await usersRes.json();
         const pending = users.filter(u => u.status === 'pending').length;
@@ -65,7 +65,7 @@ const Inboxpage = () => {
   const handleToggleRegistration = async () => {
     try {
       const newStatus = !isRegistrationOpen;
-      const res = await fetch(`${API_BASE}/api/settings`, {
+      const res = await fetch(`${API_BASE}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -87,7 +87,7 @@ const Inboxpage = () => {
   const handleSaveCapacity = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/api/settings`, {
+      const res = await fetch(`${API_BASE}/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

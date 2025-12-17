@@ -79,7 +79,7 @@ export default function Dashboard() {
   const fetchDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/api/users/all`);
+      const res = await fetch(`${API_BASE}/users/all`);
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const data = await res.json();
@@ -278,7 +278,7 @@ export default function Dashboard() {
   const exportToCSV = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/api/users/all`);
+      const res = await fetch(`${API_BASE}/users/all`);
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const data = await res.json();
@@ -365,7 +365,7 @@ export default function Dashboard() {
   const exportShirtSizeCSV = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_BASE}/api/users/all`);
+      const res = await fetch(`${API_BASE}/users/all`);
       if (!res.ok) throw new Error(`status ${res.status}`);
 
       const data = await res.json();
