@@ -26,6 +26,9 @@ export default defineConfig({
         // ลบ comments ทั้งหมด
         comments: false,
       },
+      server: {
+        allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0', 'webcomcamp24.com', 'webcomcamp24.com:5173','comcamp.csmju.com'],
+      },
     },
   },
 })

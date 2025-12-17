@@ -8,7 +8,7 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: webcomcamp24
+      MONGO_INITDB_DATABASE: webcomampdb
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -25,7 +25,7 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongodb:27017/webcomcamp24
+      - MONGODB_URI=mongodb://mongodb:27017/webcomampdb
     depends_on:
       - mongodb
     networks:
