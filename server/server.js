@@ -1,63 +1,101 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import cookieParser from 'cookie-parser';
-import fileUpload from 'express-fileupload';
+import cookieParser from "cookie-parser";
+import fileUpload from "express-fileupload";
+import fs from "fs";
+
 import DBconnect from "./config/db.js";
 import userRouter from "./routes/users.js";
 import registerRouter from "./routes/register.js";
 import authRouter from "./routes/auth.js";
 import paymentsRouter from "./routes/payments.js";
-import { limitsignup } from "./middleware/ratelimit.js";
-import { loginlimit } from "./middleware/ratelimit.js";
 import settingsRouter from "./routes/settings.js";
-import { ensureStorageExists } from "./config/storage.js";
-import fs from 'fs';
 
+import { limitsignup, loginlimit } from "./middleware/ratelimit.js";
+import { ensureStorageExists } from "./config/storage.js";
 
 dotenv.config();
 
-
 const PORT = process.env.PORT || 5000;
-
 const app = express();
 
-// Middleware
+/* ======================
+   CORS CONFIG (สำคัญ)
+====================== */
+const allowedOrigins = [
+  "http://comcamp.csmju.com",
+  "https://comcamp.csmju.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
 app.use(cors({
-    origin: ['http://127.0.0.1:5173', 'http://localhost:5173', 'http://202.28.37.166:5173', 'http://comcamp.csmju.com:5173'],
-    credentials: true,
+  origin: function (origin, callback) {
+    // allow server-to-server / curl
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// handle preflight
+app.options("*", cors());
+
+/* ======================
+   GLOBAL MIDDLEWARE
+====================== */
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 }));
 
-// Serve favicon
-app.get('/favicon.ico', (req, res) => {
-    res.sendFile('favicon.png', { root: './server' });
+/* ======================
+   STATIC / MISC
+====================== */
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile("favicon.png", { root: "./server" });
 });
 
-
-// API Routes
+/* ======================
+   API ROUTES
+====================== */
 app.use("/api/users", userRouter);
-// Apply rate limiter BEFORE the register router so it can block requests
-app.use("/api/register", limitsignup, registerRouter);
-app.use('/register', limitsignup);
-app.use('/api/auth', authRouter, loginlimit);
-app.use('/api/payments', paymentsRouter);
-app.use('/api/settings', settingsRouter);
 
-// เชื่อมต่อ DB และเปิด server
-DBconnect().then(() => {
-    // Ensure storage directories exist
+// register (rate-limit BEFORE router)
+app.use("/api/register", limitsignup, registerRouter);
+
+// auth (rate-limit BEFORE router)
+app.use("/api/auth", loginlimit, authRouter);
+
+app.use("/api/payments", paymentsRouter);
+app.use("/api/settings", settingsRouter);
+
+/* ======================
+   START SERVER
+====================== */
+DBconnect()
+  .then(() => {
     ensureStorageExists(fs);
-    
-    app.get('/', (req, res) => {
-        res.send('Server is running and connected to MongoDB!');
+
+    app.get("/", (req, res) => {
+      res.send("🚀 Backend is running and connected to MongoDB");
     });
 
     app.listen(PORT, () => {
-        console.log(`🚀 Server listening on port ${PORT}`);
+      console.log(`🚀 Server listening on port ${PORT}`);
     });
-});
+  })
+  .catch((err) => {
+    console.error("❌ DB connection failed:", err);
+    process.exit(1);
+  });
