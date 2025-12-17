@@ -133,7 +133,7 @@ function CertificateManagerModal({
     formData.append('releaseDate', combinedDateTime);
 
     try {
-      const API_BASE = 'http://comcamp.csmju.com:5000';
+      const API_BASE = 'https://comcamp.csmju.com';
       const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
         method: 'POST',
         body: formData,
@@ -161,7 +161,7 @@ function CertificateManagerModal({
 
     setUploading(true);
     try {
-      const API_BASE = 'http://comcamp.csmju.com:5000';
+      const API_BASE = 'https://comcamp.csmju.com';
       const res = await fetch(`${API_BASE}/api/users/${user.id}/certificate`, {
         method: 'DELETE',
         credentials: 'include'
@@ -513,7 +513,7 @@ export default function UnifiedUsersReceipts() {
 
   const [users, setUsers] = useState([]);
 
-  const API_BASE = 'http://comcamp.csmju.com:5000';
+  const API_BASE = 'https://comcamp.csmju.com';
 
   useEffect(() => {
     fetchData();

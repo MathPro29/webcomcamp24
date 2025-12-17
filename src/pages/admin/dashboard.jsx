@@ -36,7 +36,7 @@ export default function Dashboard() {
   const [showAllAllergies, setShowAllAllergies] = useState(false);
   const [statusData, setStatusData] = useState([]);
 
-  const API_BASE = 'http://comcamp.csmju.com:5000';
+  const API_BASE = 'https://comcamp.csmju.com';
   // helper: laptop detection (stable, moved above fetch so fetch can call it)
   const hasLaptop = (u) => {
     const v = u.laptop;

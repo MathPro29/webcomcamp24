@@ -19,7 +19,7 @@ const Inboxpage = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE = 'http://comcamp.csmju.com:5000';
+const API_BASE = 'https://comcamp.csmju.com';
 
   // Fetch current stats and settings
   useEffect(() => {
