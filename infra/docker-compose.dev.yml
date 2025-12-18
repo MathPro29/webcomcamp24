@@ -6,13 +6,14 @@ services:
     image: mongo:7.0
     container_name: webcomcamp24-mongodb-dev
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     environment:
-      MONGO_INITDB_DATABASE: webcomampdb
+      MONGO_INITDB_DATABASE: webcomcampdb
     volumes:
       - mongodb_data:/data/db
     networks:
       - webcomcamp24-network
+    restart: unless-stopped
 
   # Backend Server
   server:
@@ -24,7 +25,7 @@ services:
       - "5000:5000"
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/webcomampdb
+      - MONGODB_URI=mongodb://mongodb:27017/webcomcampdb
     volumes:
       - ../server:/app
       - /app/node_modules
