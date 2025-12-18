@@ -1,63 +1,81 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # MongoDB Database
   mongodb:
     image: mongo:7.0
     container_name: webcomcamp24-mongodb-dev
+    restart: unless-stopped
+
+    # เปิดเฉพาะ localhost
     ports:
       - "127.0.0.1:27017:27017"
+
     environment:
+      MONGO_INITDB_ROOT_USERNAME: admindb
+      MONGO_INITDB_ROOT_PASSWORD: csmju!mongo@
       MONGO_INITDB_DATABASE: webcomcampdb
+
     volumes:
       - mongodb_data:/data/db
+
     networks:
       - webcomcamp24-network
-    restart: unless-stopped
 
-  # Backend Server
+
   server:
     build:
-      context: ../server
+      context: ./server
       dockerfile: Dockerfile.dev
     container_name: webcomcamp24-server-dev
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongodb:27017/webcomcampdb
-    volumes:
-      - ../server:/app
-      - /app/node_modules
-    depends_on:
-      - mongodb
-    networks:
-      - webcomcamp24-network
     restart: unless-stopped
 
-  # Frontend
-  frontend:
-    build:
-      context: ..
-      dockerfile: src/Dockerfile.dev
-    container_name: webcomcamp24-frontend-dev
     ports:
-      - "5173:5173"
+      - "5000:5000"
+
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=https://comcamp.csmju.com
-    volumes:
-      - ..:/app
-      - /app/node_modules
-      - /app/server/node_modules
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admindb:csmju!mongo@mongodb:27017/webcomcampdb?authSource=webcomcampdb
+
     depends_on:
-      - server
+      - mongodb
+
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
     networks:
       - webcomcamp24-network
+
+
+  frontend:
+    build:
+      context: .
+      dockerfile: src/Dockerfile.dev
+    container_name: webcomcamp24-frontend-dev
     restart: unless-stopped
+
+    ports:
+      - "5173:5173"
+
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:5000
+
+    depends_on:
+      - server
+
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/server/node_modules
+
+    networks:
+      - webcomcamp24-network
+
 
 volumes:
   mongodb_data:
+
 
 networks:
   webcomcamp24-network:
