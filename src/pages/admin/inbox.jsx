@@ -87,7 +87,7 @@ const API_BASE = 'https://comcamp.csmju.com';
   const handleSaveCapacity = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`${API_BASE}/settings`, {
+      const res = await fetch(`${API_BASE}/api/settings`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
