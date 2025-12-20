@@ -17,13 +17,16 @@ if (!fs.existsSync(LOGS_DIR)) {
 function getTimestamp() {
   const now = new Date();
   
+  // Add 7 hours for Thailand timezone (UTC+7)
+  const thailandTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+  
   // Format: 2025-12-20 12:30:45
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const year = thailandTime.getUTCFullYear();
+  const month = String(thailandTime.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(thailandTime.getUTCDate()).padStart(2, '0');
+  const hours = String(thailandTime.getUTCHours()).padStart(2, '0');
+  const minutes = String(thailandTime.getUTCMinutes()).padStart(2, '0');
+  const seconds = String(thailandTime.getUTCSeconds()).padStart(2, '0');
   
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
