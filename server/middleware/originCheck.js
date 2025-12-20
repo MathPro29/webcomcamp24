@@ -3,6 +3,8 @@
  * ป้องกัน API จาก Postman และ requests ที่ไม่ได้มาจาก frontend
  */
 
+import { logSecurityEvent } from '../utils/logger.js';
+
 const ALLOWED_ORIGINS = [
   'https://comcamp.csmju.com',
   'http://comcamp.csmju.com',
@@ -27,6 +29,7 @@ export const validateOrigin = (req, res, next) => {
 
   // Block requests without origin or referer (Postman, curl, etc.)
   if (!origin && !referer) {
+    logSecurityEvent(req, 'No origin or referer header');
     console.warn(`⛔ Blocked request without origin: ${req.method} ${req.path}`);
     return res.status(403).json({ 
       error: 'Forbidden',
@@ -36,6 +39,7 @@ export const validateOrigin = (req, res, next) => {
 
   // Check if origin is in whitelist
   if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    logSecurityEvent(req, `Unauthorized origin: ${origin}`);
     console.warn(`⛔ Blocked request from unauthorized origin: ${origin}`);
     return res.status(403).json({ 
       error: 'Forbidden',
@@ -47,6 +51,7 @@ export const validateOrigin = (req, res, next) => {
   if (referer) {
     const isAllowedReferer = ALLOWED_ORIGINS.some(allowed => referer.startsWith(allowed));
     if (!isAllowedReferer) {
+      logSecurityEvent(req, `Unauthorized referer: ${referer}`);
       console.warn(`⛔ Blocked request from unauthorized referer: ${referer}`);
       return res.status(403).json({ 
         error: 'Forbidden',
@@ -71,6 +76,7 @@ export const strictOriginCheck = (req, res, next) => {
   const origin = req.get('origin');
 
   if (!origin) {
+    logSecurityEvent(req, 'Strict: No origin header');
     console.warn(`⛔ Strict: Blocked request without origin header: ${req.method} ${req.path}`);
     return res.status(403).json({ 
       error: 'Forbidden',
@@ -79,6 +85,7 @@ export const strictOriginCheck = (req, res, next) => {
   }
 
   if (!ALLOWED_ORIGINS.includes(origin)) {
+    logSecurityEvent(req, `Strict: Unauthorized origin: ${origin}`);
     console.warn(`⛔ Strict: Blocked unauthorized origin: ${origin}`);
     return res.status(403).json({ 
       error: 'Forbidden',

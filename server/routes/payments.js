@@ -4,6 +4,7 @@ import Payment from '../models/payment.js';
 import { limitPaymentCheck } from '../middleware/ratelimit.js';
 import { verifyAdmin } from '../middleware/auth.js';
 import { strictOriginCheck } from '../middleware/originCheck.js';
+import { logPayment, logPaymentStatusChange, logAdminAction } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -138,9 +139,11 @@ router.post('/', strictOriginCheck, async (req, res) => {
     });
 
     await payment.save();
+    logPayment(req, { name: user.firstName + ' ' + user.lastName, phone }, true);
     res.json({ success: true, message: 'Payment submitted successfully', payment });
   } catch (err) {
     console.error(err);
+    logPayment(req, { name: req.body.name, phone: req.body.phone }, false, err.message);
     res.status(500).json({ error: 'Failed to upload payment' });
   }
 });
@@ -212,6 +215,8 @@ router.put('/:id/status', verifyAdmin, async (req, res) => {
       );
     }
 
+    const userName = payment.userId ? `${payment.userId.firstName} ${payment.userId.lastName}` : 'unknown';
+    logPaymentStatusChange(req, id, payment.status, status, userName);
     console.log(`[STATUS] Payment ${id} status changed to ${status}, user status updated to ${userStatus}`);
     res.json({ success: true, payment, userStatus });
   } catch (err) {
@@ -266,6 +271,7 @@ router.delete('/:id', verifyAdmin, async (req, res) => {
     }
 
     console.log(`[DELETE] Delete complete: paymentDeleted=true, userDeleted=${userDeleted}`);
+    logAdminAction(req, 'DELETE-PAYMENT', `PaymentID: ${id}, UserDeleted: ${userDeleted}`);
     return res.json({
       success: true,
       message: 'Payment deleted successfully',

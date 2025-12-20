@@ -3,6 +3,7 @@ import express from "express";
 import User from "../models/users.js";
 import Settings from "../models/settings.js";
 import { strictOriginCheck } from "../middleware/originCheck.js";
+import { logRegistration } from "../utils/logger.js";
 
 const router = express.Router();
 
@@ -47,9 +48,11 @@ router.post("/", strictOriginCheck, async (req, res) => {
       birthDate: data.birthDate,
     });
 
+    logRegistration(req, data, true);
     res.status(201).json({ success: true, message: "สมัครสำเร็จ!", user: newUser });
   } catch (err) {
     console.error(err);
+    logRegistration(req, req.body, false, err.message);
     if (err.code === 11000) return res.status(409).json({ error: "ข้อมูลซ้ำ" });
     res.status(500).json({ error: "บันทึกไม่สำเร็จ" });
   }

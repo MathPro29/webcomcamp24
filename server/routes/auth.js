@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
 import { verifyAdmin } from '../middleware/auth.js';
+import { logAdminLogin, logAdminLogout, logAdminAction } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -23,11 +24,13 @@ router.post('/seed-admin', verifyAdmin, async (req, res) => {
       // อัปเดต password
       admin.password = password;
       await admin.save();
+      logAdminAction(req, 'SEED-ADMIN', `Updated admin: ${username}`);
       return res.json({ success: true, message: `อัปเดต admin '${username}' สำเร็จ`, action: 'updated' });
     } else {
       // สร้าง admin ใหม่
       admin = new Admin({ username, password });
       await admin.save();
+      logAdminAction(req, 'SEED-ADMIN', `Created admin: ${username}`);
       return res.json({ success: true, message: `สร้าง admin '${username}' สำเร็จ`, action: 'created' });
     }
   } catch (err) {
@@ -50,6 +53,7 @@ router.post('/login', async (req, res) => {
     // เช็ค password ด้วย bcrypt
     const isPasswordValid = await admin.comparePassword(password);
     if (!isPasswordValid) {
+      logAdminLogin(req, username, false);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -64,6 +68,7 @@ router.post('/login', async (req, res) => {
     };
 
     res.cookie('token', token, cookieOptions);
+    logAdminLogin(req, username, true);
     return res.json({ success: true, user: { username } });
   } catch (err) {
     console.error(err);
@@ -73,7 +78,18 @@ router.post('/login', async (req, res) => {
 
 router.post('/logout', (req, res) => {
   try {
+    const token = req.cookies?.token;
+    let username = 'unknown';
+    if (token) {
+      try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        username = payload.username;
+      } catch (e) {
+        // Token invalid, ignore
+      }
+    }
     res.clearCookie('token', { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+    logAdminLogout(req, username);
     return res.json({ success: true });
   } catch (err) {
     console.error(err);
