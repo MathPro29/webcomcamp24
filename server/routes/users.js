@@ -3,7 +3,7 @@ import { getUsers } from "../controllers/users.js";
 import User from "../models/users.js";
 import Payment from "../models/payment.js";
 import path from 'path';
-import { optionalAuth } from '../middleware/auth.js';
+import { verifyAdmin, optionalAuth } from '../middleware/auth.js';
 
 const userRouter = express.Router();
 
@@ -11,7 +11,7 @@ const userRouter = express.Router();
 // ⚠️ สำคัญ: Routes เฉพาะเจาะจงต้องอยู่ก่อน /:id
 
 // 1. Upload Certificate
-userRouter.post("/:id/certificate", async (req, res) => {
+userRouter.post("/:id/certificate", verifyAdmin, async (req, res) => {
   try {
     // Check if file is uploaded
     if (!req.files || !req.files.certificate) {
@@ -143,7 +143,7 @@ userRouter.get("/:id/certificate/download", optionalAuth, async (req, res) => {
 });
 
 // 1.6 Delete Certificate
-userRouter.delete("/:id/certificate", async (req, res) => {
+userRouter.delete("/:id/certificate", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -216,7 +216,7 @@ userRouter.get("/search", async (req, res) => {
 });
 
 // 2. Get all users - รวมข้อมูลสำหรับ Dashboard
-userRouter.get("/all", async (req, res) => {
+userRouter.get("/all", verifyAdmin, async (req, res) => {
   try {
     console.log("📥 GET /api/users/all");
 
@@ -235,7 +235,7 @@ userRouter.get("/all", async (req, res) => {
 });
 
 // 3. Update status (PUT ต้องอยู่ก่อน GET /:id)
-userRouter.put("/:id/status", async (req, res) => {
+userRouter.put("/:id/status", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -261,7 +261,7 @@ userRouter.put("/:id/status", async (req, res) => {
 });
 
 // 4. Delete user (DELETE ต้องอยู่ก่อน GET /:id)
-userRouter.delete("/:id", async (req, res) => {
+userRouter.delete("/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`🗑️ DELETE /api/users/${id}`);
@@ -292,7 +292,7 @@ userRouter.delete("/:id", async (req, res) => {
 });
 
 // 4. Update user (PUT ต้องอยู่ก่อน GET /:id)
-userRouter.put("/:id", async (req, res) => {
+userRouter.put("/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📝 PUT /api/users/${id}`);
@@ -312,7 +312,7 @@ userRouter.put("/:id", async (req, res) => {
 });
 
 // 5. Get single user (ต้องอยู่ท้ายสุด!)
-userRouter.get("/:id", async (req, res) => {
+userRouter.get("/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`📥 GET /api/users/${id}`);
@@ -333,6 +333,6 @@ userRouter.get("/:id", async (req, res) => {
 });
 
 // 6. Default route (ต้องอยู่ท้ายสุด!)
-userRouter.get("/", getUsers);
+userRouter.get("/", verifyAdmin, getUsers);
 
 export default userRouter;

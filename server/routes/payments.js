@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../models/users.js';
 import Payment from '../models/payment.js';
 import { limitPaymentCheck } from '../middleware/ratelimit.js';
+import { verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -144,7 +145,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get all payments (for admin)
-router.get('/admin/all', async (req, res) => {
+router.get('/admin/all', verifyAdmin, async (req, res) => {
   try {
     const payments = await Payment.find({})
       .populate('userId', 'firstName lastName email phone school')
@@ -172,7 +173,7 @@ router.get('/admin/all', async (req, res) => {
 });
 
 // Update payment status (admin only)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, note } = req.body;
@@ -218,7 +219,7 @@ router.put('/:id/status', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const removeUser = req.query.removeUser === 'true';

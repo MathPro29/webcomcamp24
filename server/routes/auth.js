@@ -1,13 +1,14 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
+import { verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_jwt_secret';
 
-// Seed endpoint - สร้าง/อัปเดต admin ใน MongoDB
-router.post('/seed-admin', async (req, res) => {
+// Seed endpoint - สร้าง/อัปเดต admin ใน MongoDB (Protected - requires existing admin)
+router.post('/seed-admin', verifyAdmin, async (req, res) => {
   try {
     const { username, password } = req.body;
     
