@@ -2,10 +2,11 @@
 import express from "express";
 import User from "../models/users.js";
 import Settings from "../models/settings.js";
+import { strictOriginCheck } from "../middleware/originCheck.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", strictOriginCheck, async (req, res) => {
   try {
     // Check if registration is open
     const settings = await Settings.getSettings();

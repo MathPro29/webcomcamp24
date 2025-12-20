@@ -3,11 +3,12 @@ import User from '../models/users.js';
 import Payment from '../models/payment.js';
 import { limitPaymentCheck } from '../middleware/ratelimit.js';
 import { verifyAdmin } from '../middleware/auth.js';
+import { strictOriginCheck } from '../middleware/originCheck.js';
 
 const router = express.Router();
 
 // Check if user exists and if payment already submitted
-router.get('/check', limitPaymentCheck, async (req, res) => {
+router.get('/check', limitPaymentCheck, strictOriginCheck, async (req, res) => {
   try {
     const { name, phone } = req.query;
     if (!name || !phone) {
@@ -71,7 +72,7 @@ router.get('/check', limitPaymentCheck, async (req, res) => {
 });
 
 // Upload payment slip
-router.post('/', async (req, res) => {
+router.post('/', strictOriginCheck, async (req, res) => {
   try {
     const { name, phone } = req.body;
     const file = req.files?.slip;

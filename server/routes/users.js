@@ -4,6 +4,7 @@ import User from "../models/users.js";
 import Payment from "../models/payment.js";
 import path from 'path';
 import { verifyAdmin, optionalAuth } from '../middleware/auth.js';
+import { validateOrigin } from '../middleware/originCheck.js';
 
 const userRouter = express.Router();
 
@@ -97,7 +98,7 @@ userRouter.post("/:id/certificate", verifyAdmin, async (req, res) => {
 });
 
 // 1.5 Download Certificate
-userRouter.get("/:id/certificate/download", optionalAuth, async (req, res) => {
+userRouter.get("/:id/certificate/download", validateOrigin, optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -166,7 +167,7 @@ userRouter.delete("/:id/certificate", verifyAdmin, async (req, res) => {
 
 
 // 1. Search route - สำหรับ Name Checking (ต้องอยู่บนสุด)
-userRouter.get("/search", async (req, res) => {
+userRouter.get("/search", validateOrigin, async (req, res) => {
   try {
     const { firstName, lastName } = req.query;
 
