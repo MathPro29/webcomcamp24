@@ -3,13 +3,13 @@ import User from '../models/users.js';
 import Payment from '../models/payment.js';
 import { limitPaymentCheck } from '../middleware/ratelimit.js';
 import { verifyAdmin } from '../middleware/auth.js';
-import { strictOriginCheck } from '../middleware/originCheck.js';
+import { strictOriginCheck, validateOrigin } from '../middleware/originCheck.js';
 import { logPayment, logPaymentStatusChange, logAdminAction } from '../utils/logger.js';
 
 const router = express.Router();
 
 // Check if user exists and if payment already submitted
-router.get('/check', limitPaymentCheck, strictOriginCheck, async (req, res) => {
+router.get('/check', limitPaymentCheck, validateOrigin, async (req, res) => {
   try {
     const { name, phone } = req.query;
     if (!name || !phone) {
