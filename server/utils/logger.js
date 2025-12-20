@@ -16,18 +16,16 @@ if (!fs.existsSync(LOGS_DIR)) {
  */
 function getTimestamp() {
   const now = new Date();
-  // Use Thailand timezone (UTC+7)
-  const options = { 
-    timeZone: 'Asia/Bangkok',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  };
-  return now.toLocaleString('th-TH', options);
+  
+  // Format: 2025-12-20 12:30:45
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 /**
@@ -46,14 +44,26 @@ function getClientIP(req) {
  */
 function writeLog(filename, message) {
   const logPath = path.join(LOGS_DIR, filename);
-  const logLine = `${getTimestamp()} | ${message}\n`;
+  const timestamp = getTimestamp();
+  const logLine = `[${timestamp}] ${message}\n`;
   
   fs.appendFile(logPath, logLine, (err) => {
     if (err) console.error('Failed to write log:', err);
   });
   
-  // Also log to console
-  console.log(`[${filename.replace('.log', '')}] ${message}`);
+  // Also log to console with colors
+  const logType = filename.replace('.log', '').toUpperCase().padEnd(12);
+  const colors = {
+    'ADMIN': '\x1b[35m',      // Magenta
+    'REGISTRATION': '\x1b[36m', // Cyan
+    'PAYMENT': '\x1b[33m',     // Yellow
+    'SECURITY': '\x1b[31m',    // Red
+    'API': '\x1b[32m'          // Green
+  };
+  const color = colors[logType.trim()] || '\x1b[37m';
+  const reset = '\x1b[0m';
+  
+  console.log(`${color}[${timestamp}] [${logType}]${reset} ${message}`);
 }
 
 /**
@@ -64,7 +74,7 @@ export function logAdminLogin(req, username, success) {
   const userAgent = req.get('user-agent') || 'unknown';
   const status = success ? '✅ SUCCESS' : '❌ FAILED';
   
-  writeLog('admin.log', `LOGIN ${status} | User: ${username} | IP: ${ip} | UA: ${userAgent}`);
+  writeLog('admin.log', `LOGIN ${status} │ User: ${username} │ IP: ${ip} │ UserAgent: ${userAgent.substring(0, 50)}`);
 }
 
 /**
@@ -73,7 +83,7 @@ export function logAdminLogin(req, username, success) {
 export function logAdminLogout(req, username) {
   const ip = getClientIP(req);
   
-  writeLog('admin.log', `LOGOUT | User: ${username || 'unknown'} | IP: ${ip}`);
+  writeLog('admin.log', `LOGOUT │ User: ${username || 'unknown'} │ IP: ${ip}`);
 }
 
 /**
@@ -83,7 +93,7 @@ export function logAdminAction(req, action, details) {
   const ip = getClientIP(req);
   const username = req.user?.username || 'unknown';
   
-  writeLog('admin.log', `ACTION | User: ${username} | IP: ${ip} | ${action} | ${details}`);
+  writeLog('admin.log', `${action} │ Admin: ${username} │ IP: ${ip} │ Details: ${details}`);
 }
 
 /**
@@ -95,9 +105,9 @@ export function logRegistration(req, userData, success, error = null) {
   const name = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'unknown';
   const email = userData.email || 'unknown';
   const school = userData.school || 'unknown';
-  const errorMsg = error ? ` | Error: ${error}` : '';
+  const errorMsg = error ? ` │ Error: ${error}` : '';
   
-  writeLog('registration.log', `${status} | Name: ${name} | Email: ${email} | School: ${school} | IP: ${ip}${errorMsg}`);
+  writeLog('registration.log', `${status} │ Name: ${name} │ Email: ${email} │ School: ${school} │ IP: ${ip}${errorMsg}`);
 }
 
 /**
@@ -108,9 +118,9 @@ export function logPayment(req, paymentData, success, error = null) {
   const status = success ? '✅ SUCCESS' : '❌ FAILED';
   const name = paymentData.name || 'unknown';
   const phone = paymentData.phone || 'unknown';
-  const errorMsg = error ? ` | Error: ${error}` : '';
+  const errorMsg = error ? ` │ Error: ${error}` : '';
   
-  writeLog('payment.log', `UPLOAD ${status} | Name: ${name} | Phone: ${phone} | IP: ${ip}${errorMsg}`);
+  writeLog('payment.log', `UPLOAD ${status} │ Name: ${name} │ Phone: ${phone} │ IP: ${ip}${errorMsg}`);
 }
 
 /**
@@ -120,7 +130,7 @@ export function logPaymentStatusChange(req, paymentId, oldStatus, newStatus, use
   const ip = getClientIP(req);
   const admin = req.user?.username || 'unknown';
   
-  writeLog('payment.log', `STATUS CHANGE | PaymentID: ${paymentId} | User: ${userName} | ${oldStatus} → ${newStatus} | By: ${admin} | IP: ${ip}`);
+  writeLog('payment.log', `STATUS CHANGE │ User: ${userName} │ ${oldStatus} → ${newStatus} │ By: ${admin} │ IP: ${ip}`);
 }
 
 /**
@@ -132,7 +142,7 @@ export function logSecurityEvent(req, reason) {
   const path = req.path;
   const origin = req.get('origin') || 'no-origin';
   
-  writeLog('security.log', `⛔ BLOCKED | ${method} ${path} | Reason: ${reason} | Origin: ${origin} | IP: ${ip}`);
+  writeLog('security.log', `⛔ BLOCKED │ ${method} ${path} │ Reason: ${reason} │ Origin: ${origin} │ IP: ${ip}`);
 }
 
 /**
@@ -143,5 +153,5 @@ export function logAPIAccess(req, endpoint, success, details = '') {
   const method = req.method;
   const status = success ? '✅' : '❌';
   
-  writeLog('api.log', `${status} ${method} ${endpoint} | IP: ${ip}${details ? ' | ' + details : ''}`);
+  writeLog('api.log', `${status} ${method} ${endpoint} │ IP: ${ip}${details ? ' │ ' + details : ''}`);
 }
