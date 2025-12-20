@@ -1,0 +1,20 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: webcomcamp24-mongodb
+    ports:
+      - "127.0.0.1:27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: comcampdbs
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - server_server-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+
+networks:
+  server_server-network:
+    external: true

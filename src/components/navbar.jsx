@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 
 const Navbar = () => {
@@ -82,7 +83,7 @@ const Navbar = () => {
             aria-label="Go to home"
           >
             <img
-              src="src/assets/logo.png"
+              src={logo}
               alt="ComCamp Logo"
               className="w-30 h-30 object-contain"
             />

@@ -1,0 +1,15 @@
+services:
+  backend:
+    image: 371methat/backend-comcamp:1.0.0
+    container_name: backend-comcamp
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    networks:
+      - server-network
+    restart: unless-stopped
+
+networks:
+  server-network:
+    driver: bridge

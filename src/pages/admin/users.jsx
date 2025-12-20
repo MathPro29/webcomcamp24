@@ -237,7 +237,7 @@ function CertificateManagerModal({
               <div className="mb-6 w-full">
                 <div className="relative group">
                   <img
-                    src={`http://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                    src={`https://comcamp.csmju.com/api/users/${user.id}/certificate/download?view=true`}
                     alt="Certificate"
                     className="max-w-full max-h-[500px] object-contain mx-auto rounded-xl shadow-lg border border-gray-300 transition-transform duration-300 group-hover:scale-[1.02]"
                   />
@@ -261,7 +261,7 @@ function CertificateManagerModal({
             {/* Action Buttons */}
             <div className="flex gap-3">
               <a
-                href={`http://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                href={`https://comcamp.csmju.com/api/users/${user.id}/certificate/download?view=true`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
@@ -273,7 +273,7 @@ function CertificateManagerModal({
                 <span>ดู Preview</span>
               </a>
               <a
-                href={`http://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download`}
+                href={`https://comcamp.csmju.com/api/users/${user.id}/certificate/download`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
@@ -378,7 +378,7 @@ function CertificateManagerModal({
                       </div>
                     </div>
                     <a
-                      href={`http://comcamp.csmju.com:5000/api/users/${user.id}/certificate/download?view=true`}
+                      href={`https://comcamp.csmju.com/api/users/${user.id}/certificate/download?view=true`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors cursor-pointer"

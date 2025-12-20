@@ -32,7 +32,7 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'https://comcamp.csmju.com:5000', // backend server
+        target: 'https://comcamp.csmju.com', // backend server
         changeOrigin: true,
         secure: false,
       },

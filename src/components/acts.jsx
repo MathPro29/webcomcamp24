@@ -1,4 +1,10 @@
 import React from 'react'
+import img_act9 from "../assets/img_act9.jpg";
+import img_act5 from "../assets/img_act5.jpg";
+import img_act2 from "../assets/img_act2.jpg";
+import img_act4 from "../assets/img_act4.jpg";
+import img_act10 from "../assets/img_act10.jpg";
+import img_act8 from "../assets/img_act8.jpg";
 
 
 const Acts = () => {
@@ -22,7 +28,7 @@ const Acts = () => {
         {/* กิจกรรม 1 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act9.jpg"
+            src={img_act9}
             alt="พบปะอาจารย์และพี่ค่าย"
             className="w-full h-48 object-cover"
           />
@@ -37,7 +43,7 @@ const Acts = () => {
         {/* กิจกรรม 2 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act5.jpg"
+            src={img_act5}
             alt="รับฟังความรู้จากพี่วิทยากร"
             className="w-full h-48 object-cover"
           />
@@ -52,7 +58,7 @@ const Acts = () => {
         {/* กิจกรรม 3 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act2.jpg"
+            src={img_act2}
             alt="ลงมือปฏิบัติจริง"
             className="w-full h-48 object-cover"
           />
@@ -67,7 +73,7 @@ const Acts = () => {
         {/* กิจกรรม 4 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act4.jpg"
+            src={img_act4}
             alt="สันทนาการ"
             className="w-full h-48 object-cover"
           />
@@ -82,7 +88,7 @@ const Acts = () => {
         {/* กิจกรรม 5 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act10.jpg"
+            src={img_act10}
             alt="นำเสนองาน"
             className="w-full h-48 object-cover"
           />
@@ -97,7 +103,7 @@ const Acts = () => {
         {/* กิจกรรม 6 */}
         <div className="bg-[#1b1f45] rounded-2xl shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-300">
           <img
-            src="src/assets/img_act8.jpg"
+            src={img_act8}
             alt="ถ่ายรูปที่ระลึก"
             className="w-full h-48 object-cover"
           />

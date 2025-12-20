@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  frontend:
+    image: 371methat/frontend-comcamp:1.0.0
+    container_name: frontend-comcamp
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+    

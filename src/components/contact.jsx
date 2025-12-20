@@ -32,12 +32,13 @@ const Contact = () => {
                     <div className="w-full h-80 md:h-96 overflow-hidden relative">
                         <iframe
                             title="Maejo University Faculty of Science"
-                            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d6388.123456!2d99.0129284!3d18.8957308!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30da234acab26d49%3A0x673310a15bca3d4a!2sFaculty+of+Science%2C+Maejo+University!5e0!3m2!1sth!2sth!4v1699999999999!5m2!1sth!2sth"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3773.8!2d99.0129284!3d18.8957308!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30da234acab26d49%3A0x673310a15bca3d4a!2sFaculty%20of%20Science%2C%20Maejo%20University!5e0!3m2!1sen!2sth!4v1734710000000!5m2!1sen!2sth"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
                             allowFullScreen=""
                             loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
                             className="grayscale group-hover:grayscale-0 transition-all duration-500"
                         />
                         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
@@ -64,11 +65,11 @@ const Contact = () => {
                                     <p className="text-xs text-gray-500 font-medium">โทรศัพท์</p>
                                     <p className="text-gray-800 font-semibold">080-676-8161 (พี่มีน)</p>
                                 </div>
-                                
-                            </div>
-                            
 
-                            
+                            </div>
+
+
+
                             <div className="flex items-center gap-4 p-4 rounded-xl bg-white hover:bg-yellow-50 transition-colors group/item cursor-pointer shadow-sm">
                                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover/item:bg-yellow-500 transition-colors flex-shrink-0">
                                     <Facebook className="w-5 h-5 text-yellow-600 group-hover/item:text-white transition-colors" />
@@ -79,7 +80,7 @@ const Contact = () => {
                                 </div>
                             </div>
 
-                            
+
                         </div>
 
                         {/* Facebook Contact Button */}
