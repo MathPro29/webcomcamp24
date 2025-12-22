@@ -25,7 +25,7 @@ function sanitizeObject(obj) {
   // Handle objects - remove dangerous keys
   const sanitized = {};
   for (const key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
     
     // Skip keys that start with $ (MongoDB operators) or contain . (nested access)
     if (key.startsWith('$') || key.includes('.')) {
