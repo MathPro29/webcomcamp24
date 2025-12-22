@@ -5,6 +5,7 @@ import Payment from "../models/payment.js";
 import path from 'path';
 import { verifyAdmin, optionalAuth } from '../middleware/auth.js';
 import { validateOrigin } from '../middleware/originCheck.js';
+import { isValidString, isValidStringWithLength } from '../middleware/security.js';
 
 const userRouter = express.Router();
 
@@ -173,23 +174,64 @@ userRouter.get("/search", validateOrigin, async (req, res) => {
 
     console.log(`🔍 GET /api/users/search - ${firstName} ${lastName}`);
 
-    if (!firstName || !lastName) {
+    // Step 1: Validate input types
+    if (!isValidString(firstName) || !isValidString(lastName)) {
+      console.warn('⚠️ Invalid search input - non-string values:', {
+        ip: req.ip,
+        firstName: typeof firstName,
+        lastName: typeof lastName
+      });
       return res.status(400).json({
         found: false,
-        error: "กรุณาระบุชื่อและนามสกุล"
+        error: "กรุณาระบุชื่อและนามสกุลที่ถูกต้อง"
       });
     }
 
-    // ค้นหาแบบ case-insensitive และ trim whitespace
+    // Step 2: Validate length (prevent extremely long inputs)
+    if (!isValidStringWithLength(firstName, 1, 100) || !isValidStringWithLength(lastName, 1, 100)) {
+      console.warn('⚠️ Invalid search input - length out of range:', {
+        ip: req.ip,
+        firstNameLength: firstName.length,
+        lastNameLength: lastName.length
+      });
+      return res.status(400).json({
+        found: false,
+        error: "ชื่อหรือนามสกุลยาวเกินไป"
+      });
+    }
+
+    // Step 3: Sanitize and escape regex special characters to prevent ReDoS attacks
+    const escapeRegex = (str) => {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    const sanitizedFirstName = escapeRegex(firstName.trim());
+    const sanitizedLastName = escapeRegex(lastName.trim());
+
+    // Step 4: Additional security check - prevent MongoDB operators
+    if (sanitizedFirstName.includes('$') || sanitizedLastName.includes('$') ||
+        sanitizedFirstName.includes('.') || sanitizedLastName.includes('.')) {
+      console.warn('⚠️ Potential injection attempt in search:', {
+        ip: req.ip,
+        firstName: sanitizedFirstName,
+        lastName: sanitizedLastName
+      });
+      return res.status(400).json({
+        found: false,
+        error: "ชื่อหรือนามสกุลมีอักขระที่ไม่อนุญาต"
+      });
+    }
+
+    // Step 5: Safe database query with escaped regex
     const user = await User.findOne({
-      firstName: { $regex: new RegExp(`^${firstName.trim()}$`, 'i') },
-      lastName: { $regex: new RegExp(`^${lastName.trim()}$`, 'i') }
+      firstName: { $regex: new RegExp(`^${sanitizedFirstName}$`, 'i') },
+      lastName: { $regex: new RegExp(`^${sanitizedLastName}$`, 'i') }
     })
       .select("firstName lastName school grade status email certificate")
       .lean();
 
     if (!user) {
-      console.log(`❌ User not found: ${firstName} ${lastName}`);
+      console.log(`❌ User not found: ${sanitizedFirstName} ${sanitizedLastName}`);
       return res.json({ found: false });
     }
 
@@ -208,7 +250,7 @@ userRouter.get("/search", validateOrigin, async (req, res) => {
       }
     });
   } catch (err) {
-    console.error("❌ Error:", err);
+    console.error("❌ Search error:", err);
     res.status(500).json({
       found: false,
       error: "เกิดข้อผิดพลาดในการค้นหา"

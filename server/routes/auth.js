@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
 import { verifyAdmin } from '../middleware/auth.js';
 import { logAdminLogin, logAdminLogout, logAdminAction } from '../utils/logger.js';
+import { validateCredentials, isValidString } from '../middleware/security.js';
 
 const router = express.Router();
 
@@ -13,28 +14,42 @@ router.post('/seed-admin', verifyAdmin, async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username และ password ต้องระบุ' });
+    // Validate input types and format
+    const validation = validateCredentials(username, password);
+    if (!validation.isValid) {
+      return res.status(400).json({ 
+        error: 'Invalid input format',
+        details: validation.errors 
+      });
+    }
+
+    // Sanitize inputs
+    const sanitizedUsername = username.trim();
+    const sanitizedPassword = password.trim();
+
+    // Prevent NoSQL injection
+    if (sanitizedUsername.includes('$') || sanitizedUsername.includes('.')) {
+      return res.status(400).json({ error: 'Invalid username format' });
     }
 
     // ตรวจสอบ admin มีอยู่แล้วหรือไม่
-    let admin = await Admin.findOne({ username });
+    let admin = await Admin.findOne({ username: sanitizedUsername });
 
     if (admin) {
       // อัปเดต password
-      admin.password = password;
+      admin.password = sanitizedPassword;
       await admin.save();
-      logAdminAction(req, 'SEED-ADMIN', `Updated admin: ${username}`);
-      return res.json({ success: true, message: `อัปเดต admin '${username}' สำเร็จ`, action: 'updated' });
+      logAdminAction(req, 'SEED-ADMIN', `Updated admin: ${sanitizedUsername}`);
+      return res.json({ success: true, message: `อัปเดต admin '${sanitizedUsername}' สำเร็จ`, action: 'updated' });
     } else {
       // สร้าง admin ใหม่
-      admin = new Admin({ username, password });
+      admin = new Admin({ username: sanitizedUsername, password: sanitizedPassword });
       await admin.save();
-      logAdminAction(req, 'SEED-ADMIN', `Created admin: ${username}`);
-      return res.json({ success: true, message: `สร้าง admin '${username}' สำเร็จ`, action: 'created' });
+      logAdminAction(req, 'SEED-ADMIN', `Created admin: ${sanitizedUsername}`);
+      return res.json({ success: true, message: `สร้าง admin '${sanitizedUsername}' สำเร็จ`, action: 'created' });
     }
   } catch (err) {
-    console.error(err);
+    console.error('❌ Seed admin error:', err);
     return res.status(500).json({ error: 'Seed admin ล้มเหลว', details: err.message });
   }
 });
@@ -42,24 +57,55 @@ router.post('/seed-admin', verifyAdmin, async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
-    if (!username || !password) return res.status(400).json({ error: 'Missing credentials' });
+    
+    // Step 1: Validate credentials format and type
+    const validation = validateCredentials(username, password);
+    if (!validation.isValid) {
+      console.warn('⚠️ Invalid login attempt:', {
+        ip: req.ip,
+        errors: validation.errors,
+        username: typeof username,
+        password: typeof password
+      });
+      return res.status(400).json({ 
+        error: 'Invalid credentials format',
+        details: validation.errors 
+      });
+    }
 
-    // ค้นหา admin ใน MongoDB
-    const admin = await Admin.findOne({ username });
+    // Step 2: Trim and sanitize inputs (already sanitized by middleware, but extra safety)
+    const sanitizedUsername = username.trim();
+    const sanitizedPassword = password.trim();
+
+    // Step 3: Additional security checks
+    // Prevent MongoDB operator injection in username
+    if (sanitizedUsername.includes('$') || sanitizedUsername.includes('.')) {
+      console.warn('⚠️ Potential NoSQL injection attempt:', {
+        ip: req.ip,
+        username: sanitizedUsername
+      });
+      return res.status(400).json({ error: 'Invalid username format' });
+    }
+
+    // Step 4: Find admin in MongoDB with explicit string query
+    const admin = await Admin.findOne({ username: sanitizedUsername });
     if (!admin) {
+      logAdminLogin(req, sanitizedUsername, false);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // เช็ค password ด้วย bcrypt
-    const isPasswordValid = await admin.comparePassword(password);
+    // Step 5: Verify password with bcrypt (now protected against type errors)
+    const isPasswordValid = await admin.comparePassword(sanitizedPassword);
     if (!isPasswordValid) {
-      logAdminLogin(req, username, false);
+      logAdminLogin(req, sanitizedUsername, false);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const payload = { username };
+    // Step 6: Generate JWT token
+    const payload = { username: sanitizedUsername };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '2h' });
 
+    // Step 7: Set secure cookie
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -68,10 +114,10 @@ router.post('/login', async (req, res) => {
     };
 
     res.cookie('token', token, cookieOptions);
-    logAdminLogin(req, username, true);
-    return res.json({ success: true, user: { username } });
+    logAdminLogin(req, sanitizedUsername, true);
+    return res.json({ success: true, user: { username: sanitizedUsername } });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Login error:', err);
     return res.status(500).json({ error: 'Login failed' });
   }
 });

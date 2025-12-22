@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Copy, Check, Upload, X } from "lucide-react";
 import { notify } from "../utils/toast";
+import bookbank from "../assets/bookbank.jpg";
 
 export default function PaymentSection() {
   const [copied, setCopied] = useState(false);
@@ -377,7 +378,7 @@ export default function PaymentSection() {
 
               <div className="mb-4 sm:mb-6 bg-white rounded-xl p-4 sm:p-6 flex items-center justify-center">
                 <div className="text-center">
-                  <img src="src/assets/bookbank.jpg" alt="bookbank" className="w-full h-full object-contain" />
+                  <img src={bookbank} alt="bookbank" className="w-full h-full object-contain" />
                 </div>
               </div>
 

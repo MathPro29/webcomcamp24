@@ -14,6 +14,7 @@ import settingsRouter from "./routes/settings.js";
 
 import { limitsignup, loginlimit } from "./middleware/ratelimit.js";
 import { ensureStorageExists } from "./config/storage.js";
+import { sanitizeInputs, jsonErrorHandler, globalErrorHandler } from "./middleware/security.js";
 
 dotenv.config();
 
@@ -49,8 +50,12 @@ app.use(cors({
 /* ======================
    GLOBAL MIDDLEWARE
 ====================== */
-app.use(express.json());
+// Parse JSON with size limit
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
+
+// Security: Sanitize all inputs to prevent NoSQL injection
+app.use(sanitizeInputs);
 
 app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 },
@@ -64,6 +69,13 @@ app.use("/api/register", limitsignup, registerRouter);
 app.use("/api/auth", loginlimit, authRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/settings", settingsRouter);
+
+/* ======================
+   SECURITY: GLOBAL ERROR HANDLER
+====================== */
+// Must be after all routes
+app.use(jsonErrorHandler);
+app.use(globalErrorHandler);
 
 /* ======================
    START SERVER

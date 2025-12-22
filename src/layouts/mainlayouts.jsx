@@ -2,6 +2,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "/src/components/navbar.jsx";
+import Snowfall from 'react-snowfall'
 
 export default function MainLayout() {
     return (
@@ -10,6 +11,7 @@ export default function MainLayout() {
             <main>
                 <Outlet />
             </main>
+            <Snowfall />
         </>
     );
 }

@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 
 import Countdown from "./countdown";
 import { Link } from "react-router-dom";
-import logo from "../assets/logo.png";
+// import logo from "../assets/logo.png";
+import logo_xmas from "../assets/logo_xmas_comcamp.png";
 
 const HeroSections = () => {
   return (
@@ -32,7 +33,7 @@ const HeroSections = () => {
           {/* Title */}
           <div className="flex flex-col items-center justify-center space-y-3 pt-16">
             <motion.img
-              src={logo}
+              src={logo_xmas}
               alt="ComCamp Logo"
               className="
     w-[230px]          /* mobile */
