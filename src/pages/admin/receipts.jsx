@@ -48,7 +48,7 @@ const Receipts = () => {
             icon: <Clock size={16} className="text-yellow-600" />
         },
         rejected: {
-            label: 'ปฏิเสธ',
+            label: 'สละสิทธิ์',
             color: 'bg-red-100 text-red-800 border-red-300',
             icon: <XCircle size={16} className="text-red-600" />
         }
@@ -198,7 +198,7 @@ const Receipts = () => {
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                         <div className="flex items-center gap-2 text-red-800 text-sm font-medium mb-1">
                             <XCircle size={16} />
-                            ปฏิเสธ
+                            สละสิทธิ์
                         </div>
                         <div className="text-2xl font-bold text-red-900">
                             {receipts.filter(r => r.status === 'rejected').length} รายการ
@@ -232,7 +232,7 @@ const Receipts = () => {
                                 <option value="all">สถานะทั้งหมด</option>
                                 <option value="pending">รอตรวจสอบ</option>
                                 <option value="approved">อนุมัติแล้ว</option>
-                                <option value="rejected">ปฏิเสธ</option>
+                                <option value="rejected">สละสิทธิ์</option>
                             </select>
                         </div>
 
@@ -245,6 +245,148 @@ const Receipts = () => {
                         >
                             <RefreshCcw size={20} className={isRefreshing ? 'animate-spin' : ''} />
                             {isRefreshing ? 'กำลังโหลด...' : 'รีเฟรช'}
+                        </button>
+                        {/* Export CSV Button */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    console.log('🔄 Starting CSV export...');
+
+                                    // Fetch users data
+                                    const usersRes = await fetch(`${API_BASE}/api/users/all`, {
+                                        credentials: 'include'
+                                    });
+
+                                    console.log('📡 Users API response status:', usersRes.status);
+
+                                    if (!usersRes.ok) {
+                                        const errorText = await usersRes.text();
+                                        console.error('❌ API Error:', errorText);
+                                        throw new Error(`Failed to fetch users: ${usersRes.status}`);
+                                    }
+
+                                    const usersData = await usersRes.json();
+                                    console.log('✅ Users data received:', usersData.length, 'users');
+
+                                    // Create map: email/phone -> user data
+                                    const userMap = {};
+                                    usersData.forEach(user => {
+                                        const key = user.email || user.phone;
+                                        if (key) {
+                                            userMap[key] = {
+                                                regDate: user.createdAt || user.created_at || '',
+                                            };
+                                        }
+                                    });
+
+                                    console.log('📊 User map created with', Object.keys(userMap).length, 'entries');
+
+                                    // Helper: Format date only (DD/MM/YYYY)
+                                    const formatDateOnly = (dateStr) => {
+                                        if (!dateStr) return '';
+                                        try {
+                                            const d = new Date(dateStr);
+                                            return d.toLocaleDateString('th-TH', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric'
+                                            });
+                                        } catch {
+                                            return '';
+                                        }
+                                    };
+
+                                    // Helper: Format date with time
+                                    const formatDateWithTime = (dateStr) => {
+                                        if (!dateStr) return '';
+                                        try {
+                                            const d = new Date(dateStr);
+                                            return d.toLocaleString('th-TH', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit'
+                                            });
+                                        } catch {
+                                            return '';
+                                        }
+                                    };
+
+                                    // Helper: Calculate deadline (+5 days)
+                                    const calcDeadline = (regDateStr) => {
+                                        if (!regDateStr) return '';
+                                        try {
+                                            const d = new Date(regDateStr);
+                                            d.setDate(d.getDate() + 5);
+                                            return formatDateOnly(d);
+                                        } catch {
+                                            return '';
+                                        }
+                                    };
+
+                                    // Build CSV rows
+                                    const headers = [
+                                        'ลำดับ',
+                                        'ชื่อ-นามสกุล',
+                                        'อีเมล',
+                                        'เบอร์โทร',
+                                        'วันที่สมัคร',
+                                        'วันที่ครบกำหนดชำระ',
+                                        'วันเวลาที่อัปโหลดสลิป',
+                                        'สถานะ',
+                                        'หมายเหตุ'
+                                    ];
+
+                                    const rows = filteredReceipts.map((receipt, idx) => {
+                                        const key = receipt.email || receipt.phone;
+                                        const userData = userMap[key] || {};
+                                        const regDate = userData.regDate || '';
+
+                                        return [
+                                            idx + 1,
+                                            receipt.userName || '',
+                                            receipt.email || '',
+                                            receipt.phone || '',
+                                            formatDateOnly(regDate),
+                                            calcDeadline(regDate),
+                                            formatDateWithTime(receipt.uploadDate),
+                                            statusConfig[receipt.status]?.label || receipt.status,
+                                            receipt.note || ''
+                                        ];
+                                    });
+
+                                    // Convert to CSV string
+                                    const csvLines = [
+                                        headers.join(','),
+                                        ...rows.map(row =>
+                                            row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+                                        )
+                                    ];
+                                    const csvContent = csvLines.join('\n');
+
+                                    // Download
+                                    const BOM = '\uFEFF';
+                                    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = `receipts_${new Date().toISOString().split('T')[0]}.csv`;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    URL.revokeObjectURL(url);
+
+                                } catch (error) {
+                                    console.error('CSV Export Error:', error);
+                                    alert('เกิดข้อผิดพลาดในการ export CSV: ' + error.message);
+                                }
+                            }}
+                            className="cursor-pointer flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                        >
+                            <Download size={20} />
+                            ส่งออก CSV
                         </button>
                     </div>
 
@@ -281,7 +423,7 @@ const Receipts = () => {
                                     className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                                 >
                                     <XCircle size={16} />
-                                    ปฏิเสธทั้งหมด
+                                    สละสิทธิ์ทั้งหมด
                                 </button>
                             </div>
                         </div>
@@ -390,7 +532,7 @@ const Receipts = () => {
                                                 >
                                                     <option value="pending">รอตรวจสอบ</option>
                                                     <option value="approved">อนุมัติ</option>
-                                                    <option value="rejected">ปฏิเสธ</option>
+                                                    <option value="rejected">สละสิทธิ์</option>
                                                 </select>
                                             </td>
                                             <td className="px-6 py-4">

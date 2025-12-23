@@ -265,7 +265,7 @@ userRouter.get("/all", verifyAdmin, async (req, res) => {
 
     // ดึงข้อมูลทั้งหมดที่ Dashboard ต้องการ
     const users = await User.find({})
-      .select("_id prefix firstName lastName nickname birthDate age email phone parentPhone school grade province status gender laptop allergies medicalConditions shirtSize lineId emergencyContact emergencyPhone certificate")
+      .select("_id prefix firstName lastName nickname birthDate age email phone parentPhone school grade province status gender laptop allergies medicalConditions shirtSize lineId emergencyContact emergencyPhone certificate createdAt updatedAt")
       .sort({ createdAt: -1 })
       .lean();
 

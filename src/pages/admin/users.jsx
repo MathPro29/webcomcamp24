@@ -596,7 +596,7 @@ export default function UnifiedUsersReceipts() {
       icon: <Clock size={16} className="text-yellow-600" />
     },
     rejected: {
-      label: 'ปฏิเสธ',
+      label: 'สละสิทธิ์',
       color: 'bg-red-100 text-red-800 border-red-300',
       icon: <XCircle size={16} className="text-red-600" />
     }
@@ -859,7 +859,7 @@ export default function UnifiedUsersReceipts() {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center gap-2 text-red-800 text-sm font-medium mb-1">
               <XCircle size={16} />
-              ปฏิเสธ
+              สละสิทธิ์
             </div>
             <div className="text-2xl font-bold text-red-900">
               {users.filter(u => u.status === 'rejected').length} คน
@@ -909,7 +909,7 @@ export default function UnifiedUsersReceipts() {
                 <option value="all">สถานะทั้งหมด</option>
                 <option value="approved">อนุมัติแล้ว</option>
                 <option value="pending">รอตรวจสอบ</option>
-                <option value="rejected">ปฏิเสธ</option>
+                <option value="rejected">สละสิทธิ์</option>
               </select>
             </div>
 
@@ -960,7 +960,7 @@ export default function UnifiedUsersReceipts() {
                   className="cursor-pointer flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   <XCircle size={16} />
-                  ปฏิเสธทั้งหมด
+                  สละสิทธิ์ทั้งหมด
                 </button>
                 <button
                   onClick={handleBulkDelete}
@@ -1045,7 +1045,7 @@ export default function UnifiedUsersReceipts() {
                         >
                           <option value="approved">อนุมัติแล้ว</option>
                           <option value="pending">รอตรวจสอบ</option>
-                          <option value="rejected">ปฏิเสธ</option>
+                          <option value="rejected">สละสิทธิ์</option>
                         </select>
                       </td>
                       <td className="px-6 py-4">
@@ -1169,7 +1169,7 @@ export default function UnifiedUsersReceipts() {
                 <CheckCircle size={20} /> อนุมัติ
               </button>
               <button onClick={() => { handleStatusChange(viewingSlip.userId, 'rejected'); setViewingSlip(null); }} className="cursor-pointer flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors">
-                <XCircle size={20} /> ปฏิเสธ
+                <XCircle size={20} /> สละสิทธิ์
               </button>
               <button onClick={() => downloadSlip(viewingSlip.slipImage, viewingSlip.userName)} className="cursor-pointer flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-3 rounded-lg font-medium transition-colors">
                 <Download size={20} />

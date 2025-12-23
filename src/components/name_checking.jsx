@@ -100,7 +100,7 @@ const NameChecking = () => {
         };
       case "declined":
         return {
-          text: "ไม่ผ่านการคัดเลือก",
+          text: "สละสิทธิ์",
           color: "text-red-400",
           bg: "bg-red-400/10",
           border: "border-red-400/30",
@@ -335,7 +335,7 @@ const NameChecking = () => {
                   {searchResult.status === "declined" && (
                     <div className="mt-6 p-4 bg-red-400/10 border border-red-400/30 rounded-lg">
                       <p className="text-red-400 text-sm">
-                        ขออภัย คุณไม่ผ่านการคัดเลือกในครั้งนี้ ขอบคุณที่สนใจเข้าร่วมค่าย ComCamp
+                        สละสิทธิ์ครั้งนี้ ขอบคุณที่สนใจเข้าร่วมค่าย ComCamp ครั้งหน้าไว้เจอกันใหม่นะ
                       </p>
                     </div>
                   )}

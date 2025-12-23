@@ -97,7 +97,7 @@ export default function Dashboard() {
       setStatusData([
         { name: 'รอตรวจสอบ', value: pendingCount },
         { name: 'อนุมัติแล้ว', value: approvedCount },
-        { name: 'ปฏิเสธ', value: rejectedCount },
+        { name: 'สละสิทธิ์', value: rejectedCount },
       ]);
 
       // Gender
@@ -253,7 +253,7 @@ export default function Dashboard() {
   const getStatusColor = (name) => {
     if (name === 'รอตรวจสอบ') return '#FF9800'; // orange
     if (name === 'อนุมัติแล้ว') return '#4CAF50'; // green
-    if (name === 'ปฏิเสธ') return '#F44336'; // red
+    if (name === 'สละสิทธิ์') return '#F44336'; // red
     return '#9E9E9E'; // gray fallback
   };
 
@@ -370,9 +370,12 @@ export default function Dashboard() {
 
       const data = await res.json();
 
-      // Count shirt sizes
+      // Filter out users with declined status
+      const activeUsers = data.filter(user => user.status !== 'declined');
+
+      // Count shirt sizes (only for active users)
       const shirtSizeCounts = {};
-      data.forEach(user => {
+      activeUsers.forEach(user => {
         const size = user.shirtSize || 'ไม่ระบุ';
         shirtSizeCounts[size] = (shirtSizeCounts[size] || 0) + 1;
       });
@@ -395,9 +398,9 @@ export default function Dashboard() {
         ...summaryRows.map(row => row.join(','))
       ].join('\n');
 
-      // Create detailed CSV with user info
+      // Create detailed CSV with user info (only active users)
       const detailHeaders = ['ชื่อ-นามสกุล', 'ไซส์เสื้อ', 'โรงเรียน', 'เบอร์โทร'];
-      const detailRows = data
+      const detailRows = activeUsers
         .sort((a, b) => {
           const sizeOrder = { "S": 1, "M": 2, "L": 3, "XL": 4, "2XL": 5, "3XL": 6, "4XL": 7 };
           const sizeA = a.shirtSize || 'ไม่ระบุ';
@@ -480,7 +483,7 @@ export default function Dashboard() {
           { label: 'ผู้สมัครทั้งหมด', value: stats.total, color: 'border-blue-500', icon: <Users size={18} /> },
           { label: 'รอตรวจสอบ', value: stats.pending, color: 'border-yellow-400', icon: <Clock size={18} /> },
           { label: 'อนุมัติแล้ว', value: stats.approved, color: 'border-green-500', icon: <CheckCircle size={18} /> },
-          { label: 'ปฏิเสธ', value: stats.rejected, color: 'border-red-500', icon: <XCircle size={18} /> },
+          { label: 'สละสิทธิ์', value: stats.rejected, color: 'border-red-500', icon: <XCircle size={18} /> },
         ].map((c) => (
           <div key={c.label} className={`bg-white p-4 rounded-lg shadow-sm border-l-4 ${c.color}`}>
             <div className="flex items-center justify-between">

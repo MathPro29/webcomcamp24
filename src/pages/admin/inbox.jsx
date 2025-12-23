@@ -211,11 +211,11 @@ const Inboxpage = () => {
             <div className="flex items-center justify-between mb-2">
               <XCircle size={24} className="opacity-80" />
               <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
-                ปฏิเสธ
+                สละสิทธิ์
               </div>
             </div>
             <div className="text-3xl font-bold mb-1">{stats.rejected}</div>
-            <div className="text-red-100 text-sm">ถูกปฏิเสธ</div>
+            <div className="text-red-100 text-sm">ถูกสละสิทธิ์</div>
           </div>
         </div>
 
