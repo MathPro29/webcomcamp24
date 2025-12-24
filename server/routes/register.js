@@ -16,8 +16,8 @@ router.post("/", strictOriginCheck, async (req, res) => {
       return res.status(403).json({ error: "ขณะนี้ปิดรับสมัครแล้ว" });
     }
 
-    // Check capacity
-    const currentCount = await User.countDocuments();
+    // Check capacity (exclude users who forfeited their rights)
+    const currentCount = await User.countDocuments({ status: { $ne: 'declined' } });
     if (currentCount >= settings.maxCapacity) {
       return res.status(403).json({ error: "จำนวนผู้สมัครเต็มแล้ว" });
     }
@@ -37,15 +37,48 @@ router.post("/", strictOriginCheck, async (req, res) => {
       }
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      return res.status(400).json({ error: "รูปแบบอีเมลไม่ถูกต้อง" });
+    }
+
+    // Validate phone numbers (must be 10 digits)
+    const phoneRegex = /^\d{10}$/;
+    const cleanPhone = (data.phone || '').replace(/-/g, '');
+    const cleanEmergencyPhone = (data.emergencyPhone || '').replace(/-/g, '');
+    
+    if (!phoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ error: "เบอร์โทรศัพท์ต้องเป็นตัวเลข 10 หลัก" });
+    }
+    
+    if (!phoneRegex.test(cleanEmergencyPhone)) {
+      return res.status(400).json({ error: "เบอร์โทรศัพท์ฉุกเฉินต้องเป็นตัวเลข 10 หลัก" });
+    }
+
     // เช็คอีเมลซ้ำ
     const exists = await User.findOne({ email: data.email });
     if (exists) return res.status(409).json({ error: "อีเมลนี้ถูกใช้สมัครแล้ว" });
 
+    // Whitelist allowed fields to prevent status injection
+    const allowedFields = [
+      'prefix', 'firstName', 'lastName', 'nickname', 'birthDate', 'age',
+      'gender', 'school', 'grade', 'province', 'phone', 'parentPhone',
+      'email', 'lineId', 'shirtSize', 'allergies', 'medicalConditions',
+      'emergencyContact', 'emergencyPhone', 'laptop'
+    ];
+
+    const userData = {};
+    allowedFields.forEach(field => {
+      if (data[field] !== undefined) {
+        userData[field] = data[field];
+      }
+    });
+
     // บันทึก
     const newUser = await User.create({
-      ...data,
+      ...userData,
       status: "pending",
-      birthDate: data.birthDate,
     });
 
     logRegistration(req, data, true);

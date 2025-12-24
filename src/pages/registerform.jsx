@@ -103,9 +103,9 @@ export default function RegisterForm() {
             const settingsRes = await axios.get(`${API_BASE}/api/settings`);
             const settings = settingsRes.data;
 
-            // Fetch current user count
+            // Fetch current user count (exclude users who forfeited their rights)
             const usersRes = await axios.get(`${API_BASE}/api/users/all`);
-            const currentCount = usersRes.data.length;
+            const currentCount = usersRes.data.filter(user => user.status !== 'declined').length;
 
             setRegistrationStatus({
                 isOpen: settings.isRegistrationOpen,
