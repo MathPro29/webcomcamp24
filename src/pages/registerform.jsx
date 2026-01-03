@@ -99,25 +99,21 @@ export default function RegisterForm() {
 
     const checkRegistrationStatus = async () => {
         try {
-            // Fetch settings
-            const settingsRes = await axios.get(`${API_BASE}/api/settings`);
-            const settings = settingsRes.data;
-
-            // Fetch current user count (exclude users who forfeited their rights)
-            const usersRes = await axios.get(`${API_BASE}/api/users/all`);
-            const currentCount = usersRes.data.filter(user => user.status !== 'declined').length;
+            // Fetch registration status (public endpoint)
+            const statusRes = await axios.get(`${API_BASE}/api/settings/registration-status`);
+            const { isOpen, currentCount, maxCapacity } = statusRes.data;
 
             setRegistrationStatus({
-                isOpen: settings.isRegistrationOpen,
-                currentCount: currentCount,
-                maxCapacity: settings.maxCapacity,
+                isOpen,
+                currentCount,
+                maxCapacity,
                 loading: false
             });
 
             // Show warning if registration is closed or full
-            if (!settings.isRegistrationOpen) {
+            if (!isOpen) {
                 notify.error('ขณะนี้ปิดรับสมัครแล้ว');
-            } else if (currentCount >= settings.maxCapacity) {
+            } else if (currentCount >= maxCapacity) {
                 notify.error('ขออภัย! จำนวนผู้สมัครเต็มแล้ว');
             }
         } catch (error) {
